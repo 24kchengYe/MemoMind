@@ -76,16 +76,36 @@ Claude Code ──MCP (stdio)──→ WSL2
                    ┌────────────┴────────────┐
                    │     MemoMind Server      │
                    ├─────────────────────────┤
-                   │  PostgreSQL + pgvector   │ ← structured memories
-                   │  BAAI/bge-small (CUDA)   │ ← local embeddings
+                   │  PostgreSQL + pgvector   │ ← structured memories + knowledge graph
+                   │  BAAI/bge-small (CUDA)   │ ← local embeddings (384-dim)
                    │  cross-encoder (CUDA)    │ ← local reranking
-                   │  OpenRouter (qwen3.5-9b) │ ← fact extraction
+                   │  DeepSeek / OpenRouter   │ ← fact extraction (configurable)
                    └─────────────────────────┘
                               │
                    All data stays on your machine
 ```
 
 ## Three Core Operations
+
+```
+┌─────────┐     ┌──────────────────────────────────────────────┐
+│ retain  │────▶│ Text → LLM extracts facts → entities linked  │
+│         │     │ → embeddings generated → stored in PG+vector │
+└─────────┘     └──────────────────────────────────────────────┘
+
+┌─────────┐     ┌──────────────────────────────────────────────┐
+│ recall  │────▶│ Query → 4 parallel searches:                 │
+│         │     │   semantic (vector) + BM25 (keyword)         │
+│         │     │   + graph (entity links) + temporal (time)   │
+│         │     │ → cross-encoder rerank → top results         │
+└─────────┘     └──────────────────────────────────────────────┘
+
+┌─────────┐     ┌──────────────────────────────────────────────┐
+│ reflect │────▶│ Question → recall relevant memories          │
+│         │     │ → LLM reasons across all retrieved context   │
+│         │     │ → synthesized insight returned               │
+└─────────┘     └──────────────────────────────────────────────┘
+```
 
 | Operation | What It Does | When AI Calls It |
 |-----------|-------------|------------------|
@@ -130,19 +150,38 @@ MemoMind isn't just for remembering preferences. Here are some ways it makes you
 - **Web Dashboard** — browse and search all memories visually at `http://127.0.0.1:9999`
 - **Auto-start** — systemd service + Windows startup script, works after reboot
 
+## How It Differs from Built-in Memory
+
+Claude Code (and similar coding agents) already has a built-in memory system — `CLAUDE.md` and `MEMORY.md` files. Why use MemoMind on top of it?
+
+| | Claude Code Built-in | MemoMind |
+|---|---|---|
+| **Storage** | Plain Markdown files | PostgreSQL + pgvector + knowledge graph |
+| **Extraction** | Manual — you write `CLAUDE.md` rules yourself | Automatic — LLM extracts facts from your conversations |
+| **Retrieval** | Full file loaded into context every time (wastes tokens) | 4-way hybrid search, only relevant memories recalled |
+| **Cross-session** | `CLAUDE.md` is static; `MEMORY.md` is append-only | Dynamic knowledge graph with entity linking and temporal relationships |
+| **Reasoning** | No — just loads context | `reflect` can synthesize across all memories |
+| **Scalability** | Breaks down at ~200 lines (context bloat) | Handles thousands of memories efficiently |
+
+**They're complementary**, not competing. `CLAUDE.md` is great for static project rules ("use tabs, not spaces"). MemoMind handles the dynamic knowledge that accumulates over time ("user tried Redis caching last week but switched to Memcached due to memory constraints").
+
 ## How It Compares
 
-| Feature | MemoMind | Memori | Mem0 | Claude Code built-in |
-|---------|----------|--------|------|---------------------|
-| Privacy | 100% local | Cloud required | Configurable | Local files |
-| Memory type | Facts + knowledge graph + mental models | 8 categories | Flat facts | Markdown notes |
-| Retrieval | 4-way hybrid (semantic + BM25 + graph + temporal) | Semantic + BM25 | Semantic only | Full file load |
-| Auto-extract | LLM-powered | LLM-powered | LLM-powered | Manual |
-| Reflect/reason | Yes — cross-memory synthesis | No | No | No |
-| Mental models | Yes — evolving topic understanding | No | No | No |
-| Multi-provider LLM | OpenAI, Anthropic, Gemini, Groq, Ollama, etc. | Limited | OpenAI | N/A |
-| Metadata filtering | Per-user / per-project isolation | Limited | Yes | No |
-| Cost | ~$0.01/day | Free tier limited | Free tier limited | Free |
+| Feature | MemoMind | [MemOS](https://github.com/MemTensor/MemOS) (OpenClaw) | Mem0 | Claude Code built-in |
+|---------|----------|------|------|---------------------|
+| **Target** | Claude Code / MCP agents | OpenClaw agents | General LLM apps | Claude Code only |
+| **Privacy** | 100% local | Cloud or local | Configurable | Local files |
+| **Memory structure** | Knowledge graph + vectors + mental models | Graph + vectors + multi-modal | Flat facts | Markdown files |
+| **Retrieval** | 4-way hybrid (semantic + BM25 + graph + temporal) | FTS5 + vector (local) / hosted (cloud) | Semantic only | Full file load |
+| **Auto-extract** | LLM-powered fact extraction | Task summarization + skill evolution | LLM-powered | Manual |
+| **Reflect/reason** | Yes — cross-memory synthesis | No | No | No |
+| **Multi-modal** | Text only | Text + images + tool traces | Text only | Text only |
+| **Protocol** | MCP (stdio/SSE) | OpenClaw plugin API | REST API | File-based |
+| **Setup complexity** | WSL + systemd (one-time) | Docker Compose (Neo4j + Qdrant) | pip install | Zero |
+| **GPU acceleration** | Yes — local CUDA embeddings + reranking | Optional | No | No |
+| **Cost** | ~$0.01/day (LLM calls only) | Free (local) / paid (cloud) | Free tier limited | Free |
+
+**MemoMind vs MemOS/OpenClaw**: MemOS is designed for OpenClaw's agent ecosystem with multi-modal support and skill evolution. MemoMind is purpose-built for **MCP-based coding agents** (Claude Code, Cursor, etc.) with deeper retrieval (4-way hybrid vs 2-way), built-in reasoning (`reflect`), and zero-infrastructure GPU-accelerated embeddings. If you use OpenClaw, use MemOS. If you use Claude Code, use MemoMind.
 
 ## MemoMind + Recall: Two Sides of the Same Coin
 
@@ -293,6 +332,72 @@ The bridge is added to Windows startup automatically by `keep-wsl-alive.vbs`.
 
 Anthropic, Google Gemini, Ollama (fully local), LM Studio — set `llm_provider` accordingly in `serve.py`.
 
+## Integration Options
+
+MemoMind can be integrated in multiple ways beyond MCP:
+
+### Option 1: MCP (Recommended for Claude Code)
+
+Zero-code setup — Claude Code automatically calls `retain` / `recall` / `reflect` via MCP protocol. See [Quick Start](#quick-start) above.
+
+### Option 2: Python SDK
+
+```python
+from hindsight_client import HindsightClient
+
+client = HindsightClient(base_url="http://localhost:8888")
+
+# Store a memory
+client.retain("default", "User prefers FastAPI over Express for new projects")
+
+# Recall relevant memories
+results = client.recall("default", "What framework should I use?")
+for memory in results:
+    print(memory.text, memory.relevance_score)
+
+# Deep reflection across all memories
+insight = client.reflect("default", "What patterns do you see in my tech choices?")
+print(insight)
+```
+
+### Option 3: REST API
+
+```bash
+# Health check
+curl http://localhost:8888/health
+
+# List memories
+curl http://localhost:8888/v1/default/banks/default/memories/list
+
+# Recall (semantic search)
+curl -X POST http://localhost:8888/v1/default/banks/default/memories/recall \
+  -H "Content-Type: application/json" \
+  -d '{"query": "user preferences", "max_tokens": 4096}'
+
+# Reflect
+curl -X POST http://localhost:8888/v1/default/banks/default/reflect \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Summarize what you know about this user"}'
+```
+
+### Per-User Memory Isolation
+
+Use separate memory banks to isolate memories per user, project, or context:
+
+```python
+# Create a bank per user
+client.create_bank("user-alice", name="Alice's Memories")
+client.create_bank("user-bob", name="Bob's Memories")
+
+# Each user's memories are completely isolated
+client.retain("user-alice", "Alice prefers dark mode and Vim keybindings")
+client.retain("user-bob", "Bob uses VS Code with default settings")
+
+# Recall only searches within the specified bank
+alice_prefs = client.recall("user-alice", "editor preferences")
+# → Only returns Alice's preferences, not Bob's
+```
+
 ## Resource Usage
 
 | Component | Idle | Active |
@@ -422,6 +527,20 @@ MemoMind 赋予你的 AI **持久、本地、智能的记忆**。它不仅仅存
 | **Experience（经历）** | AI 参与过的事件 | "上次会话调试了 auth 模块" |
 | **Observation（观察）** | 从行为中自动归纳的模式 | "用户一直使用函数式风格" |
 | **Mental Model（心智模型）** | 对复杂主题的深层理解 | "这个代码库使用六边形架构" |
+
+## 与内置记忆的区别
+
+Claude Code 已有 `CLAUDE.md` / `MEMORY.md` 内置记忆。为什么还需要 MemoMind？
+
+| | Claude Code 内置 | MemoMind |
+|---|---|---|
+| **存储** | 纯 Markdown 文件 | PostgreSQL + pgvector + 知识图谱 |
+| **提取** | 手动写规则 | LLM 自动从对话中提取事实 |
+| **检索** | 每次全量加载（浪费 token） | 4 路混合搜索，只召回相关记忆 |
+| **推理** | 无 | `reflect` 跨所有记忆综合推理 |
+| **扩展性** | ~200 行后上下文膨胀 | 高效处理数千条记忆 |
+
+**两者互补**：`CLAUDE.md` 适合静态项目规则；MemoMind 处理随时间积累的动态知识。
 
 ## 核心能力
 

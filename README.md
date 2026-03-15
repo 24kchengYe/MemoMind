@@ -234,27 +234,64 @@ wsl -d Ubuntu -u hindsight -- /opt/memomind-env/memomind-cli.sh memory recall de
 
 ## Supported LLM Providers
 
-The LLM is only used for fact extraction (not for chatting). MemoMind supports any OpenAI-compatible API:
+The LLM is only used for fact extraction (not for chatting). MemoMind supports any OpenAI-compatible API. Two deployment modes:
 
-| Provider | Configuration | Notes |
-|----------|--------------|-------|
-| **OpenRouter** (default) | `llm_provider="openai"`, `llm_base_url="https://openrouter.ai/api/v1"` | Access 200+ models with one key |
-| **OpenAI** | `llm_provider="openai"` | GPT-4o, GPT-4.1-nano, etc. |
-| **Anthropic** | `llm_provider="anthropic"` | Claude Sonnet, Haiku |
-| **Google Gemini** | `llm_provider="gemini"` | Gemini Flash, Pro |
-| **Groq** | `llm_provider="groq"` | Ultra-fast inference |
-| **Ollama** | `llm_provider="ollama"` | Fully local, no API key needed |
-| **LM Studio** | `llm_provider="lmstudio"` | Local models with OpenAI-compatible API |
+### Mode A: China Direct (no proxy needed) — Recommended for China users
 
-### Recommended Models (via OpenRouter)
+Use a domestic OpenAI-compatible API gateway. No VPN, no proxy, no extra configuration:
 
-Pick the cheapest — fact extraction is simple work:
+| Provider | Base URL | Recommended Model | Notes |
+|----------|---------|-------------------|-------|
+| **[MindCraft](https://www.mindcraft.com.cn/)** | `https://api.mindcraft.com.cn/v1` | `deepseek-chat`, `qwen-flash` | 200+ models, pay-per-use |
+| **[DeepSeek](https://platform.deepseek.com/)** | `https://api.deepseek.com/v1` | `deepseek-chat` | Official DeepSeek API |
+| **[SiliconFlow](https://siliconflow.cn/)** | `https://api.siliconflow.cn/v1` | Various open-source models | Free tier available |
 
-| Model | Cost (per 1M tokens) | Best For |
-|-------|---------------------|----------|
-| `qwen/qwen3.5-9b` | $0.05 / $0.15 | **Default** — cheapest, good JSON output |
-| `deepseek/deepseek-chat` | $0.14 / $0.28 | Best Chinese language support |
-| `openai/gpt-4.1-nano` | $0.10 / $0.40 | Most reliable structured output |
+```python
+# In serve.py — just set these three lines:
+LLM_API_KEY = "your-api-key"
+LLM_BASE_URL = "https://api.mindcraft.com.cn/v1"
+LLM_MODEL = "deepseek-chat"
+NEEDS_PROXY = False  # No proxy needed
+```
+
+### Mode B: International APIs (proxy required)
+
+For OpenRouter, OpenAI, Anthropic, etc. Requires a proxy bridge (`proxy-bridge.py`) to route WSL traffic through your Windows proxy:
+
+| Provider | Base URL | Recommended Model |
+|----------|---------|-------------------|
+| **[OpenRouter](https://openrouter.ai/)** | `https://openrouter.ai/api/v1` | `qwen/qwen3.5-9b` ($0.05/1M tokens) |
+| **OpenAI** | `https://api.openai.com/v1` | `gpt-4.1-nano` |
+| **Groq** | `https://api.groq.com/openai/v1` | `llama-3.3-70b-versatile` (ultra-fast) |
+
+```python
+# In serve.py:
+LLM_API_KEY = "sk-..."
+LLM_BASE_URL = "https://openrouter.ai/api/v1"
+LLM_MODEL = "qwen/qwen3.5-9b"
+NEEDS_PROXY = True  # Routes through proxy-bridge.py → Clash
+```
+
+<details>
+<summary>Proxy bridge setup (for Mode B only)</summary>
+
+MemoMind includes `proxy-bridge.py` — a lightweight TCP forwarder that runs on Windows and bridges WSL to your local proxy (e.g., Clash):
+
+```bash
+# Start the bridge (binds 0.0.0.0:12080 → 127.0.0.1:2080)
+pythonw proxy-bridge.py
+
+# WSL can now reach your proxy via {Windows_IP}:12080
+# This is automatically configured in serve.py when NEEDS_PROXY = True
+```
+
+The bridge is added to Windows startup automatically by `keep-wsl-alive.vbs`.
+
+</details>
+
+### Also supported (any OpenAI-compatible API)
+
+Anthropic, Google Gemini, Ollama (fully local), LM Studio — set `llm_provider` accordingly in `serve.py`.
 
 ## Resource Usage
 
@@ -323,7 +360,7 @@ export HF_ENDPOINT=https://hf-mirror.com  # Use China mirror
 
 ## Changelog
 
-- **v1.2** (2026-03-15): Dashboard redesign (glassmorphism, memory cards, graph zoom/pan/tooltips, delete, animated counters, mobile responsive); README rewrite with demo GIF; proxy bridge for WSL-Windows connectivity; service renamed hindsight → memomind
+- **v1.2** (2026-03-15): Dashboard redesign (glassmorphism, memory cards, graph zoom/pan/tooltips, delete, animated counters, mobile responsive); README rewrite with demo GIF; dual LLM mode (China direct via MindCraft / international via proxy bridge); service renamed hindsight → memomind; retain speed 50s → 13s
 - **v1.1** (2026-03-12): Web dashboard for visual memory browsing; auto-start on boot; MCP stdio transport
 - **v1.0** (2026-03-09): Initial release — retain/recall/reflect, PostgreSQL + pgvector, GPU-accelerated embeddings, cross-encoder reranking
 
@@ -431,14 +468,28 @@ claude mcp add --scope user --transport stdio memomind \
   -- wsl -d Ubuntu -u hindsight -e /opt/memomind-env/bin/python3 /opt/memomind-env/mcp_stdio.py
 ```
 
+### LLM 配置
+
+MemoMind 支持两种部署模式，在 `serve.py` 和 `mcp_stdio.py` 中配置：
+
+**模式 A：国内直连（推荐）**— 使用 [MindCraft](https://www.mindcraft.com.cn/)、[DeepSeek 官方](https://platform.deepseek.com/) 等国内 API，无需代理：
+```python
+LLM_API_KEY = "your-key"
+LLM_BASE_URL = "https://api.mindcraft.com.cn/v1"
+LLM_MODEL = "deepseek-chat"
+NEEDS_PROXY = False
+```
+
+**模式 B：走代理**— 使用 OpenRouter 等国际 API，通过 `proxy-bridge.py` 桥接 WSL 到 Clash 代理
+
 ### 中国用户提示
 
 - 嵌入模型自动从 `hf-mirror.com` 下载，无需 VPN
-- OpenRouter 大部分模型无需代理（避免使用 Google Gemini 系列）
+- 推荐使用模式 A（国内直连），retain 速度约 10-15 秒（vs 走代理 40-50 秒）
 
 ## 更新日志
 
-- **v1.2** (2026-03-15): Dashboard 全面重新设计（毛玻璃效果、记忆卡片、图谱缩放/平移/提示、删除、动画计数器、移动端适配）；README 重写 + demo GIF；WSL-Windows 代理桥接；服务名 hindsight → memomind
+- **v1.2** (2026-03-15): Dashboard 全面重新设计；README 重写 + demo GIF；双 LLM 模式（国内直连 MindCraft / 国际走代理桥接）；服务名 hindsight → memomind；retain 速度 50s → 13s
 - **v1.1** (2026-03-12): 可视化记忆面板；开机自启；MCP stdio 传输
 - **v1.0** (2026-03-09): 首次发布——retain/recall/reflect、PostgreSQL + pgvector、GPU 加速嵌入、交叉编码器重排序
 

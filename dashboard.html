@@ -1717,6 +1717,7 @@ body {
         <span class="bank-badge" id="toolbarBankBadge">default</span>
       </div>
       <div class="toolbar-actions">
+        <button class="btn-icon" onclick="exportMemories()" title="Export all memories as JSON">&#128190;</button>
         <button class="btn-icon" id="reflectToggle" onclick="toggleReflect()" title="Reflect">&#128172;</button>
         <button class="btn-icon" onclick="doRefresh(this)" title="Refresh">&#8635;</button>
       </div>
@@ -3070,6 +3071,71 @@ async function loadGraph() {
   } catch (e) {
     empty.textContent = `Graph unavailable: ${e.message}`;
     empty.style.display = '';
+  }
+}
+
+// ── Export ──
+async function exportMemories() {
+  try {
+    const [bankInfo, memList, graphData, statsData] = await Promise.all([
+      api(`/v1/default/banks`),
+      api(`/v1/default/banks/${currentBank}/memories/list?limit=10000`),
+      api(`/v1/default/banks/${currentBank}/graph`),
+      api(`/v1/default/banks/${currentBank}/stats`)
+    ]);
+
+    // Fetch full detail for each memory (includes entities, source_memory_ids, history)
+    const items = memList.items || [];
+    const detailed = [];
+    for (const m of items) {
+      try {
+        const d = await api(`/v1/default/banks/${currentBank}/memories/${m.id}`);
+        detailed.push(d);
+      } catch(e) {
+        detailed.push(m); // fallback to list data
+      }
+    }
+
+    const exportData = {
+      version: '1.0',
+      format: 'memomind-export',
+      exported_at: new Date().toISOString(),
+      bank: {
+        bank_id: currentBank,
+        name: (bankInfo.banks || []).find(b => b.bank_id === currentBank)?.name || currentBank,
+        mission: (bankInfo.banks || []).find(b => b.bank_id === currentBank)?.mission || ''
+      },
+      stats: statsData,
+      memories: detailed.map(m => ({
+        id: m.id,
+        text: m.text,
+        context: m.context || '',
+        date: m.date,
+        fact_type: m.type || m.fact_type,
+        entities: m.entities || [],
+        tags: m.tags || [],
+        occurred_start: m.occurred_start,
+        occurred_end: m.occurred_end,
+        source_memory_ids: m.source_memory_ids || [],
+        source_memories: (m.source_memories || []).map(s => ({ id: s.id, text: s.text })),
+        history: m.history || [],
+        proof_count: m.proof_count || 0
+      })),
+      graph: {
+        nodes: (graphData.nodes || []).map(n => n.data || n),
+        edges: (graphData.edges || []).map(e => e.data || e)
+      }
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `memomind-${currentBank}-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    showError('Export failed: ' + e.message);
   }
 }
 

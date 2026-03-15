@@ -1,6 +1,6 @@
 """
-Proxy bridge: binds 0.0.0.0:2081 and forwards to 127.0.0.1:2080 (Clash).
-Run on Windows so WSL can reach Clash proxy via {Windows_IP}:2081.
+Proxy bridge: binds 0.0.0.0:12080 and forwards to 127.0.0.1:2080 (Clash).
+Run on Windows so WSL can reach Clash proxy via {Windows_IP}:12080.
 """
 import socket, threading, sys
 

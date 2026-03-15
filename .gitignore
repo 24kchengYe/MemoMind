@@ -11,3 +11,6 @@ __pycache__/
 node_modules/
 package-lock.json
 tmp-frames/
+# Never commit actual config with API keys (only templates)
+serve.py
+mcp_stdio.py

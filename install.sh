@@ -16,6 +16,8 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 # 1. Install system dependencies
 echo "[1/7] Installing system dependencies..."
 apt-get update -qq
@@ -28,8 +30,8 @@ if ! command -v /root/.local/bin/uv &>/dev/null; then
 fi
 export PATH=$HOME/.local/bin:$PATH
 
-# 3. Create venv and install hindsight
-echo "[3/7] Creating Python environment and installing MemoMind engine..."
+# 3. Create venv and install MemoMind engine
+echo "[3/7] Creating Python environment..."
 uv venv /opt/memomind-env
 uv pip install --python /opt/memomind-env/bin/python3 hindsight-all hindsight-api
 
@@ -71,19 +73,26 @@ PG_HBA=$(find /home/memomind/.pg0 -name pg_hba.conf 2>/dev/null | head -1)
 if [ -n "$PG_HBA" ]; then
     sed -i 's/password/trust/g' "$PG_HBA"
     su - memomind -c "kill -HUP \$(head -1 /home/memomind/.pg0/instances/*/data/postmaster.pid 2>/dev/null) 2>/dev/null" || true
-    echo "  Database auth fixed (trust mode for local connections)"
+    echo "  Database auth fixed (trust mode)"
 fi
 
 # Patch startup timeout (default 30s is too short for cold CUDA load)
 SERVER_PY=$(find /opt/memomind-env -name 'server.py' -path '*/hindsight/*' | head -1)
 if [ -n "$SERVER_PY" ]; then
-    sed -i 's/def start(self, timeout: float = 30.0)/def start(self, timeout: float = 600.0)/' "$SERVER_PY"
+    sed -i 's/def start(self, timeout: float = [0-9.]*/def start(self, timeout: float = 600.0/' "$SERVER_PY"
     find /opt/memomind-env -name '*.pyc' -delete 2>/dev/null
     echo "  Startup timeout patched to 600s"
 fi
 
-# 7. Install systemd service, start script, and MCP stdio entry
-echo "[7/7] Installing systemd service and MCP..."
+# 7. Install config files, systemd service, and MCP entry
+echo "[7/7] Installing service and config..."
+
+# Copy serve.py template if not already configured
+if [ ! -f /opt/memomind-env/serve.py ]; then
+    cp "$SCRIPT_DIR/serve.py.template" /opt/memomind-env/serve.py
+    echo "  Copied serve.py.template → /opt/memomind-env/serve.py"
+    echo "  *** EDIT THIS FILE to set your LLM API key! ***"
+fi
 
 # Create start wrapper
 cat > /opt/memomind-env/start-memomind.sh << 'STARTEOF'
@@ -94,34 +103,47 @@ exec /opt/memomind-env/bin/python3 /opt/memomind-env/serve.py
 STARTEOF
 chmod +x /opt/memomind-env/start-memomind.sh
 
-# Create MCP entry wrapper
+# Create MCP entry wrapper (avoids Git Bash path translation issues on Windows)
 cat > /opt/memomind-env/mcp-entry.sh << 'ENTRYEOF'
 #!/bin/bash
 exec /opt/memomind-env/bin/python3 /opt/memomind-env/mcp_stdio.py
 ENTRYEOF
 chmod +x /opt/memomind-env/mcp-entry.sh
 
-if [ ! -f /opt/memomind-env/serve.py ]; then
-    echo ""
-    echo "WARNING: /opt/memomind-env/serve.py not found!"
-    echo "Copy serve.py.template to /opt/memomind-env/serve.py"
-    echo "and configure your LLM API key before starting."
-    echo ""
-fi
-
 # Create MCP stdio entry point
+# NOTE: reads LLM config from serve.py at runtime so you only configure once
 cat > /opt/memomind-env/mcp_stdio.py << 'MCPEOF'
-"""MemoMind MCP stdio server."""
-import os, sys
+"""MemoMind MCP stdio server — reads LLM config from serve.py."""
+import os, sys, importlib.util
 
+# Clear all proxy vars
 for k in ["ALL_PROXY", "all_proxy", "HTTP_PROXY", "http_proxy", "HTTPS_PROXY", "https_proxy", "NO_PROXY", "no_proxy"]:
     os.environ.pop(k, None)
 
-# ── LLM Configuration (mirrors serve.py) ──
-LLM_API_KEY = os.environ.get("MEMOMIND_LLM_API_KEY", "your-api-key")
-LLM_BASE_URL = os.environ.get("MEMOMIND_LLM_URL", "https://api.mindcraft.com.cn/v1")
-LLM_MODEL = os.environ.get("MEMOMIND_LLM_MODEL", "deepseek-chat")
-NEEDS_PROXY = os.environ.get("MEMOMIND_NEEDS_PROXY", "false").lower() == "true"
+# ── Read LLM config from serve.py (single source of truth) ──
+_serve_path = os.path.join(os.path.dirname(__file__), "serve.py")
+LLM_API_KEY = "your-api-key"
+LLM_BASE_URL = "https://api.mindcraft.com.cn/v1"
+LLM_MODEL = "deepseek-chat"
+NEEDS_PROXY = False
+
+try:
+    with open(_serve_path) as f:
+        _code = f.read()
+    _ns = {}
+    # Extract config variables from serve.py without executing the whole server
+    for line in _code.split("\n"):
+        line = line.strip()
+        for var in ["LLM_API_KEY", "LLM_BASE_URL", "LLM_MODEL", "NEEDS_PROXY"]:
+            if line.startswith(f"{var} =") and not line.startswith("#"):
+                exec(line, _ns)
+    LLM_API_KEY = _ns.get("LLM_API_KEY", LLM_API_KEY)
+    LLM_BASE_URL = _ns.get("LLM_BASE_URL", LLM_BASE_URL)
+    LLM_MODEL = _ns.get("LLM_MODEL", LLM_MODEL)
+    NEEDS_PROXY = _ns.get("NEEDS_PROXY", NEEDS_PROXY)
+    print(f"[MemoMind MCP] Config from serve.py: model={LLM_MODEL}, proxy={NEEDS_PROXY}", file=sys.stderr)
+except Exception as e:
+    print(f"[MemoMind MCP] Warning: could not read serve.py ({e}), using defaults", file=sys.stderr)
 
 if NEEDS_PROXY:
     _win_host = "172.17.112.1"
@@ -137,9 +159,6 @@ if NEEDS_PROXY:
     os.environ["HTTPS_PROXY"] = _proxy
     os.environ["HTTP_PROXY"] = _proxy
     os.environ["NO_PROXY"] = "localhost,127.0.0.1,::1,0.0.0.0"
-    print(f"[MemoMind MCP] Proxy: {_proxy}", file=sys.stderr)
-else:
-    print("[MemoMind MCP] Direct connection (no proxy)", file=sys.stderr)
 
 os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
 
@@ -168,9 +187,16 @@ engine = MemoryEngine(
 mcp = create_mcp_server(engine)
 mcp.run(transport="stdio")
 MCPEOF
+
+# Copy CLI wrapper
+cp "$SCRIPT_DIR/memomind-cli.sh.template" /opt/memomind-env/memomind-cli.sh
+chmod +x /opt/memomind-env/memomind-cli.sh
+
+# Fix ownership
 chown -R memomind:memomind /opt/memomind-env/
 
-cp "$(dirname "$0")/memomind.service" /etc/systemd/system/memomind.service
+# Install systemd service
+cp "$SCRIPT_DIR/memomind.service" /etc/systemd/system/memomind.service
 systemctl daemon-reload
 systemctl enable memomind
 
@@ -180,12 +206,21 @@ echo "  Installation Complete!"
 echo "========================================="
 echo ""
 echo "Next steps:"
-echo "  1. Copy serve.py.template to /opt/memomind-env/serve.py"
-echo "  2. Edit serve.py and configure your LLM API (MindCraft / OpenRouter)"
-echo "  3. Run: sudo systemctl start memomind"
-echo "  4. Register MCP in Claude Code:"
+echo ""
+echo "  1. Edit LLM config (API key + model):"
+echo "     nano /opt/memomind-env/serve.py"
+echo ""
+echo "  2. Start the service:"
+echo "     sudo systemctl start memomind"
+echo ""
+echo "  3. Register MCP in Claude Code (run from Windows terminal):"
 echo '     claude mcp add --scope user --transport stdio memomind \'
 echo '       -- wsl -d Ubuntu -u memomind -e //opt/memomind-env/mcp-entry.sh'
 echo ""
-echo "  Dashboard: http://127.0.0.1:9999 (run dashboard.py on Windows)"
+echo "  4. (Optional) Auto-start on boot:"
+echo '     Copy keep-wsl-alive.vbs to Windows Startup folder'
+echo ""
+echo "  5. (Optional) Dashboard on Windows:"
+echo "     pythonw dashboard.py    → http://localhost:9999"
+echo "     (requires portproxy: powershell -ExecutionPolicy Bypass -File update-portproxy.ps1)"
 echo ""

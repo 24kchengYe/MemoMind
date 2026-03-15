@@ -214,16 +214,19 @@ MemoMind organizes knowledge into four biomimetic memory pathways — modeled af
 
 ```bash
 git clone https://github.com/24kchengYe/MemoMind.git
-cd MemoMind
+
+# Enter WSL and run installer (it auto-copies serve.py.template)
 wsl -d Ubuntu
+cd /mnt/$(wslpath -u "$(pwd)")/MemoMind  # or wherever you cloned it
 sudo bash install.sh
 ```
 
-**Step 2 — Configure your API key**
+**Step 2 — Configure your LLM API key**
 
 ```bash
-cp serve.py.template /opt/memomind-env/serve.py
-nano /opt/memomind-env/serve.py  # Set your LLM_API_KEY, LLM_BASE_URL, LLM_MODEL
+# Only one file to edit — mcp_stdio.py reads from this automatically
+sudo nano /opt/memomind-env/serve.py
+# Set LLM_API_KEY, LLM_BASE_URL, LLM_MODEL (see "Supported LLM Providers" below)
 ```
 
 **Step 3 — Start the service**
@@ -232,28 +235,26 @@ nano /opt/memomind-env/serve.py  # Set your LLM_API_KEY, LLM_BASE_URL, LLM_MODEL
 sudo systemctl start memomind
 ```
 
-**Step 4 — Register MCP in Claude Code**
+**Step 4 — Register MCP in Claude Code** (run from Windows terminal)
 
 ```bash
-# stdio mode (recommended, no port forwarding needed)
 claude mcp add --scope user --transport stdio memomind \
-  -- wsl -d Ubuntu -u memomind -e /opt/memomind-env/bin/python3 /opt/memomind-env/mcp_stdio.py
+  -- wsl -d Ubuntu -u memomind -e //opt/memomind-env/mcp-entry.sh
 ```
-
-<details>
-<summary>Alternative: SSE mode</summary>
-
-```bash
-powershell -ExecutionPolicy Bypass -File update-portproxy.ps1
-claude mcp add --scope user --transport sse memomind "http://127.0.0.1:8888/mcp/"
-```
-
-</details>
 
 **Step 5 — (Optional) Auto-start on boot**
 
 ```bash
+# Copy to Windows Startup folder
 cp keep-wsl-alive.vbs "$APPDATA/Microsoft/Windows/Start Menu/Programs/Startup/"
+```
+
+**Step 6 — (Optional) Dashboard**
+
+```bash
+# Run on Windows (not WSL) — requires portproxy for API access
+powershell -ExecutionPolicy Bypass -File update-portproxy.ps1  # Run as admin
+pythonw dashboard.py  # Starts at http://localhost:9999
 ```
 
 ### Verify
@@ -263,12 +264,8 @@ cp keep-wsl-alive.vbs "$APPDATA/Microsoft/Windows/Start Menu/Programs/Startup/"
 wsl -d Ubuntu -e systemctl status memomind
 
 # Test health endpoint
-wsl -d Ubuntu -e bash -c "curl -s http://localhost:8888/health"
+wsl -d Ubuntu -- bash -c "curl -s --noproxy '*' http://127.0.0.1:8888/health"
 # → {"status":"healthy","database":"connected"}
-
-# Test memory via CLI
-wsl -d Ubuntu -u memomind -- /opt/memomind-env/memomind-cli.sh memory retain default "User prefers Python"
-wsl -d Ubuntu -u memomind -- /opt/memomind-env/memomind-cli.sh memory recall default "What language does user prefer?"
 ```
 
 ## Supported LLM Providers
@@ -330,7 +327,7 @@ The bridge is added to Windows startup automatically by `keep-wsl-alive.vbs`.
 
 ### Also supported (any OpenAI-compatible API)
 
-Anthropic, Google Gemini, Ollama (fully local), LM Studio — set `llm_provider` accordingly in `serve.py`.
+Ollama (fully local, no API key needed), Groq, LM Studio, and more. For non-OpenAI-compatible providers (Anthropic, Gemini), set `llm_provider` in `serve.py` to `"anthropic"` or `"gemini"`.
 
 ## Integration Options
 
@@ -341,6 +338,10 @@ MemoMind can be integrated in multiple ways beyond MCP:
 Zero-code setup — Claude Code automatically calls `retain` / `recall` / `reflect` via MCP protocol. See [Quick Start](#quick-start) above.
 
 ### Option 2: Python SDK
+
+```bash
+pip install hindsight-client  # Install the client library
+```
 
 ```python
 from hindsight_client import HindsightClient
@@ -653,22 +654,21 @@ Claude Code ──MCP (stdio)──→ WSL2
 ```bash
 # 1. 克隆仓库
 git clone https://github.com/24kchengYe/MemoMind.git
-cd MemoMind
 
-# 2. 在 WSL2 Ubuntu 中运行安装脚本
+# 2. 进入 WSL 运行安装脚本（自动复制 serve.py 模板）
 wsl -d Ubuntu
+cd /mnt/$(wslpath -u "$(pwd)")/MemoMind
 sudo bash install.sh
 
-# 3. 配置 API 密钥
-cp serve.py.template /opt/memomind-env/serve.py
-nano /opt/memomind-env/serve.py  # 设置 LLM_API_KEY, LLM_BASE_URL, LLM_MODEL
+# 3. 配置 LLM API 密钥（只需编辑这一个文件，MCP 会自动读取）
+sudo nano /opt/memomind-env/serve.py
 
 # 4. 启动服务
 sudo systemctl start memomind
 
-# 5. 在 Claude Code 中注册 MCP
+# 5. 在 Claude Code 中注册 MCP（在 Windows 终端执行）
 claude mcp add --scope user --transport stdio memomind \
-  -- wsl -d Ubuntu -u memomind -e /opt/memomind-env/bin/python3 /opt/memomind-env/mcp_stdio.py
+  -- wsl -d Ubuntu -u memomind -e //opt/memomind-env/mcp-entry.sh
 ```
 
 ### LLM 配置

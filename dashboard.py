@@ -1,6 +1,7 @@
 """
 MemoMind Dashboard - Local web UI for viewing memories.
-Run in WSL: python3 dashboard.py
+Run on Windows: pythonw dashboard.py (or python dashboard.py)
+Proxies API requests to MemoMind backend (WSL port 8888 via portproxy).
 Opens at http://localhost:9999
 """
 import http.server
@@ -9,7 +10,7 @@ import os
 import urllib.request
 import urllib.error
 
-HINDSIGHT_API = "http://127.0.0.1:8888"
+MEMOMIND_API = "http://127.0.0.1:8888"
 DASHBOARD_PORT = 9999
 
 # Disable proxy for urllib (bypass Clash/system proxy)
@@ -45,8 +46,8 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
         self._proxy("POST")
 
     def _proxy(self, method):
-        """Proxy requests to Hindsight API."""
-        url = HINDSIGHT_API + self.path
+        """Proxy requests to MemoMind API."""
+        url = MEMOMIND_API + self.path
         try:
             body = None
             if method == "POST":

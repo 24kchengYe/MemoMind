@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MemoMind</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --surface-0: oklch(0.13 0.015 260);
+  --surface-1: oklch(0.16 0.015 260);
+  --surface-2: oklch(0.19 0.015 260);
+  --surface-3: oklch(0.22 0.015 260);
+  --text-1: oklch(0.92 0.01 260);
+  --text-2: oklch(0.68 0.02 260);
+  --text-3: oklch(0.52 0.02 260);
+  --border: oklch(0.25 0.015 260);
+  --world: oklch(0.72 0.16 155);
+  --world-bg: oklch(0.22 0.04 155);
+  --experience: oklch(0.72 0.16 300);
+  --experience-bg: oklch(0.22 0.04 300);
+  --observation: oklch(0.75 0.14 75);
+  --observation-bg: oklch(0.22 0.04 75);
+  --accent: oklch(0.75 0.12 200);
+  --accent-dim: oklch(0.35 0.06 200);
+  --danger: oklch(0.65 0.2 25);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--surface-0);
+  color: var(--text-1);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Layout ── */
+.shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  grid-row: 1 / -1;
+  background: var(--surface-1);
+  border-right: 1px solid var(--border);
+  padding: 32px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.logo {
+  padding: 0 24px;
+  margin-bottom: 40px;
+}
+
+.logo h1 {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.logo h1 em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--accent);
+}
+
+.logo p {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 6px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sidebar-section {
+  padding: 0 16px;
+  margin-bottom: 32px;
+}
+
+.sidebar-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 0 8px;
+  margin-bottom: 8px;
+}
+
+.bank-list {
+  list-style: none;
+}
+
+.bank-item {
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background 0.15s, color 0.15s;
+}
+
+.bank-item:hover { background: var(--surface-2); color: var(--text-1); }
+.bank-item.active { background: var(--accent-dim); color: var(--accent); }
+
+.bank-count {
+  font-size: 11px;
+  background: var(--surface-2);
+  padding: 1px 7px;
+  border-radius: 10px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.bank-item.active .bank-count { background: oklch(0.3 0.06 200); color: var(--accent); }
+
+/* Status indicator */
+.status {
+  margin-top: auto;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--world);
+  flex-shrink: 0;
+}
+
+.status-dot.offline { background: var(--danger); }
+
+.endpoint-input {
+  margin-top: 10px;
+  width: 100%;
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 6px 10px;
+  color: var(--text-2);
+  font-size: 11px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+}
+
+.endpoint-input:focus { border-color: var(--accent); }
+
+/* ── Main ── */
+.main {
+  padding: 32px 40px;
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
+/* ── Metrics ── */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 40px;
+}
+
+.metric {
+  background: var(--surface-1);
+  padding: 20px 24px;
+}
+
+.metric-value {
+  font-family: 'Fraunces', serif;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.metric-label {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 6px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.metric-value.healthy { color: var(--world); }
+
+/* ── Search ── */
+.search-area {
+  margin-bottom: 32px;
+}
+
+.search-bar {
+  display: flex;
+  gap: 0;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.search-bar:focus-within { border-color: var(--accent); }
+
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 14px 18px;
+  color: var(--text-1);
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+}
+
+.search-input::placeholder { color: var(--text-3); }
+
+.search-btn {
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--border);
+  padding: 14px 20px;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: color 0.15s, background 0.15s;
+}
+
+.search-btn:hover { color: var(--accent); background: var(--surface-2); }
+
+.search-hint {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 8px;
+  padding-left: 2px;
+}
+
+/* ── Tabs ── */
+.view-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.view-tab {
+  padding: 10px 20px;
+  font-size: 13px;
+  color: var(--text-3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.view-tab:hover { color: var(--text-2); }
+.view-tab.active { color: var(--text-1); border-bottom-color: var(--accent); }
+
+/* ── Memory Stream ── */
+.stream { display: flex; flex-direction: column; gap: 2px; }
+
+.memory {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid oklch(0.2 0.01 260);
+  align-items: start;
+  animation: fadeSlide 0.3s ease-out both;
+}
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.memory:last-child { border-bottom: none; }
+
+.memory-type {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 0;
+  text-align: right;
+}
+
+.memory-type.world { color: var(--world); }
+.memory-type.experience { color: var(--experience); }
+.memory-type.observation { color: var(--observation); }
+
+.memory-body {}
+
+.memory-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-1);
+}
+
+.memory-detail {
+  display: flex;
+  gap: 16px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.memory-detail span {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.memory-detail .entity-tag {
+  color: var(--accent);
+}
+
+.memory-date {
+  font-size: 11px;
+  color: var(--text-3);
+  white-space: nowrap;
+  padding: 3px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Graph ── */
+.graph-container {
+  position: relative;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  height: 500px;
+  overflow: hidden;
+}
+
+.graph-container canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.graph-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+/* ── States ── */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-3);
+}
+
+.empty-state p { font-size: 14px; line-height: 1.6; }
+.empty-state .hint { font-size: 12px; margin-top: 8px; color: var(--text-3); opacity: 0.7; }
+
+.error-banner {
+  background: oklch(0.2 0.04 25);
+  border: 1px solid oklch(0.3 0.08 25);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  font-size: 13px;
+  color: var(--danger);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .shell { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .main { padding: 20px; }
+  .metrics { grid-template-columns: repeat(2, 1fr); }
+  .memory { grid-template-columns: 60px 1fr; }
+  .memory-date { grid-column: 2; margin-top: -4px; }
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <h1>Memo<em>Mind</em></h1>
+      <p>Memory Observatory</p>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Memory Banks</div>
+      <ul class="bank-list" id="bankList">
+        <li class="bank-item active">loading...</li>
+      </ul>
+    </div>
+
+    <div class="status">
+      <div class="status-row">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">Connecting...</span>
+      </div>
+      <input class="endpoint-input" id="baseUrl" value="http://127.0.0.1:8888" spellcheck="false"
+             onchange="loadAll()" title="API endpoint">
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div id="errorBanner"></div>
+
+    <!-- Metrics -->
+    <div class="metrics" id="metrics">
+      <div class="metric">
+        <div class="metric-value" id="mTotal">—</div>
+        <div class="metric-label">Memories</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value" id="mWorld">—</div>
+        <div class="metric-label">World Facts</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value" id="mObs">—</div>
+        <div class="metric-label">Observations</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value" id="mDocs">—</div>
+        <div class="metric-label">Documents</div>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-area">
+      <div class="search-bar">
+        <input class="search-input" id="searchInput" type="text"
+               placeholder="What does your AI know about you?"
+               onkeydown="if(event.key==='Enter')doSearch()">
+        <button class="search-btn" onclick="doSearch()">Recall</button>
+      </div>
+      <div class="search-hint" id="searchHint">Semantic search across all memories — meaning, not just keywords</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="view-tabs">
+      <button class="view-tab active" onclick="switchTab('stream',this)">Stream</button>
+      <button class="view-tab" onclick="switchTab('graph',this)">Graph</button>
+    </div>
+
+    <!-- Stream View -->
+    <div id="streamView">
+      <div class="stream" id="memoryStream">
+        <div class="empty-state">
+          <p>Connecting to MemoMind...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Graph View -->
+    <div id="graphView" style="display:none">
+      <div class="graph-container">
+        <canvas id="graphCanvas"></canvas>
+        <div class="graph-empty" id="graphEmpty">Loading graph data...</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ── State ──
+let currentBank = 'default';
+let allBanks = [];
+let graphData = null;
+let graphNodes = [];
+let graphEdges = [];
+let graphSim = null;
+
+function base() { return document.getElementById('baseUrl').value.replace(/\/+$/, ''); }
+
+async function api(path, opts = {}) {
+  const res = await fetch(base() + path, {
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    ...opts
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(`${res.status}: ${txt.slice(0, 200)}`);
+  }
+  return res.json();
+}
+
+function showError(msg) {
+  document.getElementById('errorBanner').innerHTML = msg
+    ? `<div class="error-banner">${esc(msg)}</div>` : '';
+}
+
+function esc(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+
+function fmtDate(d) {
+  if (!d) return '';
+  const dt = new Date(d);
+  const now = new Date();
+  const diff = now - dt;
+  if (diff < 3600000) return `${Math.floor(diff/60000)}m ago`;
+  if (diff < 86400000) return `${Math.floor(diff/3600000)}h ago`;
+  if (diff < 604800000) return `${Math.floor(diff/86400000)}d ago`;
+  return dt.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+}
+
+// ── Load ──
+async function loadAll() {
+  showError('');
+  try {
+    const health = await api('/health');
+    document.getElementById('statusDot').classList.toggle('offline', health.status !== 'healthy');
+    document.getElementById('statusText').textContent = health.status === 'healthy' ? 'Connected' : health.status;
+
+    const banksRes = await api('/v1/default/banks');
+    allBanks = banksRes.banks || [];
+    renderBanks();
+    await loadBank();
+  } catch (e) {
+    document.getElementById('statusDot').classList.add('offline');
+    document.getElementById('statusText').textContent = 'Disconnected';
+    showError(`Cannot reach MemoMind at ${base()}. Is the service running?`);
+    document.getElementById('memoryStream').innerHTML =
+      '<div class="empty-state"><p>Not connected</p><div class="hint">Start MemoMind service in WSL, then refresh</div></div>';
+  }
+}
+
+function renderBanks() {
+  const el = document.getElementById('bankList');
+  if (allBanks.length === 0) {
+    el.innerHTML = '<li class="bank-item" style="color:var(--text-3)">No banks</li>';
+    return;
+  }
+  el.innerHTML = allBanks.map(b => `
+    <li class="bank-item ${b.bank_id === currentBank ? 'active' : ''}"
+        onclick="selectBank('${esc(b.bank_id)}')">
+      ${esc(b.name || b.bank_id)}
+      <span class="bank-count" id="bc-${esc(b.bank_id)}">·</span>
+    </li>
+  `).join('');
+}
+
+async function selectBank(id) {
+  currentBank = id;
+  renderBanks();
+  await loadBank();
+}
+
+async function loadBank() {
+  try {
+    const stats = await api(`/v1/default/banks/${currentBank}/stats`);
+    const counts = stats.node_counts || {};
+    const total = Object.values(counts).reduce((a, b) => a + b, 0);
+
+    document.getElementById('mTotal').textContent = total;
+    document.getElementById('mWorld').textContent = counts.world || 0;
+    document.getElementById('mObs').textContent = counts.observation || 0;
+    document.getElementById('mDocs').textContent = stats.total_documents || 0;
+
+    // Update bank count badge
+    const badge = document.getElementById(`bc-${currentBank}`);
+    if (badge) badge.textContent = total;
+
+    await loadMemories();
+  } catch (e) {
+    showError(e.message);
+  }
+}
+
+async function loadMemories() {
+  const stream = document.getElementById('memoryStream');
+  try {
+    const res = await api(`/v1/default/banks/${currentBank}/memories/list?limit=200`);
+    const items = res.items || [];
+
+    if (items.length === 0) {
+      stream.innerHTML = `
+        <div class="empty-state">
+          <p>No memories yet</p>
+          <div class="hint">Start a conversation in Claude Code — MemoMind will automatically extract and store knowledge</div>
+        </div>`;
+      return;
+    }
+
+    // Sort by date descending
+    items.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+    stream.innerHTML = items.map((m, i) => `
+      <div class="memory" style="animation-delay:${Math.min(i * 0.03, 0.5)}s">
+        <div class="memory-type ${esc(m.fact_type)}">${esc(m.fact_type)}</div>
+        <div class="memory-body">
+          <div class="memory-text">${esc(m.text)}</div>
+          <div class="memory-detail">
+            ${m.context ? `<span>${esc(m.context)}</span>` : ''}
+            ${(m.entities || []).map(e => `<span class="entity-tag">${esc(e.name || e)}</span>`).join('')}
+          </div>
+        </div>
+        <div class="memory-date">${fmtDate(m.date)}</div>
+      </div>
+    `).join('');
+  } catch (e) {
+    stream.innerHTML = `<div class="empty-state"><p>${esc(e.message)}</p></div>`;
+  }
+}
+
+async function doSearch() {
+  const query = document.getElementById('searchInput').value.trim();
+  if (!query) { loadMemories(); return; }
+
+  const stream = document.getElementById('memoryStream');
+  const hint = document.getElementById('searchHint');
+  stream.innerHTML = '<div class="empty-state"><p style="color:var(--text-3)">Searching...</p></div>';
+
+  try {
+    const res = await fetch(base() + `/v1/default/banks/${currentBank}/memories/recall`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, max_tokens: 8192 })
+    });
+    const data = await res.json();
+    const results = data.results || [];
+
+    hint.textContent = `${results.length} memor${results.length === 1 ? 'y' : 'ies'} found for "${query}"`;
+
+    if (results.length === 0) {
+      stream.innerHTML = '<div class="empty-state"><p>No matching memories</p><div class="hint">Try different phrasing — recall uses semantic understanding</div></div>';
+      return;
+    }
+
+    stream.innerHTML = results.map((m, i) => `
+      <div class="memory" style="animation-delay:${Math.min(i * 0.03, 0.5)}s">
+        <div class="memory-type ${esc(m.fact_type)}">${esc(m.fact_type)}</div>
+        <div class="memory-body">
+          <div class="memory-text">${esc(m.text)}</div>
+          <div class="memory-detail">
+            ${(m.entities || []).map(e => `<span class="entity-tag">${esc(e.name || e)}</span>`).join('')}
+          </div>
+        </div>
+        <div class="memory-date">${fmtDate(m.date)}</div>
+      </div>
+    `).join('');
+  } catch (e) {
+    stream.innerHTML = `<div class="empty-state"><p>${esc(e.message)}</p></div>`;
+  }
+}
+
+// ── Tabs ──
+function switchTab(tab, el) {
+  document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('streamView').style.display = tab === 'stream' ? '' : 'none';
+  document.getElementById('graphView').style.display = tab === 'graph' ? '' : 'none';
+  if (tab === 'graph') loadGraph();
+}
+
+// ── Graph (force-directed) ──
+async function loadGraph() {
+  const empty = document.getElementById('graphEmpty');
+  const canvas = document.getElementById('graphCanvas');
+  const ctx = canvas.getContext('2d');
+
+  try {
+    const data = await api(`/v1/default/banks/${currentBank}/graph`);
+    const nodes = data.nodes || [];
+    const edges = data.edges || [];
+
+    if (nodes.length === 0) {
+      empty.textContent = 'No graph data yet — memories need entity relationships to form a graph';
+      empty.style.display = '';
+      return;
+    }
+    empty.style.display = 'none';
+
+    // Setup canvas
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width * 2;
+    canvas.height = rect.height * 2;
+    ctx.scale(2, 2);
+    const W = rect.width, H = rect.height;
+
+    // Build simulation
+    const nodeMap = {};
+    const simNodes = nodes.map((n, i) => {
+      const sn = {
+        id: n.id,
+        label: (n.text || '').slice(0, 60),
+        type: n.fact_type || 'world',
+        x: W/2 + (Math.random() - 0.5) * W * 0.6,
+        y: H/2 + (Math.random() - 0.5) * H * 0.6,
+        vx: 0, vy: 0,
+        radius: Math.min(5 + (n.mention_count || 1) * 1.5, 14)
+      };
+      nodeMap[n.id] = sn;
+      return sn;
+    });
+
+    const simEdges = edges.filter(e => nodeMap[e.source] && nodeMap[e.target]).map(e => ({
+      source: nodeMap[e.source],
+      target: nodeMap[e.target],
+      type: e.link_type || ''
+    }));
+
+    const colors = { world: getComputedStyle(document.documentElement).getPropertyValue('--world').trim() || '#4ade80',
+                     experience: getComputedStyle(document.documentElement).getPropertyValue('--experience').trim() || '#c084fc',
+                     observation: getComputedStyle(document.documentElement).getPropertyValue('--observation').trim() || '#fbbf24' };
+
+    function getColor(type) { return colors[type] || colors.world; }
+
+    // Simple force simulation
+    function tick() {
+      // Repulsion
+      for (let i = 0; i < simNodes.length; i++) {
+        for (let j = i + 1; j < simNodes.length; j++) {
+          const a = simNodes[i], b = simNodes[j];
+          let dx = a.x - b.x, dy = a.y - b.y;
+          let d = Math.sqrt(dx*dx + dy*dy) || 1;
+          let f = 800 / (d * d);
+          a.vx += dx/d * f; a.vy += dy/d * f;
+          b.vx -= dx/d * f; b.vy -= dy/d * f;
+        }
+      }
+      // Attraction (edges)
+      for (const e of simEdges) {
+        let dx = e.target.x - e.source.x, dy = e.target.y - e.source.y;
+        let d = Math.sqrt(dx*dx + dy*dy) || 1;
+        let f = (d - 80) * 0.005;
+        e.source.vx += dx/d * f; e.source.vy += dy/d * f;
+        e.target.vx -= dx/d * f; e.target.vy -= dy/d * f;
+      }
+      // Center gravity
+      for (const n of simNodes) {
+        n.vx += (W/2 - n.x) * 0.001;
+        n.vy += (H/2 - n.y) * 0.001;
+        n.vx *= 0.85; n.vy *= 0.85;
+        n.x += n.vx; n.y += n.vy;
+        n.x = Math.max(20, Math.min(W - 20, n.x));
+        n.y = Math.max(20, Math.min(H - 20, n.y));
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+
+      // Edges
+      ctx.strokeStyle = 'oklch(0.3 0.01 260)';
+      ctx.lineWidth = 0.5;
+      for (const e of simEdges) {
+        ctx.beginPath();
+        ctx.moveTo(e.source.x, e.source.y);
+        ctx.lineTo(e.target.x, e.target.y);
+        ctx.stroke();
+      }
+
+      // Nodes
+      for (const n of simNodes) {
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+        ctx.fillStyle = getColor(n.type);
+        ctx.globalAlpha = 0.8;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        // Label
+        if (n.radius > 6 && n.label) {
+          ctx.fillStyle = 'oklch(0.8 0.01 260)';
+          ctx.font = '10px DM Sans';
+          ctx.textAlign = 'center';
+          ctx.fillText(n.label.slice(0, 30), n.x, n.y + n.radius + 14);
+        }
+      }
+    }
+
+    let frame = 0;
+    function animate() {
+      tick();
+      draw();
+      frame++;
+      if (frame < 300) requestAnimationFrame(animate);
+    }
+    animate();
+
+  } catch (e) {
+    empty.textContent = `Graph unavailable: ${e.message}`;
+    empty.style.display = '';
+  }
+}
+
+// ── Init ──
+loadAll();
+</script>
+</body>
+</html>

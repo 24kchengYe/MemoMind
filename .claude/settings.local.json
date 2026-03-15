@@ -15,7 +15,8 @@
       "mcp__memomind__retain",
       "Bash(claude mcp:*)",
       "Bash(netsh interface:*)",
-      "Bash(ipconfig)"
+      "Bash(ipconfig)",
+      "Bash(powershell -Command \"\\(Get-Service iphlpsvc\\).Status\" 2>&1)"
     ]
   }
 }

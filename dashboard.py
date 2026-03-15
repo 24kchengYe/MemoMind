@@ -24,7 +24,8 @@ proxy_handler = urllib.request.ProxyHandler({})
 opener = urllib.request.build_opener(proxy_handler)
 urllib.request.install_opener(opener)
 
-DASHBOARD_HTML = open(os.path.join(os.path.dirname(__file__) or ".", "dashboard.html"), encoding="utf-8").read()
+with open(os.path.join(os.path.dirname(__file__) or ".", "dashboard.html"), encoding="utf-8") as _f:
+    DASHBOARD_HTML = _f.read()
 # Patch the default URL to point to the dashboard proxy (not directly to API)
 DASHBOARD_HTML = DASHBOARD_HTML.replace(
     'value="http://127.0.0.1:8888"',
@@ -45,12 +46,23 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         self._proxy("POST")
 
+    def do_DELETE(self):
+        self._proxy("DELETE")
+
+    def do_OPTIONS(self):
+        """CORS preflight handler."""
+        self.send_response(204)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Accept")
+        self.end_headers()
+
     def _proxy(self, method):
         """Proxy requests to MemoMind API."""
         url = MEMOMIND_API + self.path
         try:
             body = None
-            if method == "POST":
+            if method in ("POST", "DELETE"):
                 length = int(self.headers.get("Content-Length", 0))
                 body = self.rfile.read(length) if length > 0 else None
 
@@ -58,7 +70,7 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
             req.add_header("Content-Type", "application/json")
             req.add_header("Accept", "application/json")
 
-            with urllib.request.urlopen(req, timeout=30) as resp:
+            with urllib.request.urlopen(req, timeout=120) as resp:
                 data = resp.read()
                 self.send_response(resp.status)
                 self.send_header("Content-Type", "application/json")

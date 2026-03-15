@@ -1,11 +1,23 @@
 #!/bin/bash
 # MemoMind CLI wrapper - copy to /opt/memomind-env/memomind-cli.sh
+# Keys are read from serve.py at runtime if left as defaults
 unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY all_proxy no_proxy
 export HOME=/home/memomind
 export PATH=/usr/local/bin:/usr/bin:/bin:/home/memomind/.local/bin
 export HF_ENDPOINT=https://hf-mirror.com
-export HINDSIGHT_API_LLM_API_KEY="your-api-key"                    # <-- Replace
+export HINDSIGHT_API_LLM_API_KEY="your-api-key"                    # <-- Replace, or leave as-is to read from serve.py
 export HINDSIGHT_API_LLM_URL="https://api.mindcraft.com.cn/v1"     # Or OpenRouter URL
 export HINDSIGHT_API_LLM_MODEL="deepseek-chat"                     # Or qwen/qwen3.5-9b
+
+# Source keys from serve.py if still using defaults
+if [ "$HINDSIGHT_API_LLM_API_KEY" = "your-api-key" ] && [ -f /opt/memomind-env/serve.py ]; then
+    _key=$(grep -m1 '^LLM_API_KEY' /opt/memomind-env/serve.py | sed 's/.*= *"//;s/".*//')
+    _url=$(grep -m1 '^LLM_BASE_URL' /opt/memomind-env/serve.py | sed 's/.*= *"//;s/".*//')
+    _model=$(grep -m1 '^LLM_MODEL' /opt/memomind-env/serve.py | sed 's/.*= *"//;s/".*//')
+    [ -n "$_key" ] && export HINDSIGHT_API_LLM_API_KEY="$_key"
+    [ -n "$_url" ] && export HINDSIGHT_API_LLM_URL="$_url"
+    [ -n "$_model" ] && export HINDSIGHT_API_LLM_MODEL="$_model"
+fi
+
 source /opt/memomind-env/bin/activate
 exec hindsight-embed "$@"

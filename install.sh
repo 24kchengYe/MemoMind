@@ -162,6 +162,15 @@ if NEEDS_PROXY:
 
 os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
 
+# Also read consolidation config from serve.py
+for line in _code.split("\n"):
+    line = line.strip()
+    if line.startswith('os.environ["HINDSIGHT_API_CONSOLIDATION') and not line.startswith("#"):
+        try:
+            exec(line)
+        except:
+            pass
+
 from hindsight_api.engine.memory_engine import MemoryEngine
 from hindsight_api.api.mcp import create_mcp_server
 

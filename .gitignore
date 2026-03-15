@@ -1,5 +1,9 @@
 run.sh
 start.sh
+memory_backup.json
+*.log
+*.sqlite
+*.db
 *.env
 .env*
 data/

@@ -202,7 +202,7 @@ git clone https://github.com/24kchengYe/MemoMind.git
 
 # Enter WSL and run installer (it auto-copies serve.py.template)
 wsl -d Ubuntu
-cd /mnt/$(wslpath -u "$(pwd)")/MemoMind  # or wherever you cloned it
+cd /mnt/d/path/to/MemoMind  # adjust to your clone location
 sudo bash install.sh
 ```
 
@@ -229,9 +229,9 @@ claude mcp add --scope user --transport stdio memomind \
 
 **Step 5 — (Optional) Auto-start on boot**
 
-```bash
-# Copy to Windows Startup folder
-cp keep-wsl-alive.vbs "$APPDATA/Microsoft/Windows/Start Menu/Programs/Startup/"
+```powershell
+# Run from Windows PowerShell or CMD (not WSL bash — $APPDATA is a Windows variable)
+copy keep-wsl-alive.vbs "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\"
 ```
 
 **Step 6 — (Optional) Dashboard**
@@ -306,7 +306,7 @@ pythonw proxy-bridge.py
 # This is automatically configured in serve.py when NEEDS_PROXY = True
 ```
 
-The bridge is added to Windows startup automatically by `keep-wsl-alive.vbs`.
+To auto-start, uncomment the proxy-bridge line in `keep-wsl-alive.vbs`.
 
 </details>
 
@@ -435,7 +435,7 @@ export HF_ENDPOINT=https://hf-mirror.com  # Use China mirror
 
 - [x] Core memory engine (retain / recall / reflect)
 - [x] PostgreSQL + pgvector storage
-- [x] Local GPU-accelerated embeddings (BAAI/bge-small)
+- [x] Local GPU-accelerated embeddings (BAAI/bge-m3)
 - [x] Cross-encoder reranking
 - [x] MCP stdio transport
 - [x] Multi-provider LLM support (OpenAI, Anthropic, Gemini, Groq, Ollama, etc.)
@@ -627,7 +627,7 @@ git clone https://github.com/24kchengYe/MemoMind.git
 
 # 2. 进入 WSL 运行安装脚本（自动复制 serve.py 模板）
 wsl -d Ubuntu
-cd /mnt/$(wslpath -u "$(pwd)")/MemoMind
+cd /mnt/d/path/to/MemoMind  # adjust to your clone location
 sudo bash install.sh
 
 # 3. 配置 LLM API 密钥（只需编辑这一个文件，MCP 会自动读取）

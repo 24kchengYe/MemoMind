@@ -8,6 +8,7 @@ User=memomind
 ExecStart=/opt/memomind-env/start-memomind.sh
 Restart=on-failure
 RestartSec=30
+TimeoutStartSec=660
 
 [Install]
 WantedBy=multi-user.target

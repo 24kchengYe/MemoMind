@@ -3,7 +3,6 @@ import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
-// Clear proxy env vars
 for (const k of ['HTTP_PROXY','HTTPS_PROXY','ALL_PROXY','http_proxy','https_proxy','all_proxy']) {
   delete process.env[k];
 }
@@ -13,7 +12,7 @@ const OUTPUT_DIR = 'D:/pythonPycharms/MemoMind/docs/demos';
 const TEMP_DIR = 'D:/pythonPycharms/MemoMind/tmp-frames';
 
 async function recordScene(name, actions, options = {}) {
-  const { width = 1280, height = 720, fps = 8, duration = 10000 } = options;
+  const { width = 1280, height = 720, fps = 8, duration = 12000 } = options;
   const framesDir = path.join(TEMP_DIR, name);
   fs.mkdirSync(framesDir, { recursive: true });
 
@@ -22,12 +21,10 @@ async function recordScene(name, actions, options = {}) {
   const page = await context.newPage();
 
   await page.goto(options.url || BASE_URL, { waitUntil: 'networkidle', timeout: 20000 });
-  // Wait for API data to load (memories, stats)
   await page.waitForTimeout(3000);
 
   await actions(page);
 
-  // Capture frames
   const totalFrames = Math.ceil((duration / 1000) * fps);
   const interval = 1000 / fps;
   for (let i = 0; i < totalFrames; i++) {
@@ -59,69 +56,98 @@ async function recordScene(name, actions, options = {}) {
   console.log(`✓ ${name}.gif — ${(stats.size / 1024).toFixed(0)} KB`);
 }
 
+// Main demo: show all new features
 await recordScene('dashboard', async (page) => {
-  // 1. Show the dashboard with real data loaded (metrics, memory cards)
-  await page.waitForTimeout(2000);
+  // 1. Show dashboard with data loaded (metrics, filters, tabs)
+  await page.waitForTimeout(1500);
 
-  // 2. Hover over metric cards
+  // 2. Hover metric cards
   const metrics = await page.$$('.metric');
-  for (const metric of metrics) {
-    await metric.hover();
+  for (const m of metrics.slice(0, 3)) {
+    await m.hover();
+    await page.waitForTimeout(400);
+  }
+  await page.mouse.move(640, 300);
+  await page.waitForTimeout(300);
+
+  // 3. Click a type filter chip (e.g., "World")
+  const worldChip = await page.$('.filter-chip:nth-child(2)');
+  if (worldChip) {
+    await worldChip.click();
+    await page.waitForTimeout(1000);
+  }
+
+  // 4. Click "All" to reset
+  const allChip = await page.$('.filter-chip:nth-child(1)');
+  if (allChip) {
+    await allChip.click();
     await page.waitForTimeout(500);
   }
-  await page.mouse.move(640, 400);
-  await page.waitForTimeout(400);
 
-  // 3. Scroll down to show memory cards if there are any
-  await page.evaluate(() => window.scrollTo({ top: 200, behavior: 'smooth' }));
-  await page.waitForTimeout(800);
+  // 5. Type a search
+  const searchInput = await page.$('.search-input');
+  if (searchInput) {
+    await searchInput.click();
+    await page.waitForTimeout(200);
+    await page.type('.search-input', '张业成', { delay: 80 });
+    await page.waitForTimeout(300);
+    await page.click('.search-btn');
+    await page.waitForTimeout(1500);
+  }
 
-  // 4. Hover over a memory card to show hover effects + delete button
+  // 6. Clear search
+  const clearBtn = await page.$('.search-clear');
+  if (clearBtn) {
+    await clearBtn.click();
+    await page.waitForTimeout(500);
+  }
+
+  // 7. Click Timeline tab
+  const timelineTab = await page.$('.view-tab:nth-child(3)');
+  if (timelineTab) {
+    await timelineTab.click();
+    await page.waitForTimeout(1500);
+  }
+
+  // 8. Click Graph tab
+  const graphTab = await page.$('.view-tab:nth-child(2)');
+  if (graphTab) {
+    await graphTab.click();
+    await page.waitForTimeout(2000);
+  }
+
+  // 9. Back to Stream
+  const streamTab = await page.$('.view-tab:nth-child(1)');
+  if (streamTab) {
+    await streamTab.click();
+    await page.waitForTimeout(500);
+  }
+
+  // 10. Show the Reflect panel briefly
+  const reflectBtn = await page.$('.btn-reflect');
+  if (reflectBtn) {
+    await reflectBtn.click();
+    await page.waitForTimeout(1500);
+    // Close it
+    await reflectBtn.click();
+    await page.waitForTimeout(500);
+  }
+
+  // 11. Hover a memory card to show actions
   const card = await page.$('.memory-card');
   if (card) {
     await card.hover();
     await page.waitForTimeout(800);
   }
-  await page.mouse.move(640, 300);
-  await page.waitForTimeout(300);
 
-  // 5. Scroll back up
-  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
-  await page.waitForTimeout(600);
-
-  // 6. Type a search query
-  await page.click('.search-input');
-  await page.waitForTimeout(200);
-  await page.type('.search-input', 'user preferences', { delay: 70 });
+  await page.mouse.move(640, 400);
   await page.waitForTimeout(500);
-
-  // 7. Click Recall button to search
-  await page.click('.search-btn');
-  await page.waitForTimeout(2000);
-
-  // 8. Clear search
-  await page.fill('.search-input', '');
-  await page.waitForTimeout(300);
-
-  // 9. Switch to Graph tab
-  const graphTab = await page.$('.view-tab:nth-child(2)');
-  if (graphTab) {
-    await graphTab.click();
-    await page.waitForTimeout(2500);
-  }
-
-  // 10. Switch back to Stream
-  const streamTab = await page.$('.view-tab:nth-child(1)');
-  if (streamTab) {
-    await streamTab.click();
-    await page.waitForTimeout(1000);
-  }
 }, {
   url: BASE_URL,
   width: 1280,
   height: 720,
   fps: 8,
-  duration: 10000,
+  duration: 12000,
 });
 
 fs.rmSync(TEMP_DIR, { recursive: true, force: true });

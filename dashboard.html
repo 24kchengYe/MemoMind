@@ -2980,7 +2980,7 @@ async function loadGraph() {
 
       if (hoveredNode) {
         const typeLabel = hoveredNode.isEntity ? 'entity' : hoveredNode.type;
-        const dateStr = hoveredNode.date ? fmtDate(hoveredNode.date) : '';
+        const dateStr = hoveredNode.date ? new Date(hoveredNode.date).toLocaleString('zh-CN', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit' }) : '';
         const connCount = simEdges.filter(e => e.source === hoveredNode || e.target === hoveredNode).length;
         let ttHtml = `<div class="tt-type ${typeLabel}">${typeLabel}</div>`;
         ttHtml += esc(hoveredNode.fullText.slice(0, 200));

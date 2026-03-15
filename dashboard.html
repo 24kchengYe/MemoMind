@@ -1840,6 +1840,10 @@ body {
             <div class="legend-item"><div class="legend-dot" style="background:var(--experience)"></div> Experience</div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--observation)"></div> Observation</div>
             <div class="legend-item"><div class="legend-ring"></div> Entity</div>
+            <div style="width:100%;height:1px;background:oklch(0.25 0.01 260);margin:4px 0"></div>
+            <div class="legend-item"><div style="width:16px;height:2px;background:oklch(0.55 0.10 200);border-radius:1px"></div> Entity link</div>
+            <div class="legend-item"><div style="width:16px;height:2px;background:oklch(0.45 0.10 300);border-radius:1px"></div> Semantic</div>
+            <div class="legend-item"><div style="width:16px;height:0;border-top:1px dashed oklch(0.35 0.01 260)"></div> Temporal</div>
           </div>
           <div class="graph-controls">
             <button onclick="graphZoom(1.2)" title="Zoom in">+</button>
@@ -2705,15 +2709,37 @@ function drawGraph() {
     return colorMap[n.type] || colorMap.world;
   }
 
-  // Edges
+  // Edge color/style by type
+  const edgeStyles = {
+    entity:      { color: 'oklch(0.55 0.10 200)', hoverColor: 'oklch(0.70 0.12 200)', width: 0.8, dash: [] },         // cyan
+    entity_link: { color: 'oklch(0.45 0.08 200)', hoverColor: 'oklch(0.65 0.10 200)', width: 0.6, dash: [] },         // dim cyan
+    semantic:    { color: 'oklch(0.45 0.10 300)', hoverColor: 'oklch(0.65 0.14 300)', width: 1.0, dash: [] },          // purple
+    temporal:    { color: 'oklch(0.22 0.01 260)', hoverColor: 'oklch(0.40 0.02 260)', width: 0.4, dash: [3, 4] },     // dim dashed
+  };
+  const defaultEdge = { color: 'oklch(0.25 0.01 260)', hoverColor: 'oklch(0.5 0.02 260)', width: 0.5, dash: [] };
+
+  // Draw edges grouped by type (temporal first = behind, entity/semantic on top)
+  const edgeOrder = ['temporal', 'entity_link', 'entity', 'semantic'];
+  const edgesByType = {};
   for (const e of simEdges) {
-    graphCtx.beginPath();
-    graphCtx.moveTo(e.source.x, e.source.y);
-    graphCtx.lineTo(e.target.x, e.target.y);
-    const isHovered = hoveredNode && (e.source === hoveredNode || e.target === hoveredNode);
-    graphCtx.strokeStyle = isHovered ? 'oklch(0.5 0.02 260)' : 'oklch(0.25 0.01 260)';
-    graphCtx.lineWidth = isHovered ? 1.5 : 0.7;
-    graphCtx.stroke();
+    const t = e.type || 'temporal';
+    (edgesByType[t] = edgesByType[t] || []).push(e);
+  }
+
+  for (const etype of edgeOrder) {
+    const edges = edgesByType[etype] || [];
+    const style = edgeStyles[etype] || defaultEdge;
+    for (const e of edges) {
+      const isHovered = hoveredNode && (e.source === hoveredNode || e.target === hoveredNode);
+      graphCtx.beginPath();
+      graphCtx.setLineDash(style.dash);
+      graphCtx.moveTo(e.source.x, e.source.y);
+      graphCtx.lineTo(e.target.x, e.target.y);
+      graphCtx.strokeStyle = isHovered ? style.hoverColor : style.color;
+      graphCtx.lineWidth = isHovered ? style.width + 0.8 : (etype === 'semantic' ? style.width * (0.5 + e.weight) : style.width);
+      graphCtx.stroke();
+    }
+    graphCtx.setLineDash([]);
   }
 
   // Nodes
@@ -2829,6 +2855,7 @@ async function loadGraph() {
         id: nd.id,
         label: (nd.text || nd.label || '').slice(0, 60),
         fullText: nd.text || nd.label || '',
+        date: nd.date || '',
         type: typeById[nd.id] || nd.fact_type || 'world',
         isEntity: false,
         x: graphW/2 + (Math.random() - 0.5) * graphW * 0.6,
@@ -2890,7 +2917,7 @@ async function loadGraph() {
       const src = nodeMap[ed.source];
       const tgt = nodeMap[ed.target];
       if (src && tgt) {
-        simEdges.push({ source: src, target: tgt, type: ed.linkType || '' });
+        simEdges.push({ source: src, target: tgt, type: ed.linkType || '', weight: ed.weight || 0, entityName: ed.entityName || '' });
       }
     });
 
@@ -2953,7 +2980,16 @@ async function loadGraph() {
 
       if (hoveredNode) {
         const typeLabel = hoveredNode.isEntity ? 'entity' : hoveredNode.type;
-        tooltip.innerHTML = `<div class="tt-type ${typeLabel}">${typeLabel}</div>${esc(hoveredNode.fullText.slice(0, 200))}`;
+        const dateStr = hoveredNode.date ? fmtDate(hoveredNode.date) : '';
+        const connCount = simEdges.filter(e => e.source === hoveredNode || e.target === hoveredNode).length;
+        let ttHtml = `<div class="tt-type ${typeLabel}">${typeLabel}</div>`;
+        ttHtml += esc(hoveredNode.fullText.slice(0, 200));
+        if (hoveredNode.isEntity) {
+          ttHtml += `<div style="margin-top:6px;font-size:10px;color:oklch(0.6 0.02 260)">${connCount} connections</div>`;
+        } else {
+          if (dateStr) ttHtml += `<div style="margin-top:6px;font-size:10px;color:oklch(0.6 0.02 260)">${dateStr}</div>`;
+        }
+        tooltip.innerHTML = ttHtml;
         tooltip.style.left = (pos.cx + 14) + 'px';
         tooltip.style.top = (pos.cy - 10) + 'px';
         tooltip.classList.add('visible');

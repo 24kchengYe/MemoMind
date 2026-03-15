@@ -15,9 +15,24 @@
 [![CUDA](https://img.shields.io/badge/GPU-CUDA%20Accelerated-76b900)](https://developer.nvidia.com/cuda-toolkit)
 [![Dashboard](https://img.shields.io/badge/Dashboard-http%3A%2F%2F127.0.0.1%3A9999-ff69b4)](http://127.0.0.1:9999)
 
-[English](#the-problem) | [中文](#问题)
+[English](#two-kinds-of-ai-memory) | [中文](#两种-ai-记忆)
 
 </div>
+
+---
+
+## Two Kinds of AI Memory
+
+AI memory has two audiences — **the machine** and **the human**. Most tools only address one:
+
+| | For the AI (what it knows) | For the Human (what you can review) |
+|---|---|---|
+| **Goal** | AI remembers preferences, decisions, context across sessions | You browse, search, and manage conversation history |
+| **Problem solved** | "Why does it keep forgetting my coding style?" | "What did we discuss last Tuesday?" |
+
+MemoMind handles the **AI side** — it gives your coding agent persistent, structured, intelligent memory. For the human side, see [Recall](https://github.com/24kchengYe/Recall) (our companion project for conversation history management).
+
+**Use both together for the complete experience.**
 
 ---
 
@@ -31,6 +46,21 @@ You've been there. Every developer who uses AI coding assistants has been there.
 - Your coding conventions, your team's naming rules, your deployment pipeline — all gone. **Every. Single. Session.**
 
 The most powerful AI in the world has the memory of a goldfish.
+
+## Why Not Just Use CLAUDE.md?
+
+Claude Code already has `CLAUDE.md` and `MEMORY.md`. But they have fundamental limitations:
+
+| | Claude Code Built-in | MemoMind |
+|---|---|---|
+| **Storage** | Plain Markdown files | PostgreSQL + pgvector + knowledge graph |
+| **Extraction** | Manual — you write rules yourself | Automatic — LLM extracts facts from conversations |
+| **Retrieval** | Full file loaded into context every time (wastes tokens) | 4-way hybrid search, only relevant memories recalled |
+| **Cross-session** | Static rules; append-only notes | Dynamic knowledge graph with entity linking + temporal relationships |
+| **Reasoning** | No — just loads text | `reflect` synthesizes insights across all memories |
+| **Scalability** | Breaks down at ~200 lines (context bloat) | Handles thousands of memories efficiently |
+
+**They're complementary**, not competing. `CLAUDE.md` is great for static project rules ("use tabs, not spaces"). MemoMind handles the dynamic knowledge that accumulates over time ("user tried Redis caching last week but switched to Memcached due to memory constraints").
 
 ## The Solution
 
@@ -65,6 +95,48 @@ You don't do anything — the AI handles it all.
 <div align="center">
 <img src="docs/demos/dashboard.gif" width="720" alt="MemoMind Dashboard Demo"/>
 </div>
+
+---
+
+## How It Compares
+
+| Feature | MemoMind | [MemOS](https://github.com/MemTensor/MemOS) (OpenClaw) | Mem0 | Claude Code built-in |
+|---------|----------|------|------|---------------------|
+| **Target** | Claude Code / MCP agents | OpenClaw agents | General LLM apps | Claude Code only |
+| **Privacy** | 100% local | Cloud or local | Configurable | Local files |
+| **Memory structure** | Knowledge graph + vectors + mental models | Graph + vectors + multi-modal | Flat facts | Markdown files |
+| **Retrieval** | 4-way hybrid (semantic + BM25 + graph + temporal) | FTS5 + vector (local) / hosted (cloud) | Semantic only | Full file load |
+| **Auto-extract** | LLM-powered fact extraction | Task summarization + skill evolution | LLM-powered | Manual |
+| **Reflect/reason** | Yes — cross-memory synthesis | No | No | No |
+| **Multi-modal** | Text only | Text + images + tool traces | Text only | Text only |
+| **Protocol** | MCP (stdio/SSE) | OpenClaw plugin API | REST API | File-based |
+| **GPU acceleration** | Yes — local CUDA embeddings + reranking | Optional | No | No |
+| **Cost** | ~$0.01/day (LLM calls only) | Free (local) / paid (cloud) | Free tier limited | Free |
+
+**MemoMind vs MemOS/OpenClaw**: MemOS is designed for OpenClaw's agent ecosystem with multi-modal support and skill evolution. MemoMind is purpose-built for **MCP-based coding agents** (Claude Code, Cursor, etc.) with deeper retrieval (4-way hybrid vs 2-way), built-in reasoning (`reflect`), and zero-infrastructure GPU-accelerated embeddings. If you use OpenClaw, use MemOS. If you use Claude Code, use MemoMind.
+
+---
+
+## Key Features
+
+- **100% local** — PostgreSQL + embedding models in WSL2, nothing leaves your machine
+- **Zero manual effort** — AI autonomously decides what to remember and recall
+- **GPU-accelerated** — uses your NVIDIA GPU for fast local embeddings and reranking
+- **4-way hybrid retrieval** — semantic similarity + BM25 keyword + knowledge graph + temporal search
+- **Reflect capability** — AI can reason across all memories, not just retrieve
+- **Mental models** — builds evolving understanding of complex topics, not just isolated facts
+- **Metadata & filtering** — tag memories with custom metadata for per-project or per-user isolation
+- **Multi-provider LLM** — works with OpenAI, Anthropic, Gemini, Groq, Ollama, LM Studio, and any OpenAI-compatible API
+- **Web Dashboard** — browse and search all memories visually at `http://127.0.0.1:9999`
+- **Auto-start** — systemd service + Windows startup script, works after reboot
+
+## Use Cases
+
+- **Coding assistant** — Remembers your project architecture, coding style, naming conventions, and tech stack decisions across sessions
+- **Project management** — Tracks decisions, deadlines, and blockers; reflects on project risks by synthesizing across all stored context
+- **Code review** — Recalls past review feedback patterns; knows which areas of the codebase are fragile
+- **Debugging** — Remembers what was tried before, what worked, what didn't — no more repeating failed approaches
+- **Team onboarding** — New team member's AI instantly inherits the project's accumulated knowledge
 
 ---
 
@@ -126,78 +198,6 @@ MemoMind organizes knowledge into four biomimetic memory pathways — modeled af
 
 > Unlike flat key-value stores, these types form a **knowledge graph** — entities are linked by relationships, creating retrieval pathways that go far beyond simple keyword matching.
 
-## Use Cases
-
-MemoMind isn't just for remembering preferences. Here are some ways it makes your AI smarter:
-
-- **Coding assistant** — Remembers your project architecture, coding style, naming conventions, and tech stack decisions across sessions
-- **Project management** — Tracks decisions, deadlines, and blockers; reflects on project risks by synthesizing across all stored context
-- **Code review** — Recalls past review feedback patterns; knows which areas of the codebase are fragile
-- **Debugging** — Remembers what was tried before, what worked, what didn't — no more repeating failed approaches
-- **Team onboarding** — New team member's AI instantly inherits the project's accumulated knowledge
-
-## Key Features
-
-- **100% local** — PostgreSQL + embedding models in WSL2, nothing leaves your machine
-- **Zero manual effort** — AI autonomously decides what to remember and recall
-- **GPU-accelerated** — uses your NVIDIA GPU for fast local embeddings and reranking
-- **Dirt cheap** — fact extraction via OpenRouter costs < $0.01/day
-- **4-way hybrid retrieval** — semantic similarity + BM25 keyword + knowledge graph + temporal search
-- **Reflect capability** — AI can reason across all memories, not just retrieve
-- **Mental models** — builds evolving understanding of complex topics, not just isolated facts
-- **Metadata & filtering** — tag memories with custom metadata for per-project or per-user isolation
-- **Multi-provider LLM** — works with OpenAI, Anthropic, Gemini, Groq, Ollama, LM Studio, and any OpenAI-compatible API via OpenRouter
-- **Web Dashboard** — browse and search all memories visually at `http://127.0.0.1:9999`
-- **Auto-start** — systemd service + Windows startup script, works after reboot
-
-## How It Differs from Built-in Memory
-
-Claude Code (and similar coding agents) already has a built-in memory system — `CLAUDE.md` and `MEMORY.md` files. Why use MemoMind on top of it?
-
-| | Claude Code Built-in | MemoMind |
-|---|---|---|
-| **Storage** | Plain Markdown files | PostgreSQL + pgvector + knowledge graph |
-| **Extraction** | Manual — you write `CLAUDE.md` rules yourself | Automatic — LLM extracts facts from your conversations |
-| **Retrieval** | Full file loaded into context every time (wastes tokens) | 4-way hybrid search, only relevant memories recalled |
-| **Cross-session** | `CLAUDE.md` is static; `MEMORY.md` is append-only | Dynamic knowledge graph with entity linking and temporal relationships |
-| **Reasoning** | No — just loads context | `reflect` can synthesize across all memories |
-| **Scalability** | Breaks down at ~200 lines (context bloat) | Handles thousands of memories efficiently |
-
-**They're complementary**, not competing. `CLAUDE.md` is great for static project rules ("use tabs, not spaces"). MemoMind handles the dynamic knowledge that accumulates over time ("user tried Redis caching last week but switched to Memcached due to memory constraints").
-
-## How It Compares
-
-| Feature | MemoMind | [MemOS](https://github.com/MemTensor/MemOS) (OpenClaw) | Mem0 | Claude Code built-in |
-|---------|----------|------|------|---------------------|
-| **Target** | Claude Code / MCP agents | OpenClaw agents | General LLM apps | Claude Code only |
-| **Privacy** | 100% local | Cloud or local | Configurable | Local files |
-| **Memory structure** | Knowledge graph + vectors + mental models | Graph + vectors + multi-modal | Flat facts | Markdown files |
-| **Retrieval** | 4-way hybrid (semantic + BM25 + graph + temporal) | FTS5 + vector (local) / hosted (cloud) | Semantic only | Full file load |
-| **Auto-extract** | LLM-powered fact extraction | Task summarization + skill evolution | LLM-powered | Manual |
-| **Reflect/reason** | Yes — cross-memory synthesis | No | No | No |
-| **Multi-modal** | Text only | Text + images + tool traces | Text only | Text only |
-| **Protocol** | MCP (stdio/SSE) | OpenClaw plugin API | REST API | File-based |
-| **Setup complexity** | WSL + systemd (one-time) | Docker Compose (Neo4j + Qdrant) | pip install | Zero |
-| **GPU acceleration** | Yes — local CUDA embeddings + reranking | Optional | No | No |
-| **Cost** | ~$0.01/day (LLM calls only) | Free (local) / paid (cloud) | Free tier limited | Free |
-
-**MemoMind vs MemOS/OpenClaw**: MemOS is designed for OpenClaw's agent ecosystem with multi-modal support and skill evolution. MemoMind is purpose-built for **MCP-based coding agents** (Claude Code, Cursor, etc.) with deeper retrieval (4-way hybrid vs 2-way), built-in reasoning (`reflect`), and zero-infrastructure GPU-accelerated embeddings. If you use OpenClaw, use MemOS. If you use Claude Code, use MemoMind.
-
-## MemoMind + Recall: Two Sides of the Same Coin
-
-AI memory has two audiences — the machine and the human. MemoMind and [Recall](https://github.com/24kchengYe/Recall) cover both:
-
-| | MemoMind | [Recall](https://github.com/24kchengYe/Recall) |
-|---|---|---|
-| **Memory for** | The AI | The human |
-| **Purpose** | AI remembers your preferences, decisions, context | You browse, search, and manage conversation history |
-| **Format** | Structured facts + knowledge graph + vectors | Full conversation archives (human-readable JSONL) |
-| **Interaction** | AI autonomously calls `retain` / `recall` / `reflect` | You manually run `/recall save` / `/recall search` / `/recall load` |
-| **Storage** | PostgreSQL + pgvector (WSL) | Files + SQLite index (Windows) |
-| **Key value** | AI gets smarter over time | You never lose a conversation |
-
-**They're complementary.** Recall preserves the *full context* so you can review what happened. MemoMind distills the *essential knowledge* so the AI can act on it. Use both together for the complete experience.
-
 ---
 
 ## Quick Start
@@ -206,7 +206,7 @@ AI memory has two audiences — the machine and the human. MemoMind and [Recall]
 
 - Windows 10/11 with WSL2 + Ubuntu
 - NVIDIA GPU (optional but recommended for local embeddings)
-- [OpenRouter](https://openrouter.ai/) API key (free tier works, ~$0.01/day)
+- An LLM API key ([MindCraft](https://www.mindcraft.com.cn/) for China users / [OpenRouter](https://openrouter.ai/) for international)
 
 ### Installation
 
@@ -223,7 +223,7 @@ sudo bash install.sh
 
 ```bash
 cp serve.py.template /opt/memomind-env/serve.py
-nano /opt/memomind-env/serve.py  # Add your OpenRouter key
+nano /opt/memomind-env/serve.py  # Set your LLM_API_KEY, LLM_BASE_URL, LLM_MODEL
 ```
 
 **Step 3 — Start the service**
@@ -406,7 +406,7 @@ alice_prefs = client.recall("user-alice", "editor preferences")
 | MemoMind Server | ~600MB RAM | ~800MB RAM |
 | GPU (embeddings) | 0 | ~500MB VRAM (burst) |
 | Disk (WSL vhdx) | ~14GB | Grows with memories |
-| Network | 0 | OpenRouter API calls on retain |
+| Network | 0 | LLM API calls on retain |
 
 ## Troubleshooting
 
@@ -441,7 +441,7 @@ export HF_ENDPOINT=https://hf-mirror.com  # Use China mirror
 <summary><b>China users</b></summary>
 
 - Embedding models download from `hf-mirror.com` automatically — no VPN needed
-- OpenRouter works without proxy for most models (avoid Google Gemini series)
+- Use Mode A (China direct) for best retain speed (~10-15s vs ~40-50s via proxy)
 
 </details>
 
@@ -495,6 +495,21 @@ MIT
 
 </div>
 
+## 两种 AI 记忆
+
+AI 记忆服务两种受众——**机器**和**人类**：
+
+| | 给 AI 的记忆（它知道什么） | 给人类的记忆（你能查什么） |
+|---|---|---|
+| **目标** | AI 跨会话记住偏好、决策、上下文 | 你浏览、搜索、管理对话历史 |
+| **解决的问题** | "为什么它老忘我的编码风格？" | "上周二我们讨论了什么？" |
+
+MemoMind 负责 **AI 侧**——给编程智能体持久、结构化、智能的记忆。人类侧请看 [Recall](https://github.com/24kchengYe/Recall)（对话历史管理工具）。
+
+**两者搭配使用效果最佳。**
+
+---
+
 ## 问题
 
 每个用 AI 编程助手的开发者都经历过——
@@ -505,6 +520,20 @@ MIT
 - 你的编码规范、团队命名规则、部署流水线——**每次会话都从零开始**。
 
 最强大的 AI，却只有金鱼的记忆力。
+
+## 为什么 CLAUDE.md 不够？
+
+Claude Code 已有 `CLAUDE.md` / `MEMORY.md` 内置记忆，但有根本局限：
+
+| | Claude Code 内置 | MemoMind |
+|---|---|---|
+| **存储** | 纯 Markdown 文件 | PostgreSQL + pgvector + 知识图谱 |
+| **提取** | 手动写规则 | LLM 自动从对话中提取事实 |
+| **检索** | 每次全量加载（浪费 token） | 4 路混合搜索，只召回相关记忆 |
+| **推理** | 无 | `reflect` 跨所有记忆综合推理 |
+| **扩展性** | ~200 行后上下文膨胀 | 高效处理数千条记忆 |
+
+**两者互补**：`CLAUDE.md` 适合静态项目规则（"用 tab 不用空格"）；MemoMind 处理随时间积累的动态知识（"用户上周试了 Redis 缓存但因内存问题换成了 Memcached"）。
 
 ## 解决方案
 
@@ -528,20 +557,6 @@ MemoMind 赋予你的 AI **持久、本地、智能的记忆**。它不仅仅存
 | **Observation（观察）** | 从行为中自动归纳的模式 | "用户一直使用函数式风格" |
 | **Mental Model（心智模型）** | 对复杂主题的深层理解 | "这个代码库使用六边形架构" |
 
-## 与内置记忆的区别
-
-Claude Code 已有 `CLAUDE.md` / `MEMORY.md` 内置记忆。为什么还需要 MemoMind？
-
-| | Claude Code 内置 | MemoMind |
-|---|---|---|
-| **存储** | 纯 Markdown 文件 | PostgreSQL + pgvector + 知识图谱 |
-| **提取** | 手动写规则 | LLM 自动从对话中提取事实 |
-| **检索** | 每次全量加载（浪费 token） | 4 路混合搜索，只召回相关记忆 |
-| **推理** | 无 | `reflect` 跨所有记忆综合推理 |
-| **扩展性** | ~200 行后上下文膨胀 | 高效处理数千条记忆 |
-
-**两者互补**：`CLAUDE.md` 适合静态项目规则；MemoMind 处理随时间积累的动态知识。
-
 ## 核心能力
 
 - **100% 本地** — PostgreSQL + 嵌入模型运行在 WSL2，数据不出机器
@@ -561,7 +576,7 @@ Claude Code 已有 `CLAUDE.md` / `MEMORY.md` 内置记忆。为什么还需要 M
 
 - Windows 10/11 + WSL2 + Ubuntu
 - NVIDIA GPU（可选，推荐用于本地嵌入）
-- [OpenRouter](https://openrouter.ai/) API 密钥（免费额度够用，约 ¥0.07/天）
+- LLM API 密钥（国内推荐 [MindCraft](https://www.mindcraft.com.cn/) / 国际推荐 [OpenRouter](https://openrouter.ai/)）
 
 ### 安装步骤
 
@@ -576,7 +591,7 @@ sudo bash install.sh
 
 # 3. 配置 API 密钥
 cp serve.py.template /opt/memomind-env/serve.py
-nano /opt/memomind-env/serve.py  # 填入你的 OpenRouter 密钥
+nano /opt/memomind-env/serve.py  # 设置 LLM_API_KEY, LLM_BASE_URL, LLM_MODEL
 
 # 4. 启动服务
 sudo systemctl start memomind

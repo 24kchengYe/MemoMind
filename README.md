@@ -90,11 +90,30 @@ You don't do anything — the AI handles it all.
 
 ---
 
-### 🎬 Demo
+### 🎬 Dashboard
 
 <div align="center">
-<img src="docs/demos/dashboard.gif" width="720" alt="MemoMind Dashboard Demo"/>
+<img src="docs/demos/dashboard-overview.png" width="800" alt="MemoMind Dashboard — memory stream with metrics, filters, and search"/>
 </div>
+
+<table>
+<tr>
+<td align="center"><b>Knowledge Graph</b></td>
+<td align="center"><b>Timeline View</b></td>
+</tr>
+<tr>
+<td><img src="docs/demos/graph-view.png" width="400" alt="Entity relationship graph with hover tooltips"/></td>
+<td><img src="docs/demos/timeline-view.png" width="400" alt="Memories organized by date"/></td>
+</tr>
+<tr>
+<td align="center"><b>Type Filters</b></td>
+<td align="center"><b>Add Memory</b></td>
+</tr>
+<tr>
+<td><img src="docs/demos/filter-observation.png" width="400" alt="Filter by observation type"/></td>
+<td><img src="docs/demos/add-memory.png" width="400" alt="Manual memory creation modal"/></td>
+</tr>
+</table>
 
 ---
 

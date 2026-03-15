@@ -142,42 +142,15 @@ You don't do anything — the AI handles it all.
 
 ## Architecture
 
-```
-Claude Code ──MCP (stdio)──→ WSL2
-                                │
-                   ┌────────────┴────────────┐
-                   │     MemoMind Server      │
-                   ├─────────────────────────┤
-                   │  PostgreSQL + pgvector   │ ← structured memories + knowledge graph
-                   │  BAAI/bge-small (CUDA)   │ ← local embeddings (384-dim)
-                   │  cross-encoder (CUDA)    │ ← local reranking
-                   │  DeepSeek / OpenRouter   │ ← fact extraction (configurable)
-                   └─────────────────────────┘
-                              │
-                   All data stays on your machine
-```
+<div align="center">
+<img src="docs/diagrams/architecture.svg" width="800" alt="MemoMind System Architecture"/>
+</div>
 
 ## Three Core Operations
 
-```
-┌─────────┐     ┌──────────────────────────────────────────────┐
-│ retain  │────▶│ Text → LLM extracts facts → entities linked  │
-│         │     │ → embeddings generated → stored in PG+vector │
-└─────────┘     └──────────────────────────────────────────────┘
-
-┌─────────┐     ┌──────────────────────────────────────────────┐
-│ recall  │────▶│ Query → 4 parallel searches:                 │
-│         │     │   semantic (vector) + BM25 (keyword)         │
-│         │     │   + graph (entity links) + temporal (time)   │
-│         │     │ → cross-encoder rerank → top results         │
-└─────────┘     └──────────────────────────────────────────────┘
-
-┌─────────┐     ┌──────────────────────────────────────────────┐
-│ reflect │────▶│ Question → recall relevant memories          │
-│         │     │ → LLM reasons across all retrieved context   │
-│         │     │ → synthesized insight returned               │
-└─────────┘     └──────────────────────────────────────────────┘
-```
+<div align="center">
+<img src="docs/diagrams/operations.svg" width="800" alt="Retain, Recall, Reflect Operations"/>
+</div>
 
 | Operation | What It Does | When AI Calls It |
 |-----------|-------------|------------------|
@@ -197,6 +170,16 @@ MemoMind organizes knowledge into four biomimetic memory pathways — modeled af
 | **Mental Model** | Learned understanding of complex topics | "This codebase follows hexagonal architecture with ports and adapters" | Enables deeper reasoning about project context |
 
 > Unlike flat key-value stores, these types form a **knowledge graph** — entities are linked by relationships, creating retrieval pathways that go far beyond simple keyword matching.
+
+## Memory Evolution
+
+Observations don't just accumulate — they **evolve**. The consolidation engine automatically merges, updates, and refines observations as new facts arrive:
+
+<div align="center">
+<img src="docs/diagrams/evolution.svg" width="800" alt="Memory Evolution Through Consolidation"/>
+</div>
+
+Each memory bank has a configurable **mission** that controls how the consolidation engine synthesizes observations — from simple detail tracking to structured task-level experience records with procedures, lessons learned, and user preferences.
 
 ---
 
@@ -460,12 +443,14 @@ export HF_ENDPOINT=https://hf-mirror.com  # Use China mirror
 - [x] Auto-start on boot (systemd + VBS)
 - [ ] Memory import/export (JSON backup)
 - [ ] Multi-agent memory sharing
-- [ ] Automatic memory consolidation and pruning
+- [x] Memory evolution via configurable consolidation mission
+- [ ] Automatic memory pruning
 - [ ] Support for more MCP clients (Cursor, Windsurf, etc.)
 - [ ] Docker-based installation (no WSL dependency)
 
 ## Changelog
 
+- **v1.3** (2026-03-15): Architecture diagrams (SVG); memory evolution via configurable consolidation mission; deployment audit with 14 fixes for fresh-clone install; template files updated (hindsight → memomind)
 - **v1.2** (2026-03-15): Dashboard redesign (glassmorphism, memory cards, graph zoom/pan/tooltips, delete, animated counters, mobile responsive); README rewrite with demo GIF; dual LLM mode (China direct via MindCraft / international via proxy bridge); retain speed 50s → 13s
 - **v1.1** (2026-03-12): Web dashboard for visual memory browsing; auto-start on boot; MCP stdio transport
 - **v1.0** (2026-03-09): Initial release — retain/recall/reflect, PostgreSQL + pgvector, GPU-accelerated embeddings, cross-encoder reranking
@@ -570,42 +555,15 @@ MemoMind 赋予你的 AI **持久、本地、智能的记忆**。它不仅仅存
 
 ## 架构
 
-```
-Claude Code ──MCP (stdio)──→ WSL2
-                                │
-                   ┌────────────┴────────────┐
-                   │     MemoMind Server      │
-                   ├─────────────────────────┤
-                   │  PostgreSQL + pgvector   │ ← 结构化记忆 + 知识图谱
-                   │  BAAI/bge-small (CUDA)   │ ← 本地嵌入 (384维)
-                   │  cross-encoder (CUDA)    │ ← 本地重排序
-                   │  DeepSeek / OpenRouter   │ ← 事实提取（可配置）
-                   └─────────────────────────┘
-                              │
-                      所有数据留在你的机器上
-```
+<div align="center">
+<img src="docs/diagrams/architecture.svg" width="800" alt="MemoMind 系统架构"/>
+</div>
 
 ## 三大操作
 
-```
-┌─────────┐     ┌──────────────────────────────────────────────┐
-│ retain  │────▶│ 文本 → LLM 提取事实 → 实体关联               │
-│ (存储)   │     │ → 生成嵌入向量 → 存入 PG + 向量库            │
-└─────────┘     └──────────────────────────────────────────────┘
-
-┌─────────┐     ┌──────────────────────────────────────────────┐
-│ recall  │────▶│ 查询 → 4 路并行搜索:                         │
-│ (召回)   │     │   语义（向量）+ BM25（关键词）               │
-│         │     │   + 图谱（实体关联）+ 时序（时间）            │
-│         │     │ → 交叉编码器重排序 → 返回最相关结果           │
-└─────────┘     └──────────────────────────────────────────────┘
-
-┌─────────┐     ┌──────────────────────────────────────────────┐
-│ reflect │────▶│ 问题 → 召回相关记忆                          │
-│ (反思)   │     │ → LLM 跨所有上下文推理                      │
-│         │     │ → 返回综合洞察                               │
-└─────────┘     └──────────────────────────────────────────────┘
-```
+<div align="center">
+<img src="docs/diagrams/operations.svg" width="800" alt="Retain、Recall、Reflect 操作流程"/>
+</div>
 
 ## 四种记忆类型
 
@@ -617,6 +575,16 @@ Claude Code ──MCP (stdio)──→ WSL2
 | **Mental Model（心智模型）** | 对复杂主题的深层理解 | "这个代码库使用六边形架构" | 支持更深层次的推理 |
 
 > 这些类型构成**知识图谱**——实体通过关系链接，创建远超关键词匹配的检索路径。
+
+## 记忆进化
+
+Observation 不只是累积——它们会**进化**。巩固引擎自动合并、更新、精炼 observation：
+
+<div align="center">
+<img src="docs/diagrams/evolution.svg" width="800" alt="通过巩固机制的记忆进化"/>
+</div>
+
+每个记忆银行有可配置的 **mission**，控制巩固引擎的归纳方向——从简单的细节记录到结构化的任务级经验（包含步骤、教训、偏好）。
 
 ## 使用场景
 
@@ -692,6 +660,7 @@ NEEDS_PROXY = False
 
 ## 更新日志
 
+- **v1.3** (2026-03-15): 架构图（SVG）；记忆进化（可配置巩固 mission）；14 项部署审计修复；模板文件更新（hindsight → memomind）
 - **v1.2** (2026-03-15): Dashboard 全面重新设计；README 重写 + demo GIF；双 LLM 模式（国内直连 MindCraft / 国际走代理桥接）；retain 速度 50s → 13s
 - **v1.1** (2026-03-12): 可视化记忆面板；开机自启；MCP stdio 传输
 - **v1.0** (2026-03-09): 首次发布——retain/recall/reflect、PostgreSQL + pgvector、GPU 加速嵌入、交叉编码器重排序

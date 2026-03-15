@@ -25,7 +25,8 @@
       "Bash(powershell -Command \"Start-Process powershell -ArgumentList '-Command netsh advfirewall firewall add rule name=\\\\\"\\\\\"\\\\\"WSL MemoMind 8888\\\\\"\\\\\"\\\\\" dir=in action=allow protocol=tcp localport=8888' -Verb RunAs -Wait\" 2>&1\nsleep 2\ncurl -s --noproxy '*' --max-time 5 http://127.0.0.1:8888/health)",
       "Bash(echo:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "WebSearch"
+      "WebSearch",
+      "mcp__memomind__update_bank"
     ]
   }
 }

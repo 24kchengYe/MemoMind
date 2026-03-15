@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f1923"/>
+      <stop offset="100%" stop-color="#0a1219"/>
+    </linearGradient>
+    <linearGradient id="serverGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#162230"/>
+      <stop offset="100%" stop-color="#1a2a3a"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="8" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,3 L0,6" fill="#38bdf8"/>
+    </marker>
+    <marker id="arrowDim" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="8" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,3 L0,6" fill="#4a6a7a"/>
+    </marker>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="520" fill="url(#bg)" rx="8"/>
+
+  <!-- Title -->
+  <text x="450" y="38" text-anchor="middle" fill="#c8dbe8" font-size="15" font-weight="600" letter-spacing="1.5">SYSTEM ARCHITECTURE</text>
+  <line x1="370" y1="48" x2="530" y2="48" stroke="#38bdf8" stroke-width="1" opacity="0.4"/>
+
+  <!-- Claude Code box -->
+  <rect x="40" y="80" width="160" height="64" rx="6" fill="#1c2c3c" stroke="#38bdf8" stroke-width="1.2"/>
+  <text x="120" y="108" text-anchor="middle" fill="#38bdf8" font-size="13" font-weight="600">Claude Code</text>
+  <text x="120" y="126" text-anchor="middle" fill="#6a8a9a" font-size="10">coding agent</text>
+
+  <!-- Arrow: Claude → MCP -->
+  <line x1="200" y1="112" x2="268" y2="112" stroke="#38bdf8" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <text x="234" y="103" text-anchor="middle" fill="#38bdf8" font-size="9" opacity="0.7">MCP stdio</text>
+
+  <!-- WSL2 boundary -->
+  <rect x="280" y="60" width="580" height="390" rx="8" fill="none" stroke="#2a4a5a" stroke-width="1" stroke-dasharray="6,4"/>
+  <text x="860" y="78" text-anchor="end" fill="#3a5a6a" font-size="10" font-weight="500">WSL2 Ubuntu</text>
+
+  <!-- MemoMind Server box -->
+  <rect x="310" y="80" width="520" height="280" rx="6" fill="url(#serverGrad)" stroke="#2a4a5a" stroke-width="1"/>
+  <text x="570" y="106" text-anchor="middle" fill="#e0ecf4" font-size="14" font-weight="600">MemoMind Server</text>
+  <text x="570" y="122" text-anchor="middle" fill="#5a7a8a" font-size="10">port 8888</text>
+
+  <!-- Components inside server -->
+  <!-- PostgreSQL -->
+  <rect x="340" y="145" width="220" height="50" rx="5" fill="#14202e" stroke="#4adeab" stroke-width="1" opacity="0.9"/>
+  <text x="450" y="168" text-anchor="middle" fill="#4adeab" font-size="12" font-weight="500">PostgreSQL + pgvector</text>
+  <text x="450" y="184" text-anchor="middle" fill="#4a6a6a" font-size="9">structured memories + knowledge graph</text>
+
+  <!-- Embeddings -->
+  <rect x="340" y="210" width="220" height="44" rx="5" fill="#14202e" stroke="#c084fc" stroke-width="1" opacity="0.9"/>
+  <text x="450" y="230" text-anchor="middle" fill="#c084fc" font-size="12" font-weight="500">BAAI/bge-small</text>
+  <text x="450" y="244" text-anchor="middle" fill="#6a5a7a" font-size="9">local embeddings  CUDA 384-dim</text>
+
+  <!-- Cross-encoder -->
+  <rect x="340" y="268" width="220" height="44" rx="5" fill="#14202e" stroke="#fbbf24" stroke-width="1" opacity="0.9"/>
+  <text x="450" y="288" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="500">cross-encoder</text>
+  <text x="450" y="302" text-anchor="middle" fill="#7a6a4a" font-size="9">local reranking  CUDA</text>
+
+  <!-- LLM -->
+  <rect x="590" y="145" width="210" height="50" rx="5" fill="#14202e" stroke="#38bdf8" stroke-width="1" opacity="0.9"/>
+  <text x="695" y="168" text-anchor="middle" fill="#38bdf8" font-size="12" font-weight="500">DeepSeek / OpenRouter</text>
+  <text x="695" y="184" text-anchor="middle" fill="#4a6a7a" font-size="9">fact extraction  configurable</text>
+
+  <!-- Consolidation engine -->
+  <rect x="590" y="210" width="210" height="44" rx="5" fill="#14202e" stroke="#4adeab" stroke-width="1" opacity="0.7"/>
+  <text x="695" y="230" text-anchor="middle" fill="#4adeab" font-size="12" font-weight="500">Consolidation Engine</text>
+  <text x="695" y="244" text-anchor="middle" fill="#4a6a6a" font-size="9">observation evolution</text>
+
+  <!-- Knowledge Graph -->
+  <rect x="590" y="268" width="210" height="44" rx="5" fill="#14202e" stroke="#c084fc" stroke-width="1" opacity="0.7"/>
+  <text x="695" y="288" text-anchor="middle" fill="#c084fc" font-size="12" font-weight="500">Knowledge Graph</text>
+  <text x="695" y="302" text-anchor="middle" fill="#6a5a7a" font-size="9">entity links + temporal edges</text>
+
+  <!-- Internal arrows -->
+  <line x1="560" y1="170" x2="588" y2="170" stroke="#4a6a7a" stroke-width="0.8" marker-end="url(#arrowDim)"/>
+  <line x1="560" y1="232" x2="588" y2="232" stroke="#4a6a7a" stroke-width="0.8" marker-end="url(#arrowDim)"/>
+  <line x1="560" y1="290" x2="588" y2="290" stroke="#4a6a7a" stroke-width="0.8" marker-end="url(#arrowDim)"/>
+
+  <!-- Dashboard box -->
+  <rect x="40" y="200" width="160" height="64" rx="6" fill="#1c2c3c" stroke="#fbbf24" stroke-width="1.2"/>
+  <text x="120" y="228" text-anchor="middle" fill="#fbbf24" font-size="13" font-weight="600">Dashboard</text>
+  <text x="120" y="246" text-anchor="middle" fill="#7a6a4a" font-size="10">port 9999  Windows</text>
+
+  <!-- Arrow: Dashboard → Server -->
+  <line x1="200" y1="232" x2="268" y2="180" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrowDim)"/>
+  <text x="228" y="218" text-anchor="middle" fill="#7a6a4a" font-size="9" transform="rotate(-20,228,218)">portproxy</text>
+
+  <!-- Browser box -->
+  <rect x="40" y="310" width="160" height="50" rx="6" fill="#1c2c3c" stroke="#4a6a7a" stroke-width="0.8"/>
+  <text x="120" y="333" text-anchor="middle" fill="#8aaaba" font-size="12" font-weight="500">Browser</text>
+  <text x="120" y="348" text-anchor="middle" fill="#4a6a7a" font-size="9">localhost:9999</text>
+
+  <!-- Arrow: Browser → Dashboard -->
+  <line x1="120" y1="310" x2="120" y2="266" stroke="#4a6a7a" stroke-width="0.8" marker-end="url(#arrowDim)"/>
+
+  <!-- Footer -->
+  <rect x="310" y="380" width="520" height="32" rx="4" fill="#0d1a24" stroke="#1a3a4a" stroke-width="0.8"/>
+  <text x="570" y="401" text-anchor="middle" fill="#3a6a7a" font-size="11" font-weight="500" letter-spacing="2">ALL DATA STAYS ON YOUR MACHINE</text>
+
+  <!-- Legend -->
+  <g transform="translate(40,420)">
+    <text x="0" y="0" fill="#5a7a8a" font-size="9" font-weight="500">COMPONENTS</text>
+    <circle cx="8" cy="16" r="4" fill="#4adeab"/>
+    <text x="18" y="20" fill="#6a8a8a" font-size="9">Storage</text>
+    <circle cx="78" cy="16" r="4" fill="#c084fc"/>
+    <text x="88" y="20" fill="#6a8a8a" font-size="9">ML Models</text>
+    <circle cx="158" cy="16" r="4" fill="#fbbf24"/>
+    <text x="168" y="20" fill="#6a8a8a" font-size="9">Interface</text>
+    <circle cx="228" cy="16" r="4" fill="#38bdf8"/>
+    <text x="238" y="20" fill="#6a8a8a" font-size="9">Protocol</text>
+  </g>
+</svg>

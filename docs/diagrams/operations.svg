@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 480" font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f1923"/>
+      <stop offset="100%" stop-color="#0a1219"/>
+    </linearGradient>
+    <marker id="ar" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="7" markerHeight="5" orient="auto">
+      <path d="M0,0.5 L9,3 L0,5.5" fill="#38bdf8"/>
+    </marker>
+    <marker id="arG" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="7" markerHeight="5" orient="auto">
+      <path d="M0,0.5 L9,3 L0,5.5" fill="#4adeab"/>
+    </marker>
+    <marker id="arP" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="7" markerHeight="5" orient="auto">
+      <path d="M0,0.5 L9,3 L0,5.5" fill="#c084fc"/>
+    </marker>
+    <marker id="arY" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="7" markerHeight="5" orient="auto">
+      <path d="M0,0.5 L9,3 L0,5.5" fill="#fbbf24"/>
+    </marker>
+  </defs>
+
+  <rect width="900" height="480" fill="url(#bg2)" rx="8"/>
+
+  <text x="450" y="38" text-anchor="middle" fill="#c8dbe8" font-size="15" font-weight="600" letter-spacing="1.5">THREE CORE OPERATIONS</text>
+  <line x1="360" y1="48" x2="540" y2="48" stroke="#38bdf8" stroke-width="1" opacity="0.4"/>
+
+  <!-- ═══ RETAIN ═══ -->
+  <text x="50" y="90" fill="#4adeab" font-size="13" font-weight="700" letter-spacing="1">RETAIN</text>
+  <text x="130" y="90" fill="#3a6a5a" font-size="10">store new knowledge</text>
+
+  <!-- Flow boxes -->
+  <rect x="50" y="105" width="110" height="42" rx="4" fill="#14202e" stroke="#4adeab" stroke-width="1"/>
+  <text x="105" y="124" text-anchor="middle" fill="#e0ecf4" font-size="11" font-weight="500">Conversation</text>
+  <text x="105" y="138" text-anchor="middle" fill="#5a7a7a" font-size="9">raw text input</text>
+
+  <line x1="160" y1="126" x2="190" y2="126" stroke="#4adeab" stroke-width="1" marker-end="url(#arG)"/>
+
+  <rect x="195" y="105" width="130" height="42" rx="4" fill="#14202e" stroke="#4adeab" stroke-width="1"/>
+  <text x="260" y="124" text-anchor="middle" fill="#e0ecf4" font-size="11" font-weight="500">LLM Extraction</text>
+  <text x="260" y="138" text-anchor="middle" fill="#5a7a7a" font-size="9">facts + entities + time</text>
+
+  <line x1="325" y1="126" x2="355" y2="126" stroke="#4adeab" stroke-width="1" marker-end="url(#arG)"/>
+
+  <rect x="360" y="105" width="120" height="42" rx="4" fill="#14202e" stroke="#4adeab" stroke-width="1"/>
+  <text x="420" y="124" text-anchor="middle" fill="#e0ecf4" font-size="11" font-weight="500">Entity Linking</text>
+  <text x="420" y="138" text-anchor="middle" fill="#5a7a7a" font-size="9">knowledge graph edges</text>
+
+  <line x1="480" y1="126" x2="510" y2="126" stroke="#4adeab" stroke-width="1" marker-end="url(#arG)"/>
+
+  <rect x="515" y="105" width="120" height="42" rx="4" fill="#14202e" stroke="#4adeab" stroke-width="1"/>
+  <text x="575" y="124" text-anchor="middle" fill="#e0ecf4" font-size="11" font-weight="500">Embed (CUDA)</text>
+  <text x="575" y="138" text-anchor="middle" fill="#5a7a7a" font-size="9">384-dim vectors</text>
+
+  <line x1="635" y1="126" x2="665" y2="126" stroke="#4adeab" stroke-width="1" marker-end="url(#arG)"/>
+
+  <rect x="670" y="105" width="180" height="42" rx="4" fill="#162a22" stroke="#4adeab" stroke-width="1.2"/>
+  <text x="760" y="124" text-anchor="middle" fill="#4adeab" font-size="11" font-weight="600">PostgreSQL + pgvector</text>
+  <text x="760" y="138" text-anchor="middle" fill="#3a6a5a" font-size="9">persistent storage</text>
+
+  <!-- ═══ RECALL ═══ -->
+  <text x="50" y="200" fill="#38bdf8" font-size="13" font-weight="700" letter-spacing="1">RECALL</text>
+  <text x="130" y="200" fill="#2a5a7a" font-size="10">retrieve relevant memories</text>
+
+  <rect x="50" y="215" width="110" height="42" rx="4" fill="#14202e" stroke="#38bdf8" stroke-width="1"/>
+  <text x="105" y="234" text-anchor="middle" fill="#e0ecf4" font-size="11" font-weight="500">Query</text>
+  <text x="105" y="248" text-anchor="middle" fill="#4a6a7a" font-size="9">natural language</text>
+
+  <!-- 4 parallel paths -->
+  <line x1="160" y1="228" x2="190" y2="218" stroke="#38bdf8" stroke-width="0.8" marker-end="url(#ar)"/>
+  <line x1="160" y1="233" x2="190" y2="230" stroke="#38bdf8" stroke-width="0.8" marker-end="url(#ar)"/>
+  <line x1="160" y1="238" x2="190" y2="242" stroke="#38bdf8" stroke-width="0.8" marker-end="url(#ar)"/>
+  <line x1="160" y1="243" x2="190" y2="254" stroke="#38bdf8" stroke-width="0.8" marker-end="url(#ar)"/>
+
+  <rect x="195" y="206" width="100" height="24" rx="3" fill="#14202e" stroke="#38bdf8" stroke-width="0.8"/>
+  <text x="245" y="222" text-anchor="middle" fill="#38bdf8" font-size="10">Semantic</text>
+
+  <rect x="195" y="234" width="100" height="24" rx="3" fill="#14202e" stroke="#38bdf8" stroke-width="0.8"/>
+  <text x="245" y="250" text-anchor="middle" fill="#38bdf8" font-size="10">BM25</text>
+
+  <rect x="310" y="206" width="100" height="24" rx="3" fill="#14202e" stroke="#c084fc" stroke-width="0.8"/>
+  <text x="360" y="222" text-anchor="middle" fill="#c084fc" font-size="10">Graph</text>
+
+  <rect x="310" y="234" width="100" height="24" rx="3" fill="#14202e" stroke="#fbbf24" stroke-width="0.8"/>
+  <text x="360" y="250" text-anchor="middle" fill="#fbbf24" font-size="10">Temporal</text>
+
+  <!-- Converge -->
+  <line x1="295" y1="218" x2="430" y2="233" stroke="#38bdf8" stroke-width="0.6" opacity="0.5"/>
+  <line x1="295" y1="246" x2="430" y2="237" stroke="#38bdf8" stroke-width="0.6" opacity="0.5"/>
+  <line x1="410" y1="218" x2="430" y2="233" stroke="#c084fc" stroke-width="0.6" opacity="0.5"/>
+  <line x1="410" y1="246" x2="430" y2="237" stroke="#fbbf24" stroke-width="0.6" opacity="0.5"/>
+
+  <text x="440" y="225" fill="#3a5a6a" font-size="8">4-way</text>
+  <text x="440" y="245" fill="#3a5a6a" font-size="8">merge</text>
+
+  <line x1="468" y1="236" x2="500" y2="236" stroke="#38bdf8" stroke-width="1" marker-end="url(#ar)"/>
+
+  <rect x="505" y="215" width="140" height="42" rx="4" fill="#14202e" stroke="#fbbf24" stroke-width="1"/>
+  <text x="575" y="234" text-anchor="middle" fill="#e0ecf4" font-size="11" font-weight="500">Cross-encoder</text>
+  <text x="575" y="248" text-anchor="middle" fill="#7a6a4a" font-size="9">rerank by relevance</text>
+
+  <line x1="645" y1="236" x2="675" y2="236" stroke="#38bdf8" stroke-width="1" marker-end="url(#ar)"/>
+
+  <rect x="680" y="215" width="170" height="42" rx="4" fill="#162028" stroke="#38bdf8" stroke-width="1.2"/>
+  <text x="765" y="234" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="600">Ranked Results</text>
+  <text x="765" y="248" text-anchor="middle" fill="#2a5a7a" font-size="9">top-k relevant memories</text>
+
+  <!-- ═══ REFLECT ═══ -->
+  <text x="50" y="320" fill="#c084fc" font-size="13" font-weight="700" letter-spacing="1">REFLECT</text>
+  <text x="130" y="320" fill="#6a4a8a" font-size="10">reason across all memories</text>
+
+  <rect x="50" y="335" width="110" height="42" rx="4" fill="#14202e" stroke="#c084fc" stroke-width="1"/>
+  <text x="105" y="354" text-anchor="middle" fill="#e0ecf4" font-size="11" font-weight="500">Question</text>
+  <text x="105" y="368" text-anchor="middle" fill="#6a5a7a" font-size="9">complex query</text>
+
+  <line x1="160" y1="356" x2="190" y2="356" stroke="#c084fc" stroke-width="1" marker-end="url(#arP)"/>
+
+  <rect x="195" y="335" width="160" height="42" rx="4" fill="#14202e" stroke="#38bdf8" stroke-width="0.8"/>
+  <text x="275" y="354" text-anchor="middle" fill="#e0ecf4" font-size="11" font-weight="500">Recall Memories</text>
+  <text x="275" y="368" text-anchor="middle" fill="#4a6a7a" font-size="9">4-way hybrid search</text>
+
+  <line x1="355" y1="356" x2="385" y2="356" stroke="#c084fc" stroke-width="1" marker-end="url(#arP)"/>
+
+  <rect x="390" y="335" width="200" height="42" rx="4" fill="#14202e" stroke="#c084fc" stroke-width="1"/>
+  <text x="490" y="354" text-anchor="middle" fill="#e0ecf4" font-size="11" font-weight="500">LLM Reasoning</text>
+  <text x="490" y="368" text-anchor="middle" fill="#6a5a7a" font-size="9">synthesize across all context</text>
+
+  <line x1="590" y1="356" x2="620" y2="356" stroke="#c084fc" stroke-width="1" marker-end="url(#arP)"/>
+
+  <rect x="625" y="335" width="225" height="42" rx="4" fill="#1e1828" stroke="#c084fc" stroke-width="1.2"/>
+  <text x="737" y="354" text-anchor="middle" fill="#c084fc" font-size="11" font-weight="600">Synthesized Insight</text>
+  <text x="737" y="368" text-anchor="middle" fill="#6a4a8a" font-size="9">cross-memory reasoning result</text>
+
+  <!-- Footer labels -->
+  <g transform="translate(50,430)">
+    <text x="0" y="0" fill="#5a7a8a" font-size="9" font-weight="500">WHEN AI CALLS EACH</text>
+    <rect x="0" y="10" width="8" height="8" rx="2" fill="#4adeab"/>
+    <text x="14" y="18" fill="#5a7a7a" font-size="9">After learning something new</text>
+    <rect x="220" y="10" width="8" height="8" rx="2" fill="#38bdf8"/>
+    <text x="234" y="18" fill="#4a6a7a" font-size="9">Before responding, to check history</text>
+    <rect x="490" y="10" width="8" height="8" rx="2" fill="#c084fc"/>
+    <text x="504" y="18" fill="#6a5a7a" font-size="9">For complex questions requiring synthesis</text>
+  </g>
+</svg>

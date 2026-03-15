@@ -55,8 +55,31 @@ print('Models ready!')
 \"
 "
 
-# 6. Install systemd service
-echo "[6/6] Installing systemd service..."
+# 6. Initialize database and fix auth
+echo "[6/7] Initializing database..."
+# Start the embedded PG once to create the database, then fix auth
+su - hindsight -c "
+source /opt/hindsight-env/bin/activate
+export HF_ENDPOINT=https://hf-mirror.com
+timeout 30 python3 -c '
+from hindsight import HindsightServer
+s = HindsightServer(port=18888, host=\"127.0.0.1\")
+s.start()
+import time; time.sleep(10)
+s.stop()
+' 2>/dev/null || true
+"
+# Fix PostgreSQL auth: change password to trust for local connections
+PG_HBA=$(find /home/hindsight/.pg0 -name pg_hba.conf 2>/dev/null | head -1)
+if [ -n "$PG_HBA" ]; then
+    sed -i 's/password/trust/g' "$PG_HBA"
+    # Reload PostgreSQL
+    su - hindsight -c "kill -HUP \$(head -1 /home/hindsight/.pg0/instances/*/data/postmaster.pid 2>/dev/null) 2>/dev/null" || true
+    echo "  Database auth fixed (trust mode for local connections)"
+fi
+
+# 7. Install systemd service and MCP stdio entry
+echo "[7/7] Installing systemd service and MCP..."
 if [ ! -f /opt/hindsight-env/serve.py ]; then
     echo ""
     echo "WARNING: /opt/hindsight-env/serve.py not found!"
@@ -64,6 +87,30 @@ if [ ! -f /opt/hindsight-env/serve.py ]; then
     echo "and fill in your OpenRouter API key before starting."
     echo ""
 fi
+
+# Create MCP stdio entry point
+cat > /opt/hindsight-env/mcp_stdio.py << 'MCPEOF'
+"""MemoMind MCP stdio server - connects to running Hindsight service."""
+import os, sys
+
+for k in ["http_proxy","https_proxy","HTTP_PROXY","HTTPS_PROXY","ALL_PROXY","all_proxy","no_proxy"]:
+    os.environ.pop(k, None)
+os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
+
+from hindsight_api.engine.memory_engine import MemoryEngine
+from hindsight_api.api.mcp import create_mcp_server
+
+engine = MemoryEngine(
+    db_url="postgresql://hindsight@localhost:5432/hindsight",
+    memory_llm_provider="openai",
+    memory_llm_api_key=os.environ.get("HINDSIGHT_API_LLM_API_KEY", ""),
+    memory_llm_model=os.environ.get("HINDSIGHT_API_LLM_MODEL", "qwen/qwen3.5-9b"),
+    memory_llm_base_url=os.environ.get("HINDSIGHT_API_LLM_URL", "https://openrouter.ai/api/v1"),
+)
+mcp = create_mcp_server(engine)
+mcp.run(transport="stdio")
+MCPEOF
+chown hindsight:hindsight /opt/hindsight-env/mcp_stdio.py
 
 cp "$(dirname "$0")/hindsight.service" /etc/systemd/system/hindsight.service
 systemctl daemon-reload
@@ -78,7 +125,7 @@ echo "Next steps:"
 echo "  1. Copy serve.py.template to /opt/hindsight-env/serve.py"
 echo "  2. Edit serve.py and add your OpenRouter API key"
 echo "  3. Run: systemctl start hindsight"
-echo "  4. On Windows, run update-portproxy.ps1 as admin"
-echo "  5. Register MCP in Claude Code:"
-echo "     claude mcp add --scope user --transport sse hindsight http://127.0.0.1:8888/mcp/"
+echo "  4. Register MCP in Claude Code (stdio mode, no port forwarding needed):"
+echo '     claude mcp add --scope user --transport stdio memomind \'
+echo '       -- wsl -d Ubuntu -u hindsight -e //opt/hindsight-env/bin/python3 //opt/hindsight-env/mcp_stdio.py'
 echo ""

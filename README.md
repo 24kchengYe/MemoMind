@@ -100,20 +100,20 @@ You don't do anything — the AI handles it all.
 
 ## How It Compares
 
-| Feature | MemoMind | [MemOS](https://github.com/MemTensor/MemOS) (OpenClaw) | Mem0 | Claude Code built-in |
+| Feature | MemoMind | [MemOS](https://github.com/MemTensor/MemOS) | Mem0 | Claude Code built-in |
 |---------|----------|------|------|---------------------|
-| **Target** | Claude Code / MCP agents | OpenClaw agents | General LLM apps | Claude Code only |
+| **Target** | MCP-based coding agents (Claude Code, Cursor) | General-purpose agent memory (OpenClaw plugin available) | General LLM apps | Claude Code only |
 | **Privacy** | 100% local | Cloud or local | Configurable | Local files |
-| **Memory structure** | Knowledge graph + vectors + mental models | Graph + vectors + multi-modal | Flat facts | Markdown files |
+| **Memory structure** | Knowledge graph + vectors + mental models | Graph + vectors + multi-modal (text, images, tool traces) | Flat facts | Markdown files |
 | **Retrieval** | 4-way hybrid (semantic + BM25 + graph + temporal) | FTS5 + vector (local) / hosted (cloud) | Semantic only | Full file load |
 | **Auto-extract** | LLM-powered fact extraction | Task summarization + skill evolution | LLM-powered | Manual |
 | **Reflect/reason** | Yes — cross-memory synthesis | No | No | No |
-| **Multi-modal** | Text only | Text + images + tool traces | Text only | Text only |
-| **Protocol** | MCP (stdio/SSE) | OpenClaw plugin API | REST API | File-based |
+| **Multi-modal** | Text only | Text + images + tool traces + personas | Text only | Text only |
+| **Protocol** | MCP (stdio/SSE) | REST API + agent plugins | REST API | File-based |
 | **GPU acceleration** | Yes — local CUDA embeddings + reranking | Optional | No | No |
 | **Cost** | ~$0.01/day (LLM calls only) | Free (local) / paid (cloud) | Free tier limited | Free |
 
-**MemoMind vs MemOS/OpenClaw**: MemOS is designed for OpenClaw's agent ecosystem with multi-modal support and skill evolution. MemoMind is purpose-built for **MCP-based coding agents** (Claude Code, Cursor, etc.) with deeper retrieval (4-way hybrid vs 2-way), built-in reasoning (`reflect`), and zero-infrastructure GPU-accelerated embeddings. If you use OpenClaw, use MemOS. If you use Claude Code, use MemoMind.
+**MemoMind vs MemOS**: MemOS is a general-purpose memory operating system for LLM agents, with multi-modal support (text + images + tool traces) and OpenClaw/MoltBot plugin integration. MemoMind is purpose-built for **MCP-based coding agents** with deeper retrieval (4-way hybrid vs 2-way), built-in reasoning (`reflect`), and zero-infrastructure GPU-accelerated local embeddings. Choose based on your agent ecosystem: MCP agents → MemoMind, OpenClaw/general agents → MemOS.
 
 ---
 
@@ -548,14 +548,82 @@ MemoMind 赋予你的 AI **持久、本地、智能的记忆**。它不仅仅存
 | **跨会话推理** | 不可能 | `reflect` 跨所有记忆综合分析 |
 | **隐私** | 通常基于云 | 100% 本地——数据不出你的电脑 |
 
+---
+
+## 横向对比
+
+| 特性 | MemoMind | [MemOS](https://github.com/MemTensor/MemOS) | Mem0 | Claude Code 内置 |
+|------|----------|------|------|---------------------|
+| **目标** | MCP 编程智能体 (Claude Code, Cursor) | 通用 Agent 记忆（有 OpenClaw 插件） | 通用 LLM 应用 | 仅 Claude Code |
+| **隐私** | 100% 本地 | 云或本地 | 可配置 | 本地文件 |
+| **记忆结构** | 知识图谱 + 向量 + 心智模型 | 图 + 向量 + 多模态（文本、图片、工具轨迹） | 扁平事实 | Markdown 文件 |
+| **检索** | 4 路混合（语义 + BM25 + 图谱 + 时序） | FTS5 + 向量 | 仅语义 | 全量加载 |
+| **反思推理** | 是——跨记忆综合分析 | 否 | 否 | 否 |
+| **多模态** | 仅文本 | 文本 + 图片 + 工具轨迹 + 人格 | 仅文本 | 仅文本 |
+| **GPU 加速** | 是——本地 CUDA 嵌入 + 重排序 | 可选 | 否 | 否 |
+| **成本** | ~¥0.07/天（仅 LLM 调用） | 免费（本地）/ 付费（云） | 免费额度有限 | 免费 |
+
+**MemoMind vs MemOS**：MemOS 是通用记忆操作系统，支持多模态和 OpenClaw 插件。MemoMind 专为 **MCP 编程智能体**设计，拥有更深的检索（4 路 vs 2 路）、内置推理（`reflect`）和零基础设施的 GPU 加速嵌入。MCP 智能体 → MemoMind，OpenClaw/通用 Agent → MemOS。
+
+---
+
+## 架构
+
+```
+Claude Code ──MCP (stdio)──→ WSL2
+                                │
+                   ┌────────────┴────────────┐
+                   │     MemoMind Server      │
+                   ├─────────────────────────┤
+                   │  PostgreSQL + pgvector   │ ← 结构化记忆 + 知识图谱
+                   │  BAAI/bge-small (CUDA)   │ ← 本地嵌入 (384维)
+                   │  cross-encoder (CUDA)    │ ← 本地重排序
+                   │  DeepSeek / OpenRouter   │ ← 事实提取（可配置）
+                   └─────────────────────────┘
+                              │
+                      所有数据留在你的机器上
+```
+
+## 三大操作
+
+```
+┌─────────┐     ┌──────────────────────────────────────────────┐
+│ retain  │────▶│ 文本 → LLM 提取事实 → 实体关联               │
+│ (存储)   │     │ → 生成嵌入向量 → 存入 PG + 向量库            │
+└─────────┘     └──────────────────────────────────────────────┘
+
+┌─────────┐     ┌──────────────────────────────────────────────┐
+│ recall  │────▶│ 查询 → 4 路并行搜索:                         │
+│ (召回)   │     │   语义（向量）+ BM25（关键词）               │
+│         │     │   + 图谱（实体关联）+ 时序（时间）            │
+│         │     │ → 交叉编码器重排序 → 返回最相关结果           │
+└─────────┘     └──────────────────────────────────────────────┘
+
+┌─────────┐     ┌──────────────────────────────────────────────┐
+│ reflect │────▶│ 问题 → 召回相关记忆                          │
+│ (反思)   │     │ → LLM 跨所有上下文推理                      │
+│         │     │ → 返回综合洞察                               │
+└─────────┘     └──────────────────────────────────────────────┘
+```
+
 ## 四种记忆类型
 
-| 类型 | 捕获什么 | 示例 |
-|------|---------|------|
-| **World（世界事实）** | 关于用户和环境的客观事实 | "用户偏好 Python 而非 R" |
-| **Experience（经历）** | AI 参与过的事件 | "上次会话调试了 auth 模块" |
-| **Observation（观察）** | 从行为中自动归纳的模式 | "用户一直使用函数式风格" |
-| **Mental Model（心智模型）** | 对复杂主题的深层理解 | "这个代码库使用六边形架构" |
+| 类型 | 捕获什么 | 示例 | 作用 |
+|------|---------|------|------|
+| **World（世界事实）** | 关于用户和环境的客观事实 | "用户偏好 Python 而非 R" | 影响推荐和默认行为 |
+| **Experience（经历）** | AI 参与过的事件 | "上次会话调试了 auth 模块" | 提供跨会话连续性 |
+| **Observation（观察）** | 从行为中自动归纳的模式 | "用户一直使用函数式风格" | 持续优化理解 |
+| **Mental Model（心智模型）** | 对复杂主题的深层理解 | "这个代码库使用六边形架构" | 支持更深层次的推理 |
+
+> 这些类型构成**知识图谱**——实体通过关系链接，创建远超关键词匹配的检索路径。
+
+## 使用场景
+
+- **编程助手** — 跨会话记住项目架构、编码风格、命名规范、技术栈决策
+- **项目管理** — 追踪决策、截止日期、阻塞点；跨所有上下文反思项目风险
+- **代码审查** — 回忆历史审查反馈模式；了解代码库中哪些区域脆弱
+- **调试** — 记住之前试过什么、什么有效、什么无效——不再重复失败的方法
+- **团队入职** — 新成员的 AI 立即继承项目积累的知识
 
 ## 核心能力
 
@@ -569,6 +637,8 @@ MemoMind 赋予你的 AI **持久、本地、智能的记忆**。它不仅仅存
 - **多 LLM 支持** — OpenAI、Anthropic、Gemini、Groq、Ollama、LM Studio 等
 - **可视化面板** — 在 `http://127.0.0.1:9999` 浏览和搜索所有记忆
 - **开机自启** — systemd 服务 + Windows 启动脚本
+
+---
 
 ## 快速开始
 

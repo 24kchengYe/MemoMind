@@ -1,16 +1,16 @@
-# MemoMind
+# MemoFinal
 
 **Give your AI agent a brain that remembers.**
 
-MemoMind is a turnkey local memory system for Claude Code and other AI coding assistants. It runs entirely on your machine — no cloud uploads, no data leaks, no subscription fees. Your conversations become persistent knowledge that makes your AI smarter over time.
+MemoFinal is a turnkey local memory system for Claude Code and other AI coding assistants. It runs entirely on your machine — no cloud uploads, no data leaks, no subscription fees. Your conversations become persistent knowledge that makes your AI smarter over time.
 
 > Built on [Hindsight](https://github.com/vectorize-io/hindsight) by Vectorize.io, optimized for Windows + WSL2 + Claude Code.
 
-## Why MemoMind?
+## Why MemoFinal?
 
 AI coding assistants forget everything between sessions. You explain your project architecture, your coding preferences, your team conventions — and next session, it's all gone.
 
-MemoMind fixes this:
+MemoFinal fixes this:
 
 - **Your AI remembers you** — preferences, decisions, project context persist across all sessions
 - **100% local** — PostgreSQL + embedding models run in WSL2, nothing leaves your machine
@@ -184,7 +184,7 @@ export HF_ENDPOINT=https://hf-mirror.com
 
 ## How It Compares
 
-| Feature | MemoMind (local) | Memori (cloud) | Mem0 (hybrid) | Claude Code built-in |
+| Feature | MemoFinal (local) | Memori (cloud) | Mem0 (hybrid) | Claude Code built-in |
 |---------|-----------------|----------------|---------------|---------------------|
 | Privacy | 100% local | Cloud upload required | Configurable | Local files |
 | Memory type | Structured facts + knowledge graph | 8 categories | Flat facts | Markdown notes |
@@ -206,6 +206,6 @@ MIT — same as Hindsight.
 
 ---
 
-![Visitors](https://visitor-badge.laobi.icu/badge?page_id=24kchengYe.MemoMind)
+![Visitors](https://visitor-badge.laobi.icu/badge?page_id=24kchengYe.MemoFinal)
 
-[![Star History Chart](https://api.star-history.com/svg?repos=24kchengYe/MemoMind&type=Date)](https://star-history.com/#24kchengYe/MemoMind&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=24kchengYe/MemoFinal&type=Date)](https://star-history.com/#24kchengYe/MemoFinal&Date)

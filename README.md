@@ -557,6 +557,33 @@ MemoMind 赋予你的 AI **持久、本地、智能的记忆**。它不仅仅存
 
 ---
 
+### 🎬 可视化面板
+
+<div align="center">
+<img src="docs/demos/dashboard-overview.png" width="800" alt="MemoMind 面板 — 记忆流、指标卡、搜索过滤"/>
+</div>
+
+<table>
+<tr>
+<td align="center"><b>知识图谱</b></td>
+<td align="center"><b>时间线视图</b></td>
+</tr>
+<tr>
+<td><img src="docs/demos/graph-view.png" width="400" alt="实体关系图谱，悬浮显示记忆详情"/></td>
+<td><img src="docs/demos/timeline-view.png" width="400" alt="按日期分组的记忆时间线"/></td>
+</tr>
+<tr>
+<td align="center"><b>类型过滤</b></td>
+<td align="center"><b>手动写入记忆</b></td>
+</tr>
+<tr>
+<td><img src="docs/demos/filter-observation.png" width="400" alt="按 Observation 类型过滤"/></td>
+<td><img src="docs/demos/add-memory.png" width="400" alt="手动创建记忆的弹窗"/></td>
+</tr>
+</table>
+
+---
+
 ## 横向对比
 
 | 特性 | MemoMind | [MemOS](https://github.com/MemTensor/MemOS) | Mem0 | Claude Code 内置 |

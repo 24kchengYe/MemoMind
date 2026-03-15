@@ -1,0 +1,11 @@
+#!/bin/bash
+# MemoMind CLI wrapper - copy to /opt/memomind-env/memomind-cli.sh
+unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY all_proxy no_proxy
+export HOME=/home/memomind
+export PATH=/usr/local/bin:/usr/bin:/bin:/home/memomind/.local/bin
+export HF_ENDPOINT=https://hf-mirror.com
+export HINDSIGHT_API_LLM_API_KEY="your-api-key"                    # <-- Replace
+export HINDSIGHT_API_LLM_URL="https://api.mindcraft.com.cn/v1"     # Or OpenRouter URL
+export HINDSIGHT_API_LLM_MODEL="deepseek-chat"                     # Or qwen/qwen3.5-9b
+source /opt/memomind-env/bin/activate
+exec hindsight-embed "$@"

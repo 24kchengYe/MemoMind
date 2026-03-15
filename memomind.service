@@ -1,0 +1,13 @@
+[Unit]
+Description=MemoMind - Local Agent Memory Server
+After=network.target
+
+[Service]
+Type=simple
+User=memomind
+ExecStart=/opt/memomind-env/start-memomind.sh
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

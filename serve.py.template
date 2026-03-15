@@ -1,21 +1,65 @@
 """
-MemoMind Server - Hindsight embedded server with persistent memory.
-Copy this file to /opt/hindsight-env/serve.py and fill in your API key.
+MemoMind Server - embedded server with persistent memory.
+Copy this file to /opt/memomind-env/serve.py and configure your LLM API.
 """
-import time, signal, sys
+import os, sys
+
+# ── Clear inherited proxy vars ──
+for k in ["ALL_PROXY", "all_proxy", "HTTP_PROXY", "http_proxy", "HTTPS_PROXY", "https_proxy", "NO_PROXY", "no_proxy"]:
+    os.environ.pop(k, None)
+
+# ══════════════════════════════════════════════════════════════
+# LLM Configuration — choose ONE of the two modes below
+# ══════════════════════════════════════════════════════════════
+
+# ── Mode A: China Direct (no proxy needed) ──
+LLM_API_KEY = "your-api-key"                        # <-- Replace with your API key
+LLM_BASE_URL = "https://api.mindcraft.com.cn/v1"    # MindCraft / DeepSeek / SiliconFlow
+LLM_MODEL = "deepseek-chat"                         # Recommended: deepseek-chat, qwen-flash
+NEEDS_PROXY = False
+
+# ── Mode B: International APIs (uncomment below, comment out Mode A) ──
+# LLM_API_KEY = "sk-or-v1-YOUR_OPENROUTER_KEY"      # <-- Replace with your OpenRouter key
+# LLM_BASE_URL = "https://openrouter.ai/api/v1"
+# LLM_MODEL = "qwen/qwen3.5-9b"
+# NEEDS_PROXY = True
+
+# ══════════════════════════════════════════════════════════════
+
+if NEEDS_PROXY:
+    _win_host = "172.17.112.1"
+    try:
+        with open("/etc/resolv.conf") as f:
+            for line in f:
+                if line.startswith("nameserver"):
+                    _win_host = line.split()[1]
+                    break
+    except Exception:
+        pass
+    _proxy = f"http://{_win_host}:12080"
+    os.environ["HTTPS_PROXY"] = _proxy
+    os.environ["HTTP_PROXY"] = _proxy
+    os.environ["NO_PROXY"] = "localhost,127.0.0.1,::1,0.0.0.0"
+    print(f"[MemoMind] Proxy: {_proxy}", flush=True)
+else:
+    print("[MemoMind] Direct connection (no proxy)", flush=True)
+
+os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
+
+import time, signal
 from hindsight import HindsightServer
 
 server = HindsightServer(
     llm_provider="openai",
-    llm_model="qwen/qwen3.5-9b",                    # Cheap model for fact extraction
-    llm_api_key="sk-or-v1-YOUR_OPENROUTER_KEY",      # <-- Replace with your OpenRouter key
-    llm_base_url="https://openrouter.ai/api/v1",
+    llm_model=LLM_MODEL,
+    llm_api_key=LLM_API_KEY,
+    llm_base_url=LLM_BASE_URL,
     port=8888,
     host="0.0.0.0",
-    mcp_enabled=True
+    mcp_enabled=True,
 )
 server.start()
-print(f"MemoMind running at {server.url}", flush=True)
+print(f"MemoMind running at {server.url} (model: {LLM_MODEL})", flush=True)
 
 def shutdown(sig, frame):
     server.stop()

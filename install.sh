@@ -48,8 +48,8 @@ export HF_ENDPOINT=https://hf-mirror.com
 source /opt/memomind-env/bin/activate
 python3 -c \"
 from sentence_transformers import SentenceTransformer, CrossEncoder
-print('Downloading embedding model...')
-SentenceTransformer('BAAI/bge-small-en-v1.5')
+print('Downloading multilingual embedding model (bge-m3)...')
+SentenceTransformer('BAAI/bge-m3')
 print('Downloading reranker model...')
 CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
 print('Models ready!')

@@ -26,7 +26,9 @@
       "Bash(echo:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebSearch",
-      "mcp__memomind__update_bank"
+      "mcp__memomind__update_bank",
+      "mcp__memomind__clear_memories",
+      "mcp__memomind__create_bank"
     ]
   }
 }

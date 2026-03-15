@@ -122,7 +122,9 @@ You don't do anything — the AI handles it all.
 - **100% local** — PostgreSQL + embedding models in WSL2, nothing leaves your machine
 - **Zero manual effort** — AI autonomously decides what to remember and recall
 - **GPU-accelerated** — uses your NVIDIA GPU for fast local embeddings and reranking
+- **Multilingual** — bge-m3 embedding model supports 100+ languages (Chinese, English, Japanese, etc.)
 - **4-way hybrid retrieval** — semantic similarity + BM25 keyword + knowledge graph + temporal search
+- **Split LLM** — fast cheap model for fact extraction, stronger model for consolidation (better observation merging)
 - **Reflect capability** — AI can reason across all memories, not just retrieve
 - **Mental models** — builds evolving understanding of complex topics, not just isolated facts
 - **Metadata & filtering** — tag memories with custom metadata for per-project or per-user isolation
@@ -450,7 +452,7 @@ export HF_ENDPOINT=https://hf-mirror.com  # Use China mirror
 
 ## Changelog
 
-- **v1.3** (2026-03-15): Architecture diagrams (SVG); memory evolution via configurable consolidation mission; deployment audit with 14 fixes for fresh-clone install; template files updated (hindsight → memomind)
+- **v1.3** (2026-03-15): Multilingual embedding (bge-m3, 100+ languages); split LLM config (deepseek-chat for retain, gpt-4o-mini for consolidation); architecture diagrams (SVG); memory evolution via configurable consolidation mission; deployment audit with 14 fixes for fresh-clone install
 - **v1.2** (2026-03-15): Dashboard redesign (glassmorphism, memory cards, graph zoom/pan/tooltips, delete, animated counters, mobile responsive); README rewrite with demo GIF; dual LLM mode (China direct via MindCraft / international via proxy bridge); retain speed 50s → 13s
 - **v1.1** (2026-03-12): Web dashboard for visual memory browsing; auto-start on boot; MCP stdio transport
 - **v1.0** (2026-03-09): Initial release — retain/recall/reflect, PostgreSQL + pgvector, GPU-accelerated embeddings, cross-encoder reranking
@@ -660,7 +662,7 @@ NEEDS_PROXY = False
 
 ## 更新日志
 
-- **v1.3** (2026-03-15): 架构图（SVG）；记忆进化（可配置巩固 mission）；14 项部署审计修复；模板文件更新（hindsight → memomind）
+- **v1.3** (2026-03-15): 多语言嵌入模型（bge-m3，100+ 语言）；LLM 分离配置（retain 用 deepseek-chat，consolidation 用 gpt-4o-mini）；架构图（SVG）；记忆进化（可配置巩固 mission）；14 项部署审计修复
 - **v1.2** (2026-03-15): Dashboard 全面重新设计；README 重写 + demo GIF；双 LLM 模式（国内直连 MindCraft / 国际走代理桥接）；retain 速度 50s → 13s
 - **v1.1** (2026-03-12): 可视化记忆面板；开机自启；MCP stdio 传输
 - **v1.0** (2026-03-09): 首次发布——retain/recall/reflect、PostgreSQL + pgvector、GPU 加速嵌入、交叉编码器重排序

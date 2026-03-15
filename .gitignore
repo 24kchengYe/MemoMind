@@ -8,3 +8,6 @@ DockerDesktopInstaller.exe
 ubuntu-backup.tar
 __pycache__/
 *.pyc
+node_modules/
+package-lock.json
+tmp-frames/

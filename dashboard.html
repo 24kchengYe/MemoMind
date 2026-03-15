@@ -8,70 +8,137 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --surface-0: oklch(0.13 0.015 260);
-  --surface-1: oklch(0.16 0.015 260);
-  --surface-2: oklch(0.19 0.015 260);
+  --surface-0: oklch(0.11 0.015 260);
+  --surface-1: oklch(0.14 0.015 260);
+  --surface-2: oklch(0.18 0.015 260);
   --surface-3: oklch(0.22 0.015 260);
-  --text-1: oklch(0.92 0.01 260);
+  --surface-glass: oklch(0.16 0.015 260 / 0.7);
+  --text-1: oklch(0.93 0.008 260);
   --text-2: oklch(0.68 0.02 260);
-  --text-3: oklch(0.52 0.02 260);
-  --border: oklch(0.25 0.015 260);
+  --text-3: oklch(0.50 0.02 260);
+  --border: oklch(0.24 0.015 260);
+  --border-subtle: oklch(0.20 0.01 260);
   --world: oklch(0.72 0.16 155);
-  --world-bg: oklch(0.22 0.04 155);
+  --world-bg: oklch(0.20 0.05 155);
+  --world-glow: oklch(0.72 0.16 155 / 0.15);
   --experience: oklch(0.72 0.16 300);
-  --experience-bg: oklch(0.22 0.04 300);
+  --experience-bg: oklch(0.20 0.05 300);
+  --experience-glow: oklch(0.72 0.16 300 / 0.15);
   --observation: oklch(0.75 0.14 75);
-  --observation-bg: oklch(0.22 0.04 75);
+  --observation-bg: oklch(0.20 0.05 75);
+  --observation-glow: oklch(0.75 0.14 75 / 0.15);
   --accent: oklch(0.75 0.12 200);
-  --accent-dim: oklch(0.35 0.06 200);
+  --accent-dim: oklch(0.30 0.06 200);
+  --accent-glow: oklch(0.75 0.12 200 / 0.12);
   --danger: oklch(0.65 0.2 25);
+  --danger-bg: oklch(0.20 0.05 25);
+  --gradient-subtle: linear-gradient(135deg, oklch(0.16 0.02 260), oklch(0.14 0.01 280));
+  --gradient-accent: linear-gradient(135deg, oklch(0.75 0.12 200), oklch(0.70 0.14 220));
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --shadow-card: 0 2px 8px oklch(0 0 0 / 0.2), 0 1px 2px oklch(0 0 0 / 0.15);
+  --shadow-card-hover: 0 8px 24px oklch(0 0 0 / 0.3), 0 2px 6px oklch(0 0 0 / 0.2);
+  --shadow-glow: 0 0 20px oklch(0.75 0.12 200 / 0.1);
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'DM Sans', system-ui, sans-serif;
   background: var(--surface-0);
   color: var(--text-1);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
 
 /* ── Layout ── */
 .shell {
   display: grid;
-  grid-template-columns: 260px 1fr;
-  grid-template-rows: auto 1fr;
+  grid-template-columns: 280px 1fr;
   min-height: 100vh;
 }
+
+/* ── Mobile menu toggle ── */
+.mobile-toggle {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1000;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  color: var(--text-1);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-card);
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: oklch(0 0 0 / 0.5);
+  z-index: 998;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+.sidebar-overlay.visible { opacity: 1; }
 
 /* ── Sidebar ── */
 .sidebar {
   grid-row: 1 / -1;
-  background: var(--surface-1);
+  background: var(--gradient-subtle);
   border-right: 1px solid var(--border);
-  padding: 32px 0;
+  padding: 28px 0;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 999;
+  overflow-y: auto;
 }
 
 .logo {
   padding: 0 24px;
-  margin-bottom: 40px;
+  margin-bottom: 36px;
 }
 
 .logo h1 {
   font-family: 'Fraunces', serif;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
 }
 
 .logo h1 em {
   font-style: italic;
   font-weight: 300;
-  color: var(--accent);
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .logo p {
@@ -83,8 +150,8 @@ body {
 }
 
 .sidebar-section {
-  padding: 0 16px;
-  margin-bottom: 32px;
+  padding: 0 14px;
+  margin-bottom: 28px;
 }
 
 .sidebar-label {
@@ -93,44 +160,70 @@ body {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-3);
-  padding: 0 8px;
+  padding: 0 10px;
   margin-bottom: 8px;
 }
 
-.bank-list {
-  list-style: none;
-}
+.bank-list { list-style: none; }
 
 .bank-item {
-  padding: 8px 12px;
-  border-radius: 6px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 13px;
   color: var(--text-2);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  transition: background 0.15s, color 0.15s;
+  gap: 10px;
+  transition: all var(--transition-fast);
+  position: relative;
 }
 
-.bank-item:hover { background: var(--surface-2); color: var(--text-1); }
-.bank-item.active { background: var(--accent-dim); color: var(--accent); }
+.bank-item .bank-icon {
+  font-size: 15px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.bank-item .bank-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bank-item:hover {
+  background: var(--surface-2);
+  color: var(--text-1);
+  transform: translateX(2px);
+}
+
+.bank-item.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
 
 .bank-count {
-  font-size: 11px;
+  font-size: 10px;
   background: var(--surface-2);
-  padding: 1px 7px;
+  padding: 2px 8px;
   border-radius: 10px;
   color: var(--text-3);
   font-variant-numeric: tabular-nums;
+  font-weight: 500;
 }
 
-.bank-item.active .bank-count { background: oklch(0.3 0.06 200); color: var(--accent); }
+.bank-item.active .bank-count {
+  background: oklch(0.30 0.08 200);
+  color: var(--accent);
+}
 
 /* Status indicator */
 .status {
   margin-top: auto;
-  padding: 16px 24px;
+  padding: 16px 20px;
   border-top: 1px solid var(--border);
 }
 
@@ -143,73 +236,243 @@ body {
 }
 
 .status-dot {
-  width: 6px; height: 6px;
+  width: 8px; height: 8px;
   border-radius: 50%;
   background: var(--world);
   flex-shrink: 0;
+  position: relative;
 }
 
-.status-dot.offline { background: var(--danger); }
+.status-dot::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: var(--world);
+  opacity: 0.3;
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.3); opacity: 0; }
+}
+
+.status-dot.offline {
+  background: var(--danger);
+}
+.status-dot.offline::after {
+  background: var(--danger);
+  animation: none;
+}
 
 .endpoint-input {
   margin-top: 10px;
   width: 100%;
   background: var(--surface-0);
   border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: 6px 10px;
+  border-radius: 6px;
+  padding: 7px 10px;
   color: var(--text-2);
   font-size: 11px;
   font-family: 'DM Sans', sans-serif;
   outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.endpoint-input:focus { border-color: var(--accent); }
+.endpoint-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
 
 /* ── Main ── */
 .main {
-  padding: 32px 40px;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
   max-height: 100vh;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, oklch(0.16 0.03 200 / 0.15), transparent),
+    var(--surface-0);
+}
+
+/* ── Header / Toolbar ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 40px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.toolbar-title {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 500;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toolbar-title .bank-badge {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  letter-spacing: 0.03em;
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.btn-icon:hover {
+  background: var(--surface-3);
+  color: var(--text-1);
+  transform: scale(1.05);
+}
+
+.btn-icon.spinning {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.main-content {
+  padding: 28px 40px 40px;
+  flex: 1;
 }
 
 /* ── Metrics ── */
 .metrics {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1px;
-  background: var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 40px;
+  gap: 16px;
+  margin-bottom: 32px;
 }
 
 .metric {
-  background: var(--surface-1);
-  padding: 20px 24px;
+  background: var(--gradient-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px 22px;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-normal);
 }
+
+.metric::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--border);
+  transition: background var(--transition-normal);
+}
+
+.metric:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card);
+  border-color: var(--surface-3);
+}
+
+.metric:nth-child(1):hover::before { background: var(--accent); }
+.metric:nth-child(2):hover::before { background: var(--world); }
+.metric:nth-child(3):hover::before { background: var(--observation); }
+.metric:nth-child(4):hover::before { background: var(--experience); }
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.metric-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  background: var(--surface-2);
+}
+
+.metric-spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 24px;
+}
+
+.metric-spark .bar {
+  width: 3px;
+  border-radius: 1.5px;
+  background: var(--accent);
+  opacity: 0.4;
+  transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.metric:nth-child(2) .metric-spark .bar { background: var(--world); }
+.metric:nth-child(3) .metric-spark .bar { background: var(--observation); }
+.metric:nth-child(4) .metric-spark .bar { background: var(--experience); }
 
 .metric-value {
   font-family: 'Fraunces', serif;
-  font-size: 32px;
+  font-size: 34px;
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.02em;
+  transition: color var(--transition-normal);
 }
+
+.metric:nth-child(2) .metric-value { color: var(--world); }
+.metric:nth-child(3) .metric-value { color: var(--observation); }
+.metric:nth-child(4) .metric-value { color: var(--experience); }
 
 .metric-label {
   font-size: 11px;
   color: var(--text-3);
-  margin-top: 6px;
+  margin-top: 4px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  font-weight: 500;
 }
-
-.metric-value.healthy { color: var(--world); }
 
 /* ── Search ── */
 .search-area {
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 
 .search-bar {
@@ -217,18 +480,30 @@ body {
   gap: 0;
   background: var(--surface-1);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  transition: border-color 0.2s;
+  transition: all var(--transition-normal);
+  box-shadow: 0 2px 4px oklch(0 0 0 / 0.1);
 }
 
-.search-bar:focus-within { border-color: var(--accent); }
+.search-bar:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow), 0 4px 12px oklch(0 0 0 / 0.15);
+}
+
+.search-icon {
+  display: flex;
+  align-items: center;
+  padding-left: 18px;
+  font-size: 16px;
+  color: var(--text-3);
+}
 
 .search-input {
   flex: 1;
   background: transparent;
   border: none;
-  padding: 14px 18px;
+  padding: 16px 14px;
   color: var(--text-1);
   font-size: 14px;
   font-family: 'DM Sans', sans-serif;
@@ -238,118 +513,257 @@ body {
 .search-input::placeholder { color: var(--text-3); }
 
 .search-btn {
-  background: transparent;
+  background: var(--accent-dim);
   border: none;
   border-left: 1px solid var(--border);
-  padding: 14px 20px;
-  color: var(--text-3);
+  padding: 14px 24px;
+  color: var(--accent);
   cursor: pointer;
   font-size: 13px;
   font-family: 'DM Sans', sans-serif;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  transition: color 0.15s, background 0.15s;
+  transition: all var(--transition-fast);
 }
 
-.search-btn:hover { color: var(--accent); background: var(--surface-2); }
+.search-btn:hover {
+  background: oklch(0.35 0.08 200);
+  color: oklch(0.85 0.1 200);
+}
 
 .search-hint {
   font-size: 11px;
   color: var(--text-3);
-  margin-top: 8px;
-  padding-left: 2px;
+  margin-top: 10px;
+  padding-left: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.search-hint .result-count {
+  background: var(--accent-dim);
+  color: var(--accent);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 10px;
 }
 
 /* ── Tabs ── */
 .view-tabs {
   display: flex;
-  gap: 0;
+  gap: 4px;
   margin-bottom: 24px;
-  border-bottom: 1px solid var(--border);
+  background: var(--surface-1);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  border: 1px solid var(--border-subtle);
+  width: fit-content;
 }
 
 .view-tab {
-  padding: 10px 20px;
+  padding: 8px 20px;
   font-size: 13px;
   color: var(--text-3);
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  transition: color 0.15s;
-  background: none;
-  border-top: none;
-  border-left: none;
-  border-right: none;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
   font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .view-tab:hover { color: var(--text-2); }
-.view-tab.active { color: var(--text-1); border-bottom-color: var(--accent); }
+
+.view-tab.active {
+  color: var(--text-1);
+  background: var(--surface-3);
+  box-shadow: 0 1px 3px oklch(0 0 0 / 0.2);
+}
+
+.view-tab .tab-icon { font-size: 14px; }
 
 /* ── Memory Stream ── */
-.stream { display: flex; flex-direction: column; gap: 2px; }
-
-.memory {
+.stream {
   display: grid;
-  grid-template-columns: 80px 1fr auto;
-  gap: 16px;
-  padding: 16px 0;
-  border-bottom: 1px solid oklch(0.2 0.01 260);
-  align-items: start;
-  animation: fadeSlide 0.3s ease-out both;
+  gap: 12px;
 }
 
-@keyframes fadeSlide {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+.memory-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  transition: all var(--transition-normal);
+  animation: cardEntrance 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  position: relative;
+  overflow: hidden;
 }
 
-.memory:last-child { border-bottom: none; }
+.memory-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  transition: background var(--transition-fast);
+}
 
-.memory-type {
+.memory-card.type-world::before { background: var(--world); }
+.memory-card.type-experience::before { background: var(--experience); }
+.memory-card.type-observation::before { background: var(--observation); }
+
+.memory-card:hover {
+  border-color: var(--border);
+  box-shadow: var(--shadow-card);
+  transform: translateY(-1px);
+}
+
+.memory-card.type-world:hover { box-shadow: var(--shadow-card), 0 0 0 1px var(--world-glow); }
+.memory-card.type-experience:hover { box-shadow: var(--shadow-card), 0 0 0 1px var(--experience-glow); }
+.memory-card.type-observation:hover { box-shadow: var(--shadow-card), 0 0 0 1px var(--observation-glow); }
+
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.memory-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.memory-card-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.memory-type-badge {
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 3px 0;
-  text-align: right;
+  padding: 3px 10px;
+  border-radius: 20px;
+  line-height: 1.4;
 }
 
-.memory-type.world { color: var(--world); }
-.memory-type.experience { color: var(--experience); }
-.memory-type.observation { color: var(--observation); }
+.memory-type-badge.world {
+  background: var(--world-bg);
+  color: var(--world);
+}
+.memory-type-badge.experience {
+  background: var(--experience-bg);
+  color: var(--experience);
+}
+.memory-type-badge.observation {
+  background: var(--observation-bg);
+  color: var(--observation);
+}
 
-.memory-body {}
+.relevance-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.memory-card-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.memory-card:hover .memory-card-actions { opacity: 1; }
+
+.btn-delete {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.btn-delete:hover {
+  background: var(--danger-bg);
+  border-color: oklch(0.30 0.06 25);
+  color: var(--danger);
+}
 
 .memory-text {
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.65;
   color: var(--text-1);
 }
 
-.memory-detail {
-  display: flex;
-  gap: 16px;
-  margin-top: 6px;
-  flex-wrap: wrap;
+.memory-text mark {
+  background: oklch(0.75 0.12 200 / 0.2);
+  color: var(--accent);
+  padding: 0 2px;
+  border-radius: 2px;
 }
 
-.memory-detail span {
+.memory-footer {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.memory-footer span {
   font-size: 11px;
   color: var(--text-3);
 }
 
-.memory-detail .entity-tag {
-  color: var(--accent);
+.entity-tag {
+  color: var(--accent) !important;
+  background: var(--accent-dim);
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  transition: background var(--transition-fast);
+}
+
+.entity-tag:hover {
+  background: oklch(0.35 0.08 200);
 }
 
 .memory-date {
   font-size: 11px;
   color: var(--text-3);
   white-space: nowrap;
-  padding: 3px 0;
   font-variant-numeric: tabular-nums;
+  margin-left: auto;
 }
 
 /* ── Graph ── */
@@ -357,14 +771,105 @@ body {
   position: relative;
   background: var(--surface-1);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  height: 500px;
+  border-radius: var(--radius-lg);
+  height: 550px;
   overflow: hidden;
 }
 
 .graph-container canvas {
   width: 100%;
   height: 100%;
+  cursor: grab;
+}
+
+.graph-container canvas:active { cursor: grabbing; }
+
+.graph-controls {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.graph-controls button {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.graph-controls button:hover {
+  background: var(--surface-3);
+  color: var(--text-1);
+}
+
+.graph-tooltip {
+  position: absolute;
+  padding: 10px 14px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-1);
+  max-width: 260px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  box-shadow: var(--shadow-card);
+  z-index: 10;
+  line-height: 1.5;
+}
+
+.graph-tooltip.visible { opacity: 1; }
+
+.graph-tooltip .tt-type {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.graph-tooltip .tt-type.world { color: var(--world); }
+.graph-tooltip .tt-type.experience { color: var(--experience); }
+.graph-tooltip .tt-type.observation { color: var(--observation); }
+
+.graph-legend {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  gap: 16px;
+  padding: 8px 14px;
+  background: var(--surface-glass);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.graph-legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.graph-legend .legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
 }
 
 .graph-empty {
@@ -377,42 +882,218 @@ body {
   font-size: 13px;
 }
 
-/* ── States ── */
+/* ── Empty state ── */
 .empty-state {
   text-align: center;
   padding: 60px 20px;
   color: var(--text-3);
 }
 
-.empty-state p { font-size: 14px; line-height: 1.6; }
+.empty-state-art {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 24px;
+  position: relative;
+  opacity: 0.5;
+}
+
+/* CSS brain/neuron art */
+.neuron-art {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.neuron-art .core {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.6;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: corePulse 3s ease-in-out infinite;
+}
+
+@keyframes corePulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+  50% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.8; }
+}
+
+.neuron-art .dendrite {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  opacity: 0.2;
+}
+
+.neuron-art .d1 { width: 50px; height: 50px; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: dendritePulse 3s 0.2s ease-in-out infinite; }
+.neuron-art .d2 { width: 80px; height: 80px; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: dendritePulse 3s 0.5s ease-in-out infinite; }
+.neuron-art .d3 { width: 110px; height: 110px; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: dendritePulse 3s 0.8s ease-in-out infinite; }
+
+@keyframes dendritePulse {
+  0%, 100% { opacity: 0.15; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.3; transform: translate(-50%, -50%) scale(1.05); }
+}
+
+.neuron-art .synapse {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.3;
+}
+
+.neuron-art .s1 { top: 15%; left: 25%; animation: synapseBlink 2s 0.0s ease-in-out infinite; }
+.neuron-art .s2 { top: 25%; left: 75%; animation: synapseBlink 2s 0.3s ease-in-out infinite; }
+.neuron-art .s3 { top: 70%; left: 20%; animation: synapseBlink 2s 0.6s ease-in-out infinite; }
+.neuron-art .s4 { top: 80%; left: 70%; animation: synapseBlink 2s 0.9s ease-in-out infinite; }
+.neuron-art .s5 { top: 40%; left: 10%; animation: synapseBlink 2s 1.2s ease-in-out infinite; }
+.neuron-art .s6 { top: 55%; left: 85%; animation: synapseBlink 2s 1.5s ease-in-out infinite; }
+
+@keyframes synapseBlink {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.4); }
+}
+
+.empty-state p { font-size: 15px; line-height: 1.6; color: var(--text-2); }
 .empty-state .hint { font-size: 12px; margin-top: 8px; color: var(--text-3); opacity: 0.7; }
 
 .error-banner {
-  background: oklch(0.2 0.04 25);
-  border: 1px solid oklch(0.3 0.08 25);
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-bottom: 24px;
+  background: var(--danger-bg);
+  border: 1px solid oklch(0.30 0.08 25);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  margin-bottom: 20px;
   font-size: 13px;
   color: var(--danger);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: cardEntrance 0.3s ease-out;
 }
+
+.error-banner .error-icon { font-size: 16px; }
+
+/* ── Delete confirm modal ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: oklch(0 0 0 / 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  animation: fadeIn 0.15s ease-out forwards;
+}
+
+@keyframes fadeIn { to { opacity: 1; } }
+
+.modal-box {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  max-width: 380px;
+  width: 90%;
+  box-shadow: 0 16px 48px oklch(0 0 0 / 0.4);
+  animation: modalSlide 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes modalSlide {
+  from { transform: translateY(10px) scale(0.96); }
+  to { transform: translateY(0) scale(1); }
+}
+
+.modal-title {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.modal-text {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.modal-btn {
+  padding: 8px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 1px solid var(--border);
+}
+
+.modal-btn.cancel {
+  background: var(--surface-3);
+  color: var(--text-2);
+}
+.modal-btn.cancel:hover { background: var(--surface-2); color: var(--text-1); }
+
+.modal-btn.danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: white;
+}
+.modal-btn.danger:hover { opacity: 0.9; }
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
+  .mobile-toggle { display: flex; }
+
   .shell { grid-template-columns: 1fr; }
-  .sidebar { display: none; }
-  .main { padding: 20px; }
-  .metrics { grid-template-columns: repeat(2, 1fr); }
-  .memory { grid-template-columns: 60px 1fr; }
-  .memory-date { grid-column: 2; margin-top: -4px; }
+
+  .sidebar {
+    position: fixed;
+    left: -300px;
+    top: 0;
+    bottom: 0;
+    width: 280px;
+    transition: left var(--transition-normal);
+    box-shadow: 4px 0 24px oklch(0 0 0 / 0.3);
+  }
+
+  .sidebar.open { left: 0; }
+
+  .toolbar { padding: 16px 20px; padding-left: 64px; }
+  .main-content { padding: 20px; }
+  .metrics { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .memory-card { padding: 16px; }
+  .graph-container { height: 350px; }
+}
+
+@media (max-width: 480px) {
+  .metrics { grid-template-columns: 1fr; }
+  .search-btn { padding: 14px 16px; font-size: 12px; }
 }
 </style>
 </head>
 <body>
 
+<!-- Mobile menu button -->
+<button class="mobile-toggle" onclick="toggleSidebar()" aria-label="Toggle menu">&#9776;</button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
 <div class="shell">
   <!-- Sidebar -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="logo">
       <h1>Memo<em>Mind</em></h1>
       <p>Memory Observatory</p>
@@ -421,7 +1102,7 @@ body {
     <div class="sidebar-section">
       <div class="sidebar-label">Memory Banks</div>
       <ul class="bank-list" id="bankList">
-        <li class="bank-item active">loading...</li>
+        <li class="bank-item"><span class="bank-icon">&#8987;</span><span class="bank-name">Loading...</span></li>
       </ul>
     </div>
 
@@ -437,62 +1118,133 @@ body {
 
   <!-- Main -->
   <main class="main">
-    <div id="errorBanner"></div>
-
-    <!-- Metrics -->
-    <div class="metrics" id="metrics">
-      <div class="metric">
-        <div class="metric-value" id="mTotal">—</div>
-        <div class="metric-label">Memories</div>
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="toolbar-title">
+        <span id="toolbarBankName">Memory Stream</span>
+        <span class="bank-badge" id="toolbarBankBadge">default</span>
       </div>
-      <div class="metric">
-        <div class="metric-value" id="mWorld">—</div>
-        <div class="metric-label">World Facts</div>
-      </div>
-      <div class="metric">
-        <div class="metric-value" id="mObs">—</div>
-        <div class="metric-label">Observations</div>
-      </div>
-      <div class="metric">
-        <div class="metric-value" id="mDocs">—</div>
-        <div class="metric-label">Documents</div>
+      <div class="toolbar-actions">
+        <button class="btn-icon" onclick="doRefresh(this)" title="Refresh">&#8635;</button>
       </div>
     </div>
 
-    <!-- Search -->
-    <div class="search-area">
-      <div class="search-bar">
-        <input class="search-input" id="searchInput" type="text"
-               placeholder="What does your AI know about you?"
-               onkeydown="if(event.key==='Enter')doSearch()">
-        <button class="search-btn" onclick="doSearch()">Recall</button>
+    <div class="main-content">
+      <div id="errorBanner"></div>
+
+      <!-- Metrics -->
+      <div class="metrics" id="metrics">
+        <div class="metric">
+          <div class="metric-header">
+            <div class="metric-icon">&#129504;</div>
+            <div class="metric-spark" id="sparkTotal"></div>
+          </div>
+          <div class="metric-value" id="mTotal">&mdash;</div>
+          <div class="metric-label">Memories</div>
+        </div>
+        <div class="metric">
+          <div class="metric-header">
+            <div class="metric-icon">&#127758;</div>
+            <div class="metric-spark" id="sparkWorld"></div>
+          </div>
+          <div class="metric-value" id="mWorld">&mdash;</div>
+          <div class="metric-label">World Facts</div>
+        </div>
+        <div class="metric">
+          <div class="metric-header">
+            <div class="metric-icon">&#128065;</div>
+            <div class="metric-spark" id="sparkObs"></div>
+          </div>
+          <div class="metric-value" id="mObs">&mdash;</div>
+          <div class="metric-label">Observations</div>
+        </div>
+        <div class="metric">
+          <div class="metric-header">
+            <div class="metric-icon">&#128196;</div>
+            <div class="metric-spark" id="sparkDocs"></div>
+          </div>
+          <div class="metric-value" id="mDocs">&mdash;</div>
+          <div class="metric-label">Documents</div>
+        </div>
       </div>
-      <div class="search-hint" id="searchHint">Semantic search across all memories — meaning, not just keywords</div>
-    </div>
 
-    <!-- Tabs -->
-    <div class="view-tabs">
-      <button class="view-tab active" onclick="switchTab('stream',this)">Stream</button>
-      <button class="view-tab" onclick="switchTab('graph',this)">Graph</button>
-    </div>
+      <!-- Search -->
+      <div class="search-area">
+        <div class="search-bar">
+          <div class="search-icon">&#128269;</div>
+          <input class="search-input" id="searchInput" type="text"
+                 placeholder="What does your AI know about you?"
+                 onkeydown="if(event.key==='Enter')doSearch()">
+          <button class="search-btn" onclick="doSearch()">Recall</button>
+        </div>
+        <div class="search-hint" id="searchHint">Semantic search across all memories &mdash; meaning, not just keywords</div>
+      </div>
 
-    <!-- Stream View -->
-    <div id="streamView">
-      <div class="stream" id="memoryStream">
-        <div class="empty-state">
-          <p>Connecting to MemoMind...</p>
+      <!-- Tabs -->
+      <div class="view-tabs">
+        <button class="view-tab active" onclick="switchTab('stream',this)">
+          <span class="tab-icon">&#9776;</span> Stream
+        </button>
+        <button class="view-tab" onclick="switchTab('graph',this)">
+          <span class="tab-icon">&#11042;</span> Graph
+        </button>
+      </div>
+
+      <!-- Stream View -->
+      <div id="streamView">
+        <div class="stream" id="memoryStream">
+          <div class="empty-state">
+            <div class="empty-state-art">
+              <div class="neuron-art">
+                <div class="core"></div>
+                <div class="dendrite d1"></div>
+                <div class="dendrite d2"></div>
+                <div class="dendrite d3"></div>
+                <div class="synapse s1"></div>
+                <div class="synapse s2"></div>
+                <div class="synapse s3"></div>
+                <div class="synapse s4"></div>
+                <div class="synapse s5"></div>
+                <div class="synapse s6"></div>
+              </div>
+            </div>
+            <p>Connecting to MemoMind...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Graph View -->
+      <div id="graphView" style="display:none">
+        <div class="graph-container">
+          <canvas id="graphCanvas"></canvas>
+          <div class="graph-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--world)"></div> World</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--experience)"></div> Experience</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--observation)"></div> Observation</div>
+          </div>
+          <div class="graph-controls">
+            <button onclick="graphZoom(1.2)" title="Zoom in">+</button>
+            <button onclick="graphZoom(0.8)" title="Zoom out">&minus;</button>
+            <button onclick="graphReset()" title="Reset view">&#8634;</button>
+          </div>
+          <div class="graph-tooltip" id="graphTooltip"></div>
+          <div class="graph-empty" id="graphEmpty">Loading graph data...</div>
         </div>
       </div>
     </div>
-
-    <!-- Graph View -->
-    <div id="graphView" style="display:none">
-      <div class="graph-container">
-        <canvas id="graphCanvas"></canvas>
-        <div class="graph-empty" id="graphEmpty">Loading graph data...</div>
-      </div>
-    </div>
   </main>
+</div>
+
+<!-- Delete confirmation modal (hidden by default) -->
+<div class="modal-overlay" id="deleteModal" style="display:none">
+  <div class="modal-box">
+    <div class="modal-title">Delete Memory</div>
+    <div class="modal-text" id="deleteModalText">Are you sure you want to delete this memory? This action cannot be undone.</div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeDeleteModal()">Cancel</button>
+      <button class="modal-btn danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -503,6 +1255,14 @@ let graphData = null;
 let graphNodes = [];
 let graphEdges = [];
 let graphSim = null;
+let graphScale = 1;
+let graphOffsetX = 0, graphOffsetY = 0;
+let graphDragging = false;
+let graphLastMouse = { x: 0, y: 0 };
+let simNodes = [], simEdges = [];
+let animFrameId = null;
+let deleteTarget = null;
+let sparkHistory = { total: [], world: [], obs: [], docs: [] };
 
 function base() { return document.getElementById('baseUrl').value.replace(/\/+$/, ''); }
 
@@ -520,7 +1280,7 @@ async function api(path, opts = {}) {
 
 function showError(msg) {
   document.getElementById('errorBanner').innerHTML = msg
-    ? `<div class="error-banner">${esc(msg)}</div>` : '';
+    ? `<div class="error-banner"><span class="error-icon">&#9888;</span> ${esc(msg)}</div>` : '';
 }
 
 function esc(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
@@ -530,10 +1290,60 @@ function fmtDate(d) {
   const dt = new Date(d);
   const now = new Date();
   const diff = now - dt;
+  if (diff < 60000) return 'just now';
   if (diff < 3600000) return `${Math.floor(diff/60000)}m ago`;
   if (diff < 86400000) return `${Math.floor(diff/3600000)}h ago`;
   if (diff < 604800000) return `${Math.floor(diff/86400000)}d ago`;
   return dt.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+}
+
+// ── Animated counter ──
+function animateCounter(el, target) {
+  const start = parseInt(el.textContent) || 0;
+  if (start === target) { el.textContent = target; return; }
+  const duration = 600;
+  const startTime = performance.now();
+  function step(now) {
+    const progress = Math.min((now - startTime) / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(start + (target - start) * ease);
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// ── Sparklines ──
+function updateSparkline(containerId, value) {
+  const key = containerId.replace('spark', '').toLowerCase();
+  const histKey = key === 'total' ? 'total' : key === 'world' ? 'world' : key === 'obs' ? 'obs' : 'docs';
+  const history = sparkHistory[histKey];
+  history.push(value);
+  if (history.length > 7) history.shift();
+
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const max = Math.max(...history, 1);
+  container.innerHTML = history.map(v => {
+    const h = Math.max(3, (v / max) * 24);
+    return `<div class="bar" style="height:${h}px"></div>`;
+  }).join('');
+}
+
+// ── Mobile sidebar toggle ──
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const isOpen = sidebar.classList.contains('open');
+  sidebar.classList.toggle('open');
+  overlay.style.display = isOpen ? 'none' : 'block';
+  setTimeout(() => overlay.classList.toggle('visible', !isOpen), 10);
+}
+
+// ── Refresh ──
+async function doRefresh(btn) {
+  if (btn) btn.classList.add('spinning');
+  await loadAll();
+  if (btn) setTimeout(() => btn.classList.remove('spinning'), 500);
 }
 
 // ── Load ──
@@ -552,51 +1362,144 @@ async function loadAll() {
     document.getElementById('statusDot').classList.add('offline');
     document.getElementById('statusText').textContent = 'Disconnected';
     showError(`Cannot reach MemoMind at ${base()}. Is the service running?`);
-    document.getElementById('memoryStream').innerHTML =
-      '<div class="empty-state"><p>Not connected</p><div class="hint">Start MemoMind service in WSL, then refresh</div></div>';
+    document.getElementById('memoryStream').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-art">
+          <div class="neuron-art">
+            <div class="core" style="background:var(--danger)"></div>
+            <div class="dendrite d1" style="border-color:var(--danger)"></div>
+            <div class="dendrite d2" style="border-color:var(--danger)"></div>
+            <div class="dendrite d3" style="border-color:var(--danger)"></div>
+          </div>
+        </div>
+        <p>Not connected</p>
+        <div class="hint">Start MemoMind service in WSL, then refresh</div>
+      </div>`;
   }
 }
 
 function renderBanks() {
   const el = document.getElementById('bankList');
   if (allBanks.length === 0) {
-    el.innerHTML = '<li class="bank-item" style="color:var(--text-3)">No banks</li>';
+    el.innerHTML = '<li class="bank-item" style="color:var(--text-3)"><span class="bank-icon">&#128193;</span><span class="bank-name">No banks</span></li>';
     return;
   }
-  el.innerHTML = allBanks.map(b => `
+  const icons = { default: '&#129504;', personal: '&#128100;', work: '&#128188;', code: '&#128187;', notes: '&#128221;' };
+  el.innerHTML = allBanks.map(b => {
+    const icon = icons[b.bank_id] || '&#128218;';
+    return `
     <li class="bank-item ${b.bank_id === currentBank ? 'active' : ''}"
         onclick="selectBank('${esc(b.bank_id)}')">
-      ${esc(b.name || b.bank_id)}
-      <span class="bank-count" id="bc-${esc(b.bank_id)}">·</span>
-    </li>
-  `).join('');
+      <span class="bank-icon">${icon}</span>
+      <span class="bank-name">${esc(b.name || b.bank_id)}</span>
+      <span class="bank-count" id="bc-${esc(b.bank_id)}">&middot;</span>
+    </li>`;
+  }).join('');
 }
 
 async function selectBank(id) {
   currentBank = id;
   renderBanks();
+  document.getElementById('toolbarBankBadge').textContent = id;
   await loadBank();
+  // Close sidebar on mobile
+  if (window.innerWidth <= 768) toggleSidebar();
 }
 
 async function loadBank() {
   try {
     const stats = await api(`/v1/default/banks/${currentBank}/stats`);
-    const counts = stats.node_counts || {};
-    const total = Object.values(counts).reduce((a, b) => a + b, 0);
+    const counts = stats.nodes_by_fact_type || stats.node_counts || {};
+    const total = stats.total_nodes || Object.values(counts).reduce((a, b) => a + b, 0);
 
-    document.getElementById('mTotal').textContent = total;
-    document.getElementById('mWorld').textContent = counts.world || 0;
-    document.getElementById('mObs').textContent = counts.observation || 0;
-    document.getElementById('mDocs').textContent = stats.total_documents || 0;
+    animateCounter(document.getElementById('mTotal'), total);
+    animateCounter(document.getElementById('mWorld'), counts.world || 0);
+    animateCounter(document.getElementById('mObs'), counts.observation || 0);
+    animateCounter(document.getElementById('mDocs'), stats.total_documents || 0);
+
+    updateSparkline('sparkTotal', total);
+    updateSparkline('sparkWorld', counts.world || 0);
+    updateSparkline('sparkObs', counts.observation || 0);
+    updateSparkline('sparkDocs', stats.total_documents || 0);
 
     // Update bank count badge
     const badge = document.getElementById(`bc-${currentBank}`);
     if (badge) badge.textContent = total;
 
+    // Update toolbar
+    const bankObj = allBanks.find(b => b.bank_id === currentBank);
+    document.getElementById('toolbarBankName').textContent = bankObj ? (bankObj.name || bankObj.bank_id) : currentBank;
+    document.getElementById('toolbarBankBadge').textContent = currentBank;
+
     await loadMemories();
   } catch (e) {
     showError(e.message);
   }
+}
+
+function neuronEmptyHTML(message, hint) {
+  return `
+    <div class="empty-state">
+      <div class="empty-state-art">
+        <div class="neuron-art">
+          <div class="core"></div>
+          <div class="dendrite d1"></div>
+          <div class="dendrite d2"></div>
+          <div class="dendrite d3"></div>
+          <div class="synapse s1"></div>
+          <div class="synapse s2"></div>
+          <div class="synapse s3"></div>
+          <div class="synapse s4"></div>
+          <div class="synapse s5"></div>
+          <div class="synapse s6"></div>
+        </div>
+      </div>
+      <p>${esc(message)}</p>
+      ${hint ? `<div class="hint">${esc(hint)}</div>` : ''}
+    </div>`;
+}
+
+function renderMemoryCard(m, i, searchQuery) {
+  const type = m.fact_type || 'world';
+  let text = esc(m.text);
+
+  // Highlight search terms
+  if (searchQuery) {
+    const words = searchQuery.split(/\s+/).filter(w => w.length > 2);
+    words.forEach(w => {
+      const regex = new RegExp(`(${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+      text = text.replace(regex, '<mark>$1</mark>');
+    });
+  }
+
+  const entities = Array.isArray(m.entities) ? m.entities.map(e => {
+    const name = typeof e === 'object' ? (e.name || e.canonical_name || JSON.stringify(e)) : e;
+    return `<span class="entity-tag">${esc(name)}</span>`;
+  }).join('') : '';
+
+  const relevance = m.relevance_score != null
+    ? `<span class="relevance-badge">${(m.relevance_score * 100).toFixed(0)}%</span>` : '';
+
+  const memoryId = m.id || m.memory_id || '';
+
+  return `
+    <div class="memory-card type-${esc(type)}" style="animation-delay:${Math.min(i * 0.05, 0.8)}s" data-id="${esc(memoryId)}">
+      <div class="memory-card-header">
+        <div class="memory-card-left">
+          <span class="memory-type-badge ${esc(type)}">${esc(type)}</span>
+          ${relevance}
+        </div>
+        <div class="memory-card-actions">
+          ${memoryId ? `<button class="btn-delete" onclick="showDeleteModal('${esc(memoryId)}')" title="Delete memory">&#128465;</button>` : ''}
+        </div>
+      </div>
+      <div class="memory-text">${text}</div>
+      <div class="memory-footer">
+        ${m.context ? `<span>${esc(m.context)}</span>` : ''}
+        ${entities}
+        <span class="memory-date">${fmtDate(m.date)}</span>
+      </div>
+    </div>`;
 }
 
 async function loadMemories() {
@@ -606,42 +1509,24 @@ async function loadMemories() {
     const items = res.items || [];
 
     if (items.length === 0) {
-      stream.innerHTML = `
-        <div class="empty-state">
-          <p>No memories yet</p>
-          <div class="hint">Start a conversation in Claude Code — MemoMind will automatically extract and store knowledge</div>
-        </div>`;
+      stream.innerHTML = neuronEmptyHTML('No memories yet', 'Start a conversation in Claude Code \u2014 MemoMind will automatically extract and store knowledge');
       return;
     }
 
-    // Sort by date descending
     items.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-
-    stream.innerHTML = items.map((m, i) => `
-      <div class="memory" style="animation-delay:${Math.min(i * 0.03, 0.5)}s">
-        <div class="memory-type ${esc(m.fact_type)}">${esc(m.fact_type)}</div>
-        <div class="memory-body">
-          <div class="memory-text">${esc(m.text)}</div>
-          <div class="memory-detail">
-            ${m.context ? `<span>${esc(m.context)}</span>` : ''}
-            ${(m.entities || []).map(e => `<span class="entity-tag">${esc(e.name || e)}</span>`).join('')}
-          </div>
-        </div>
-        <div class="memory-date">${fmtDate(m.date)}</div>
-      </div>
-    `).join('');
+    stream.innerHTML = items.map((m, i) => renderMemoryCard(m, i, null)).join('');
   } catch (e) {
-    stream.innerHTML = `<div class="empty-state"><p>${esc(e.message)}</p></div>`;
+    stream.innerHTML = neuronEmptyHTML(e.message);
   }
 }
 
 async function doSearch() {
   const query = document.getElementById('searchInput').value.trim();
-  if (!query) { loadMemories(); return; }
+  if (!query) { loadMemories(); document.getElementById('searchHint').innerHTML = 'Semantic search across all memories &mdash; meaning, not just keywords'; return; }
 
   const stream = document.getElementById('memoryStream');
   const hint = document.getElementById('searchHint');
-  stream.innerHTML = '<div class="empty-state"><p style="color:var(--text-3)">Searching...</p></div>';
+  stream.innerHTML = `<div class="empty-state"><p style="color:var(--text-3)">Searching...</p></div>`;
 
   try {
     const res = await fetch(base() + `/v1/default/banks/${currentBank}/memories/recall`, {
@@ -652,27 +1537,54 @@ async function doSearch() {
     const data = await res.json();
     const results = data.results || [];
 
-    hint.textContent = `${results.length} memor${results.length === 1 ? 'y' : 'ies'} found for "${query}"`;
+    hint.innerHTML = `<span class="result-count">${results.length}</span> memor${results.length === 1 ? 'y' : 'ies'} found for "${esc(query)}"`;
 
     if (results.length === 0) {
-      stream.innerHTML = '<div class="empty-state"><p>No matching memories</p><div class="hint">Try different phrasing — recall uses semantic understanding</div></div>';
+      stream.innerHTML = neuronEmptyHTML('No matching memories', 'Try different phrasing \u2014 recall uses semantic understanding');
       return;
     }
 
-    stream.innerHTML = results.map((m, i) => `
-      <div class="memory" style="animation-delay:${Math.min(i * 0.03, 0.5)}s">
-        <div class="memory-type ${esc(m.fact_type)}">${esc(m.fact_type)}</div>
-        <div class="memory-body">
-          <div class="memory-text">${esc(m.text)}</div>
-          <div class="memory-detail">
-            ${(m.entities || []).map(e => `<span class="entity-tag">${esc(e.name || e)}</span>`).join('')}
-          </div>
-        </div>
-        <div class="memory-date">${fmtDate(m.date)}</div>
-      </div>
-    `).join('');
+    stream.innerHTML = results.map((m, i) => renderMemoryCard(m, i, query)).join('');
   } catch (e) {
-    stream.innerHTML = `<div class="empty-state"><p>${esc(e.message)}</p></div>`;
+    stream.innerHTML = neuronEmptyHTML(e.message);
+  }
+}
+
+// ── Delete memory ──
+function showDeleteModal(memoryId) {
+  deleteTarget = memoryId;
+  document.getElementById('deleteModal').style.display = '';
+}
+
+function closeDeleteModal() {
+  deleteTarget = null;
+  document.getElementById('deleteModal').style.display = 'none';
+}
+
+async function confirmDelete() {
+  if (!deleteTarget) return;
+  const memoryId = deleteTarget;
+  closeDeleteModal();
+
+  try {
+    await fetch(base() + `/v1/default/banks/${currentBank}/memories/${memoryId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    // Animate card removal
+    const card = document.querySelector(`.memory-card[data-id="${memoryId}"]`);
+    if (card) {
+      card.style.transition = 'all 0.3s ease-out';
+      card.style.opacity = '0';
+      card.style.transform = 'translateX(20px) scale(0.95)';
+      setTimeout(() => card.remove(), 300);
+    }
+
+    // Reload stats
+    setTimeout(() => loadBank(), 400);
+  } catch (e) {
+    showError('Failed to delete memory: ' + e.message);
   }
 }
 
@@ -685,11 +1597,27 @@ function switchTab(tab, el) {
   if (tab === 'graph') loadGraph();
 }
 
-// ── Graph (force-directed) ──
+// ── Graph (force-directed with zoom/pan/tooltip) ──
+let graphW = 0, graphH = 0, graphCtx = null, graphCanvas = null;
+
+function graphZoom(factor) {
+  graphScale *= factor;
+  graphScale = Math.max(0.3, Math.min(3, graphScale));
+}
+
+function graphReset() {
+  graphScale = 1;
+  graphOffsetX = 0;
+  graphOffsetY = 0;
+}
+
 async function loadGraph() {
   const empty = document.getElementById('graphEmpty');
-  const canvas = document.getElementById('graphCanvas');
-  const ctx = canvas.getContext('2d');
+  graphCanvas = document.getElementById('graphCanvas');
+  graphCtx = graphCanvas.getContext('2d');
+  const tooltip = document.getElementById('graphTooltip');
+
+  if (animFrameId) cancelAnimationFrame(animFrameId);
 
   try {
     const data = await api(`/v1/default/banks/${currentBank}/graph`);
@@ -697,50 +1625,97 @@ async function loadGraph() {
     const edges = data.edges || [];
 
     if (nodes.length === 0) {
-      empty.textContent = 'No graph data yet — memories need entity relationships to form a graph';
+      empty.textContent = 'No graph data yet \u2014 memories need entity relationships to form a graph';
       empty.style.display = '';
       return;
     }
     empty.style.display = 'none';
 
-    // Setup canvas
-    const rect = canvas.parentElement.getBoundingClientRect();
-    canvas.width = rect.width * 2;
-    canvas.height = rect.height * 2;
-    ctx.scale(2, 2);
-    const W = rect.width, H = rect.height;
+    const rect = graphCanvas.parentElement.getBoundingClientRect();
+    graphCanvas.width = rect.width * 2;
+    graphCanvas.height = rect.height * 2;
+    graphCtx.scale(2, 2);
+    graphW = rect.width;
+    graphH = rect.height;
 
-    // Build simulation
     const nodeMap = {};
-    const simNodes = nodes.map((n, i) => {
+    simNodes = nodes.map((n) => {
       const sn = {
         id: n.id,
-        label: (n.text || '').slice(0, 60),
+        label: (n.text || '').slice(0, 80),
+        fullText: n.text || '',
         type: n.fact_type || 'world',
-        x: W/2 + (Math.random() - 0.5) * W * 0.6,
-        y: H/2 + (Math.random() - 0.5) * H * 0.6,
+        x: graphW/2 + (Math.random() - 0.5) * graphW * 0.6,
+        y: graphH/2 + (Math.random() - 0.5) * graphH * 0.6,
         vx: 0, vy: 0,
-        radius: Math.min(5 + (n.mention_count || 1) * 1.5, 14)
+        radius: Math.min(5 + (n.mention_count || 1) * 1.5, 16)
       };
       nodeMap[n.id] = sn;
       return sn;
     });
 
-    const simEdges = edges.filter(e => nodeMap[e.source] && nodeMap[e.target]).map(e => ({
+    simEdges = edges.filter(e => nodeMap[e.source] && nodeMap[e.target]).map(e => ({
       source: nodeMap[e.source],
       target: nodeMap[e.target],
       type: e.link_type || ''
     }));
 
-    const colors = { world: getComputedStyle(document.documentElement).getPropertyValue('--world').trim() || '#4ade80',
-                     experience: getComputedStyle(document.documentElement).getPropertyValue('--experience').trim() || '#c084fc',
-                     observation: getComputedStyle(document.documentElement).getPropertyValue('--observation').trim() || '#fbbf24' };
+    const colorMap = {
+      world: getComputedStyle(document.documentElement).getPropertyValue('--world').trim() || '#4ade80',
+      experience: getComputedStyle(document.documentElement).getPropertyValue('--experience').trim() || '#c084fc',
+      observation: getComputedStyle(document.documentElement).getPropertyValue('--observation').trim() || '#fbbf24'
+    };
 
-    function getColor(type) { return colors[type] || colors.world; }
+    function getColor(type) { return colorMap[type] || colorMap.world; }
 
-    // Simple force simulation
+    // Mouse events for pan + tooltip
+    let hoveredNode = null;
+
+    graphCanvas.onmousedown = (e) => { graphDragging = true; graphLastMouse = { x: e.clientX, y: e.clientY }; };
+    graphCanvas.onmouseup = () => { graphDragging = false; };
+    graphCanvas.onmouseleave = () => { graphDragging = false; tooltip.classList.remove('visible'); };
+
+    graphCanvas.onmousemove = (e) => {
+      if (graphDragging) {
+        graphOffsetX += e.clientX - graphLastMouse.x;
+        graphOffsetY += e.clientY - graphLastMouse.y;
+        graphLastMouse = { x: e.clientX, y: e.clientY };
+        return;
+      }
+
+      const canvasRect = graphCanvas.getBoundingClientRect();
+      const mx = (e.clientX - canvasRect.left - graphOffsetX) / graphScale;
+      const my = (e.clientY - canvasRect.top - graphOffsetY) / graphScale;
+
+      hoveredNode = null;
+      for (const n of simNodes) {
+        const dx = n.x - mx, dy = n.y - my;
+        if (dx*dx + dy*dy < (n.radius + 4) * (n.radius + 4)) {
+          hoveredNode = n;
+          break;
+        }
+      }
+
+      if (hoveredNode) {
+        tooltip.innerHTML = `<div class="tt-type ${hoveredNode.type}">${hoveredNode.type}</div>${esc(hoveredNode.fullText.slice(0, 200))}`;
+        tooltip.style.left = (e.clientX - canvasRect.left + 14) + 'px';
+        tooltip.style.top = (e.clientY - canvasRect.top - 10) + 'px';
+        tooltip.classList.add('visible');
+        graphCanvas.style.cursor = 'pointer';
+      } else {
+        tooltip.classList.remove('visible');
+        graphCanvas.style.cursor = graphDragging ? 'grabbing' : 'grab';
+      }
+    };
+
+    graphCanvas.onwheel = (e) => {
+      e.preventDefault();
+      const factor = e.deltaY < 0 ? 1.1 : 0.9;
+      graphScale *= factor;
+      graphScale = Math.max(0.3, Math.min(3, graphScale));
+    };
+
     function tick() {
-      // Repulsion
       for (let i = 0; i < simNodes.length; i++) {
         for (let j = i + 1; j < simNodes.length; j++) {
           const a = simNodes[i], b = simNodes[j];
@@ -751,7 +1726,6 @@ async function loadGraph() {
           b.vx -= dx/d * f; b.vy -= dy/d * f;
         }
       }
-      // Attraction (edges)
       for (const e of simEdges) {
         let dx = e.target.x - e.source.x, dy = e.target.y - e.source.y;
         let d = Math.sqrt(dx*dx + dy*dy) || 1;
@@ -759,47 +1733,65 @@ async function loadGraph() {
         e.source.vx += dx/d * f; e.source.vy += dy/d * f;
         e.target.vx -= dx/d * f; e.target.vy -= dy/d * f;
       }
-      // Center gravity
       for (const n of simNodes) {
-        n.vx += (W/2 - n.x) * 0.001;
-        n.vy += (H/2 - n.y) * 0.001;
+        n.vx += (graphW/2 - n.x) * 0.001;
+        n.vy += (graphH/2 - n.y) * 0.001;
         n.vx *= 0.85; n.vy *= 0.85;
         n.x += n.vx; n.y += n.vy;
-        n.x = Math.max(20, Math.min(W - 20, n.x));
-        n.y = Math.max(20, Math.min(H - 20, n.y));
+        n.x = Math.max(20, Math.min(graphW - 20, n.x));
+        n.y = Math.max(20, Math.min(graphH - 20, n.y));
       }
     }
 
     function draw() {
-      ctx.clearRect(0, 0, W, H);
+      graphCtx.clearRect(0, 0, graphW, graphH);
+      graphCtx.save();
+      graphCtx.translate(graphOffsetX, graphOffsetY);
+      graphCtx.scale(graphScale, graphScale);
 
       // Edges
-      ctx.strokeStyle = 'oklch(0.3 0.01 260)';
-      ctx.lineWidth = 0.5;
       for (const e of simEdges) {
-        ctx.beginPath();
-        ctx.moveTo(e.source.x, e.source.y);
-        ctx.lineTo(e.target.x, e.target.y);
-        ctx.stroke();
+        graphCtx.beginPath();
+        graphCtx.moveTo(e.source.x, e.source.y);
+        graphCtx.lineTo(e.target.x, e.target.y);
+        const isHovered = hoveredNode && (e.source === hoveredNode || e.target === hoveredNode);
+        graphCtx.strokeStyle = isHovered ? 'oklch(0.5 0.02 260)' : 'oklch(0.25 0.01 260)';
+        graphCtx.lineWidth = isHovered ? 1.5 : 0.7;
+        graphCtx.stroke();
       }
 
       // Nodes
       for (const n of simNodes) {
-        ctx.beginPath();
-        ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
-        ctx.fillStyle = getColor(n.type);
-        ctx.globalAlpha = 0.8;
-        ctx.fill();
-        ctx.globalAlpha = 1;
+        const isHovered = n === hoveredNode;
+        const r = isHovered ? n.radius + 3 : n.radius;
+
+        // Glow for hovered node
+        if (isHovered) {
+          graphCtx.beginPath();
+          graphCtx.arc(n.x, n.y, r + 6, 0, Math.PI * 2);
+          graphCtx.fillStyle = getColor(n.type);
+          graphCtx.globalAlpha = 0.15;
+          graphCtx.fill();
+          graphCtx.globalAlpha = 1;
+        }
+
+        graphCtx.beginPath();
+        graphCtx.arc(n.x, n.y, r, 0, Math.PI * 2);
+        graphCtx.fillStyle = getColor(n.type);
+        graphCtx.globalAlpha = isHovered ? 1 : 0.75;
+        graphCtx.fill();
+        graphCtx.globalAlpha = 1;
 
         // Label
-        if (n.radius > 6 && n.label) {
-          ctx.fillStyle = 'oklch(0.8 0.01 260)';
-          ctx.font = '10px DM Sans';
-          ctx.textAlign = 'center';
-          ctx.fillText(n.label.slice(0, 30), n.x, n.y + n.radius + 14);
+        if ((n.radius > 6 || isHovered) && n.label) {
+          graphCtx.fillStyle = 'oklch(0.8 0.01 260)';
+          graphCtx.font = `${isHovered ? '11' : '10'}px DM Sans`;
+          graphCtx.textAlign = 'center';
+          graphCtx.fillText(n.label.slice(0, 35), n.x, n.y + r + 14);
         }
       }
+
+      graphCtx.restore();
     }
 
     let frame = 0;
@@ -807,7 +1799,7 @@ async function loadGraph() {
       tick();
       draw();
       frame++;
-      if (frame < 300) requestAnimationFrame(animate);
+      if (frame < 500) animFrameId = requestAnimationFrame(animate);
     }
     animate();
 

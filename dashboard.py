@@ -9,14 +9,25 @@ import os
 import urllib.request
 import urllib.error
 
-HINDSIGHT_API = "http://localhost:8888"
+HINDSIGHT_API = "http://127.0.0.1:8888"
 DASHBOARD_PORT = 9999
 
-DASHBOARD_HTML = open(os.path.join(os.path.dirname(__file__) or ".", "dashboard.html")).read()
-# Patch the default URL to point to the dashboard proxy
+# Disable proxy for urllib (bypass Clash/system proxy)
+os.environ.pop("http_proxy", None)
+os.environ.pop("https_proxy", None)
+os.environ.pop("HTTP_PROXY", None)
+os.environ.pop("HTTPS_PROXY", None)
+os.environ.pop("ALL_PROXY", None)
+os.environ.pop("all_proxy", None)
+proxy_handler = urllib.request.ProxyHandler({})
+opener = urllib.request.build_opener(proxy_handler)
+urllib.request.install_opener(opener)
+
+DASHBOARD_HTML = open(os.path.join(os.path.dirname(__file__) or ".", "dashboard.html"), encoding="utf-8").read()
+# Patch the default URL to point to the dashboard proxy (not directly to API)
 DASHBOARD_HTML = DASHBOARD_HTML.replace(
-    'value="http://localhost:8888"',
-    f'value="http://localhost:{DASHBOARD_PORT}"'
+    'value="http://127.0.0.1:8888"',
+    f'value="http://127.0.0.1:{DASHBOARD_PORT}"'
 )
 
 

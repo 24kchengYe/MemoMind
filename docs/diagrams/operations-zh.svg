@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 480" font-family="'Microsoft YaHei','PingFang SC','Segoe UI',sans-serif">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f1923"/>
+      <stop offset="100%" stop-color="#0a1219"/>
+    </linearGradient>
+    <marker id="ar" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="7" markerHeight="5" orient="auto">
+      <path d="M0,0.5 L9,3 L0,5.5" fill="#38bdf8"/>
+    </marker>
+    <marker id="arG" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="7" markerHeight="5" orient="auto">
+      <path d="M0,0.5 L9,3 L0,5.5" fill="#4adeab"/>
+    </marker>
+    <marker id="arP" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="7" markerHeight="5" orient="auto">
+      <path d="M0,0.5 L9,3 L0,5.5" fill="#c084fc"/>
+    </marker>
+  </defs>
+
+  <rect width="900" height="480" fill="url(#bg2)" rx="8"/>
+
+  <text x="450" y="38" text-anchor="middle" fill="#c8dbe8" font-size="15" font-weight="600" letter-spacing="1.5">三大核心操作</text>
+  <line x1="380" y1="48" x2="520" y2="48" stroke="#38bdf8" stroke-width="1" opacity="0.4"/>
+
+  <!-- RETAIN -->
+  <text x="50" y="90" fill="#4adeab" font-size="13" font-weight="700">RETAIN 存储</text>
+  <text x="155" y="90" fill="#3a6a5a" font-size="10">记录新知识</text>
+
+  <rect x="50" y="105" width="110" height="42" rx="4" fill="#14202e" stroke="#4adeab" stroke-width="1"/>
+  <text x="105" y="124" text-anchor="middle" fill="#e0ecf4" font-size="11" font-weight="500">对话内容</text>
+  <text x="105" y="138" text-anchor="middle" fill="#5a7a7a" font-size="9">原始文本输入</text>
+
+  <line x1="160" y1="126" x2="190" y2="126" stroke="#4adeab" stroke-width="1" marker-end="url(#arG)"/>
+
+  <rect x="195" y="105" width="130" height="42" rx="4" fill="#14202e" stroke="#4adeab" stroke-width="1"/>
+  <text x="260" y="124" text-anchor="middle" fill="#e0ecf4" font-size="11" font-weight="500">LLM 提取</text>
+  <text x="260" y="138" text-anchor="middle" fill="#5a7a7a" font-size="9">事实 + 实体 + 时间</text>
+
+  <line x1="325" y1="126" x2="355" y2="126" stroke="#4adeab" stroke-width="1" marker-end="url(#arG)"/>
+
+  <rect x="360" y="105" width="120" height="42" rx="4" fill="#14202e" stroke="#4adeab" stroke-width="1"/>
+  <text x="420" y="124" text-anchor="middle" fill="#e0ecf4" font-size="11" font-weight="500">实体关联</text>
+  <text x="420" y="138" text-anchor="middle" fill="#5a7a7a" font-size="9">知识图谱边</text>
+
+  <line x1="480" y1="126" x2="510" y2="126" stroke="#4adeab" stroke-width="1" marker-end="url(#arG)"/>
+
+  <rect x="515" y="105" width="120" height="42" rx="4" fill="#14202e" stroke="#4adeab" stroke-width="1"/>
+  <text x="575" y="124" text-anchor="middle" fill="#e0ecf4" font-size="11" font-weight="500">嵌入 (CUDA)</text>
+  <text x="575" y="138" text-anchor="middle" fill="#5a7a7a" font-size="9">384 维向量</text>
+
+  <line x1="635" y1="126" x2="665" y2="126" stroke="#4adeab" stroke-width="1" marker-end="url(#arG)"/>
+
+  <rect x="670" y="105" width="180" height="42" rx="4" fill="#162a22" stroke="#4adeab" stroke-width="1.2"/>
+  <text x="760" y="124" text-anchor="middle" fill="#4adeab" font-size="11" font-weight="600">PostgreSQL + pgvector</text>
+  <text x="760" y="138" text-anchor="middle" fill="#3a6a5a" font-size="9">持久化存储</text>
+
+  <!-- RECALL -->
+  <text x="50" y="200" fill="#38bdf8" font-size="13" font-weight="700">RECALL 召回</text>
+  <text x="155" y="200" fill="#2a5a7a" font-size="10">检索相关记忆</text>
+
+  <rect x="50" y="215" width="110" height="42" rx="4" fill="#14202e" stroke="#38bdf8" stroke-width="1"/>
+  <text x="105" y="234" text-anchor="middle" fill="#e0ecf4" font-size="11" font-weight="500">查询</text>
+  <text x="105" y="248" text-anchor="middle" fill="#4a6a7a" font-size="9">自然语言</text>
+
+  <line x1="160" y1="228" x2="190" y2="218" stroke="#38bdf8" stroke-width="0.8" marker-end="url(#ar)"/>
+  <line x1="160" y1="233" x2="190" y2="230" stroke="#38bdf8" stroke-width="0.8" marker-end="url(#ar)"/>
+  <line x1="160" y1="238" x2="190" y2="242" stroke="#38bdf8" stroke-width="0.8" marker-end="url(#ar)"/>
+  <line x1="160" y1="243" x2="190" y2="254" stroke="#38bdf8" stroke-width="0.8" marker-end="url(#ar)"/>
+
+  <rect x="195" y="206" width="100" height="24" rx="3" fill="#14202e" stroke="#38bdf8" stroke-width="0.8"/>
+  <text x="245" y="222" text-anchor="middle" fill="#38bdf8" font-size="10">语义搜索</text>
+
+  <rect x="195" y="234" width="100" height="24" rx="3" fill="#14202e" stroke="#38bdf8" stroke-width="0.8"/>
+  <text x="245" y="250" text-anchor="middle" fill="#38bdf8" font-size="10">BM25 关键词</text>
+
+  <rect x="310" y="206" width="100" height="24" rx="3" fill="#14202e" stroke="#c084fc" stroke-width="0.8"/>
+  <text x="360" y="222" text-anchor="middle" fill="#c084fc" font-size="10">图谱遍历</text>
+
+  <rect x="310" y="234" width="100" height="24" rx="3" fill="#14202e" stroke="#fbbf24" stroke-width="0.8"/>
+  <text x="360" y="250" text-anchor="middle" fill="#fbbf24" font-size="10">时序搜索</text>
+
+  <line x1="295" y1="218" x2="430" y2="233" stroke="#38bdf8" stroke-width="0.6" opacity="0.5"/>
+  <line x1="295" y1="246" x2="430" y2="237" stroke="#38bdf8" stroke-width="0.6" opacity="0.5"/>
+  <line x1="410" y1="218" x2="430" y2="233" stroke="#c084fc" stroke-width="0.6" opacity="0.5"/>
+  <line x1="410" y1="246" x2="430" y2="237" stroke="#fbbf24" stroke-width="0.6" opacity="0.5"/>
+
+  <text x="440" y="225" fill="#3a5a6a" font-size="8">4路</text>
+  <text x="440" y="245" fill="#3a5a6a" font-size="8">融合</text>
+
+  <line x1="465" y1="236" x2="500" y2="236" stroke="#38bdf8" stroke-width="1" marker-end="url(#ar)"/>
+
+  <rect x="505" y="215" width="140" height="42" rx="4" fill="#14202e" stroke="#fbbf24" stroke-width="1"/>
+  <text x="575" y="234" text-anchor="middle" fill="#e0ecf4" font-size="11" font-weight="500">交叉编码器</text>
+  <text x="575" y="248" text-anchor="middle" fill="#7a6a4a" font-size="9">按相关度重排序</text>
+
+  <line x1="645" y1="236" x2="675" y2="236" stroke="#38bdf8" stroke-width="1" marker-end="url(#ar)"/>
+
+  <rect x="680" y="215" width="170" height="42" rx="4" fill="#162028" stroke="#38bdf8" stroke-width="1.2"/>
+  <text x="765" y="234" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="600">排序结果</text>
+  <text x="765" y="248" text-anchor="middle" fill="#2a5a7a" font-size="9">最相关的 Top-K 记忆</text>
+
+  <!-- REFLECT -->
+  <text x="50" y="320" fill="#c084fc" font-size="13" font-weight="700">REFLECT 反思</text>
+  <text x="165" y="320" fill="#6a4a8a" font-size="10">跨记忆综合推理</text>
+
+  <rect x="50" y="335" width="110" height="42" rx="4" fill="#14202e" stroke="#c084fc" stroke-width="1"/>
+  <text x="105" y="354" text-anchor="middle" fill="#e0ecf4" font-size="11" font-weight="500">复杂问题</text>
+  <text x="105" y="368" text-anchor="middle" fill="#6a5a7a" font-size="9">需要综合分析</text>
+
+  <line x1="160" y1="356" x2="190" y2="356" stroke="#c084fc" stroke-width="1" marker-end="url(#arP)"/>
+
+  <rect x="195" y="335" width="160" height="42" rx="4" fill="#14202e" stroke="#38bdf8" stroke-width="0.8"/>
+  <text x="275" y="354" text-anchor="middle" fill="#e0ecf4" font-size="11" font-weight="500">召回相关记忆</text>
+  <text x="275" y="368" text-anchor="middle" fill="#4a6a7a" font-size="9">4 路混合检索</text>
+
+  <line x1="355" y1="356" x2="385" y2="356" stroke="#c084fc" stroke-width="1" marker-end="url(#arP)"/>
+
+  <rect x="390" y="335" width="200" height="42" rx="4" fill="#14202e" stroke="#c084fc" stroke-width="1"/>
+  <text x="490" y="354" text-anchor="middle" fill="#e0ecf4" font-size="11" font-weight="500">LLM 综合推理</text>
+  <text x="490" y="368" text-anchor="middle" fill="#6a5a7a" font-size="9">跨所有上下文分析</text>
+
+  <line x1="590" y1="356" x2="620" y2="356" stroke="#c084fc" stroke-width="1" marker-end="url(#arP)"/>
+
+  <rect x="625" y="335" width="225" height="42" rx="4" fill="#1e1828" stroke="#c084fc" stroke-width="1.2"/>
+  <text x="737" y="354" text-anchor="middle" fill="#c084fc" font-size="11" font-weight="600">综合洞察</text>
+  <text x="737" y="368" text-anchor="middle" fill="#6a4a8a" font-size="9">跨记忆推理结果</text>
+
+  <g transform="translate(50,430)">
+    <text x="0" y="0" fill="#5a7a8a" font-size="9" font-weight="500">AI 何时调用</text>
+    <rect x="0" y="10" width="8" height="8" rx="2" fill="#4adeab"/>
+    <text x="14" y="18" fill="#5a7a7a" font-size="9">学到新知识后</text>
+    <rect x="130" y="10" width="8" height="8" rx="2" fill="#38bdf8"/>
+    <text x="144" y="18" fill="#4a6a7a" font-size="9">回复前检查历史</text>
+    <rect x="290" y="10" width="8" height="8" rx="2" fill="#c084fc"/>
+    <text x="304" y="18" fill="#6a5a7a" font-size="9">遇到需要综合分析的复杂问题</text>
+  </g>
+</svg>

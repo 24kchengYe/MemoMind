@@ -556,13 +556,13 @@ MemoMind 赋予你的 AI **持久、本地、智能的记忆**。它不仅仅存
 ## 架构
 
 <div align="center">
-<img src="docs/diagrams/architecture.svg" width="800" alt="MemoMind 系统架构"/>
+<img src="docs/diagrams/architecture-zh.svg" width="800" alt="MemoMind 系统架构"/>
 </div>
 
 ## 三大操作
 
 <div align="center">
-<img src="docs/diagrams/operations.svg" width="800" alt="Retain、Recall、Reflect 操作流程"/>
+<img src="docs/diagrams/operations-zh.svg" width="800" alt="存储、召回、反思 操作流程"/>
 </div>
 
 ## 四种记忆类型
@@ -581,7 +581,7 @@ MemoMind 赋予你的 AI **持久、本地、智能的记忆**。它不仅仅存
 Observation 不只是累积——它们会**进化**。巩固引擎自动合并、更新、精炼 observation：
 
 <div align="center">
-<img src="docs/diagrams/evolution.svg" width="800" alt="通过巩固机制的记忆进化"/>
+<img src="docs/diagrams/evolution-zh.svg" width="800" alt="通过巩固机制的记忆进化"/>
 </div>
 
 每个记忆银行有可配置的 **mission**，控制巩固引擎的归纳方向——从简单的细节记录到结构化的任务级经验（包含步骤、教训、偏好）。

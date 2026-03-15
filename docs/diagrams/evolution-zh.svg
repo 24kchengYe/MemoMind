@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" font-family="'Microsoft YaHei','PingFang SC','Segoe UI',sans-serif">
+  <defs>
+    <linearGradient id="bg3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f1923"/>
+      <stop offset="100%" stop-color="#0a1219"/>
+    </linearGradient>
+    <marker id="a3" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="7" markerHeight="5" orient="auto">
+      <path d="M0,0.5 L9,3 L0,5.5" fill="#4adeab"/>
+    </marker>
+    <marker id="a3c" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="7" markerHeight="5" orient="auto">
+      <path d="M0,0.5 L9,3 L0,5.5" fill="#38bdf8"/>
+    </marker>
+  </defs>
+
+  <rect width="900" height="500" fill="url(#bg3)" rx="8"/>
+
+  <text x="450" y="38" text-anchor="middle" fill="#c8dbe8" font-size="15" font-weight="600" letter-spacing="1.5">记忆进化</text>
+  <line x1="400" y1="48" x2="500" y2="48" stroke="#4adeab" stroke-width="1" opacity="0.4"/>
+  <text x="450" y="65" text-anchor="middle" fill="#4a6a7a" font-size="10">观察如何随时间变得更智能</text>
+
+  <!-- New facts -->
+  <text x="50" y="110" fill="#5a7a8a" font-size="10" font-weight="600" letter-spacing="1">新事实到达</text>
+
+  <rect x="50" y="120" width="200" height="34" rx="4" fill="#14202e" stroke="#4adeab" stroke-width="0.8"/>
+  <text x="150" y="142" text-anchor="middle" fill="#b0d0c0" font-size="10">retain("CUDA 冷启动超过 30 秒")</text>
+
+  <rect x="50" y="160" width="200" height="34" rx="4" fill="#14202e" stroke="#4adeab" stroke-width="0.8"/>
+  <text x="150" y="182" text-anchor="middle" fill="#b0d0c0" font-size="10">retain("patch 超时为 600s")</text>
+
+  <rect x="50" y="200" width="200" height="34" rx="4" fill="#14202e" stroke="#4adeab" stroke-width="0.8"/>
+  <text x="150" y="222" text-anchor="middle" fill="#b0d0c0" font-size="10">retain("WSL 需要 8GB 给 CUDA")</text>
+
+  <line x1="250" y1="177" x2="310" y2="177" stroke="#4adeab" stroke-width="1.2" marker-end="url(#a3)"/>
+
+  <!-- Consolidation -->
+  <rect x="315" y="110" width="240" height="140" rx="6" fill="#162230" stroke="#38bdf8" stroke-width="1.2"/>
+  <text x="435" y="135" text-anchor="middle" fill="#38bdf8" font-size="12" font-weight="600">巩固引擎</text>
+
+  <text x="335" y="160" fill="#6a8a9a" font-size="10">1. 召回已有观察</text>
+  <text x="335" y="178" fill="#6a8a9a" font-size="10">2. 与新事实对比</text>
+  <text x="335" y="196" fill="#6a8a9a" font-size="10">3. 决定操作：</text>
+
+  <rect x="350" y="206" width="55" height="22" rx="3" fill="#14302a" stroke="#4adeab" stroke-width="0.8"/>
+  <text x="377" y="221" text-anchor="middle" fill="#4adeab" font-size="9" font-weight="600">创建</text>
+
+  <rect x="413" y="206" width="55" height="22" rx="3" fill="#1a2838" stroke="#38bdf8" stroke-width="0.8"/>
+  <text x="440" y="221" text-anchor="middle" fill="#38bdf8" font-size="9" font-weight="600">更新</text>
+
+  <rect x="476" y="206" width="55" height="22" rx="3" fill="#281a1a" stroke="#f87171" stroke-width="0.8"/>
+  <text x="503" y="221" text-anchor="middle" fill="#f87171" font-size="9" font-weight="600">删除</text>
+
+  <line x1="555" y1="177" x2="610" y2="177" stroke="#38bdf8" stroke-width="1.2" marker-end="url(#a3c)"/>
+
+  <!-- Result -->
+  <rect x="615" y="120" width="250" height="120" rx="6" fill="#14202e" stroke="#fbbf24" stroke-width="1.2"/>
+  <text x="740" y="142" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="600">进化后的观察</text>
+  <line x1="635" y1="152" x2="845" y2="152" stroke="#2a2a1a" stroke-width="0.5"/>
+  <text x="635" y="170" fill="#c0b080" font-size="10">步骤: patch timeout, 设置</text>
+  <text x="635" y="185" fill="#c0b080" font-size="10">.wslconfig memory=8GB</text>
+  <text x="635" y="203" fill="#c0b080" font-size="10">教训: 默认 4GB 会导致 CUDA</text>
+  <text x="635" y="218" fill="#c0b080" font-size="10">模型加载时 OOM</text>
+  <text x="635" y="233" fill="#c0b080" font-size="10">偏好: CUDA 至少需要 8GB+</text>
+
+  <!-- Timeline -->
+  <text x="50" y="295" fill="#5a7a8a" font-size="10" font-weight="600" letter-spacing="1">随时间演变</text>
+
+  <line x1="80" y1="330" x2="840" y2="330" stroke="#2a4a5a" stroke-width="1.5"/>
+
+  <!-- Week 1 -->
+  <circle cx="140" cy="330" r="5" fill="#4adeab"/>
+  <text x="140" y="318" text-anchor="middle" fill="#4a6a5a" font-size="9">第 1 周</text>
+  <rect x="80" y="345" width="120" height="55" rx="4" fill="#14202e" stroke="#4adeab" stroke-width="0.8"/>
+  <text x="90" y="360" fill="#4adeab" font-size="9" font-weight="600">创建</text>
+  <text x="90" y="375" fill="#8aaa8a" font-size="9">"CUDA 冷启动</text>
+  <text x="90" y="388" fill="#8aaa8a" font-size="9">需要 &gt;30 秒"</text>
+
+  <!-- Week 2 -->
+  <circle cx="330" cy="330" r="5" fill="#38bdf8"/>
+  <text x="330" y="318" text-anchor="middle" fill="#2a5a7a" font-size="9">第 2 周</text>
+  <rect x="270" y="345" width="120" height="55" rx="4" fill="#14202e" stroke="#38bdf8" stroke-width="0.8"/>
+  <text x="280" y="360" fill="#38bdf8" font-size="9" font-weight="600">更新</text>
+  <text x="280" y="375" fill="#7aaaba" font-size="9">+ "patch timeout</text>
+  <text x="280" y="388" fill="#7aaaba" font-size="9">到 600s 可解决"</text>
+
+  <!-- Week 3 -->
+  <circle cx="520" cy="330" r="5" fill="#38bdf8"/>
+  <text x="520" y="318" text-anchor="middle" fill="#2a5a7a" font-size="9">第 3 周</text>
+  <rect x="460" y="345" width="120" height="55" rx="4" fill="#14202e" stroke="#38bdf8" stroke-width="0.8"/>
+  <text x="470" y="360" fill="#38bdf8" font-size="9" font-weight="600">更新</text>
+  <text x="470" y="375" fill="#7aaaba" font-size="9">+ ".wslconfig 设 8GB</text>
+  <text x="470" y="388" fill="#7aaaba" font-size="9">防止 OOM"</text>
+
+  <!-- Week 5 -->
+  <circle cx="710" cy="330" r="5" fill="#fbbf24"/>
+  <text x="710" y="318" text-anchor="middle" fill="#7a6a3a" font-size="9">第 5 周</text>
+  <rect x="640" y="345" width="140" height="55" rx="4" fill="#1a1a14" stroke="#fbbf24" stroke-width="1"/>
+  <text x="650" y="360" fill="#fbbf24" font-size="9" font-weight="600">成熟经验</text>
+  <text x="650" y="375" fill="#c0b070" font-size="9">完整部署指南</text>
+  <text x="650" y="388" fill="#c0b070" font-size="9">含步骤 + 教训 + 偏好</text>
+
+  <line x1="145" y1="330" x2="325" y2="330" stroke="#38bdf8" stroke-width="0.6" stroke-dasharray="3,3"/>
+  <line x1="335" y1="330" x2="515" y2="330" stroke="#38bdf8" stroke-width="0.6" stroke-dasharray="3,3"/>
+  <line x1="525" y1="330" x2="705" y2="330" stroke="#fbbf24" stroke-width="0.6" stroke-dasharray="3,3"/>
+
+  <rect x="50" y="430" width="800" height="40" rx="4" fill="#0d1a24" stroke="#1a3a4a" stroke-width="0.8"/>
+  <text x="450" y="448" text-anchor="middle" fill="#4a6a7a" font-size="10">观察数量保持稳定——经验在巩固，不是膨胀</text>
+  <text x="450" y="462" text-anchor="middle" fill="#3a5a6a" font-size="10">事实（world/experience）正常积累，观察（observation）则进化、合并、自我修正</text>
+</svg>

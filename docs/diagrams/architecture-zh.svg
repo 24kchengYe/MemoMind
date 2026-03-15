@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" font-family="'Microsoft YaHei','PingFang SC','Segoe UI',sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f1923"/>
+      <stop offset="100%" stop-color="#0a1219"/>
+    </linearGradient>
+    <linearGradient id="serverGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#162230"/>
+      <stop offset="100%" stop-color="#1a2a3a"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="8" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,3 L0,6" fill="#38bdf8"/>
+    </marker>
+    <marker id="arrowDim" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="8" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,3 L0,6" fill="#4a6a7a"/>
+    </marker>
+  </defs>
+
+  <rect width="900" height="520" fill="url(#bg)" rx="8"/>
+
+  <text x="450" y="38" text-anchor="middle" fill="#c8dbe8" font-size="15" font-weight="600" letter-spacing="1.5">系统架构</text>
+  <line x1="400" y1="48" x2="500" y2="48" stroke="#38bdf8" stroke-width="1" opacity="0.4"/>
+
+  <!-- Claude Code -->
+  <rect x="40" y="80" width="160" height="64" rx="6" fill="#1c2c3c" stroke="#38bdf8" stroke-width="1.2"/>
+  <text x="120" y="108" text-anchor="middle" fill="#38bdf8" font-size="13" font-weight="600">Claude Code</text>
+  <text x="120" y="126" text-anchor="middle" fill="#6a8a9a" font-size="10">编程智能体</text>
+
+  <line x1="200" y1="112" x2="268" y2="112" stroke="#38bdf8" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <text x="234" y="103" text-anchor="middle" fill="#38bdf8" font-size="9" opacity="0.7">MCP stdio</text>
+
+  <!-- WSL2 -->
+  <rect x="280" y="60" width="580" height="390" rx="8" fill="none" stroke="#2a4a5a" stroke-width="1" stroke-dasharray="6,4"/>
+  <text x="860" y="78" text-anchor="end" fill="#3a5a6a" font-size="10" font-weight="500">WSL2 Ubuntu</text>
+
+  <!-- Server -->
+  <rect x="310" y="80" width="520" height="280" rx="6" fill="url(#serverGrad)" stroke="#2a4a5a" stroke-width="1"/>
+  <text x="570" y="106" text-anchor="middle" fill="#e0ecf4" font-size="14" font-weight="600">MemoMind 服务</text>
+  <text x="570" y="122" text-anchor="middle" fill="#5a7a8a" font-size="10">端口 8888</text>
+
+  <!-- PostgreSQL -->
+  <rect x="340" y="145" width="220" height="50" rx="5" fill="#14202e" stroke="#4adeab" stroke-width="1" opacity="0.9"/>
+  <text x="450" y="168" text-anchor="middle" fill="#4adeab" font-size="12" font-weight="500">PostgreSQL + pgvector</text>
+  <text x="450" y="184" text-anchor="middle" fill="#4a6a6a" font-size="9">结构化记忆 + 知识图谱</text>
+
+  <!-- Embeddings -->
+  <rect x="340" y="210" width="220" height="44" rx="5" fill="#14202e" stroke="#c084fc" stroke-width="1" opacity="0.9"/>
+  <text x="450" y="230" text-anchor="middle" fill="#c084fc" font-size="12" font-weight="500">BAAI/bge-small</text>
+  <text x="450" y="244" text-anchor="middle" fill="#6a5a7a" font-size="9">本地嵌入  CUDA 384维</text>
+
+  <!-- Cross-encoder -->
+  <rect x="340" y="268" width="220" height="44" rx="5" fill="#14202e" stroke="#fbbf24" stroke-width="1" opacity="0.9"/>
+  <text x="450" y="288" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="500">交叉编码器</text>
+  <text x="450" y="302" text-anchor="middle" fill="#7a6a4a" font-size="9">本地重排序  CUDA</text>
+
+  <!-- LLM -->
+  <rect x="590" y="145" width="210" height="50" rx="5" fill="#14202e" stroke="#38bdf8" stroke-width="1" opacity="0.9"/>
+  <text x="695" y="168" text-anchor="middle" fill="#38bdf8" font-size="12" font-weight="500">DeepSeek / OpenRouter</text>
+  <text x="695" y="184" text-anchor="middle" fill="#4a6a7a" font-size="9">事实提取  可配置</text>
+
+  <!-- Consolidation -->
+  <rect x="590" y="210" width="210" height="44" rx="5" fill="#14202e" stroke="#4adeab" stroke-width="1" opacity="0.7"/>
+  <text x="695" y="230" text-anchor="middle" fill="#4adeab" font-size="12" font-weight="500">巩固引擎</text>
+  <text x="695" y="244" text-anchor="middle" fill="#4a6a6a" font-size="9">观察进化</text>
+
+  <!-- Knowledge Graph -->
+  <rect x="590" y="268" width="210" height="44" rx="5" fill="#14202e" stroke="#c084fc" stroke-width="1" opacity="0.7"/>
+  <text x="695" y="288" text-anchor="middle" fill="#c084fc" font-size="12" font-weight="500">知识图谱</text>
+  <text x="695" y="302" text-anchor="middle" fill="#6a5a7a" font-size="9">实体链接 + 时序边</text>
+
+  <line x1="560" y1="170" x2="588" y2="170" stroke="#4a6a7a" stroke-width="0.8" marker-end="url(#arrowDim)"/>
+  <line x1="560" y1="232" x2="588" y2="232" stroke="#4a6a7a" stroke-width="0.8" marker-end="url(#arrowDim)"/>
+  <line x1="560" y1="290" x2="588" y2="290" stroke="#4a6a7a" stroke-width="0.8" marker-end="url(#arrowDim)"/>
+
+  <!-- Dashboard -->
+  <rect x="40" y="200" width="160" height="64" rx="6" fill="#1c2c3c" stroke="#fbbf24" stroke-width="1.2"/>
+  <text x="120" y="228" text-anchor="middle" fill="#fbbf24" font-size="13" font-weight="600">可视化面板</text>
+  <text x="120" y="246" text-anchor="middle" fill="#7a6a4a" font-size="10">端口 9999  Windows</text>
+
+  <line x1="200" y1="232" x2="268" y2="180" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrowDim)"/>
+  <text x="224" y="216" text-anchor="middle" fill="#7a6a4a" font-size="9" transform="rotate(-20,224,216)">端口转发</text>
+
+  <!-- Browser -->
+  <rect x="40" y="310" width="160" height="50" rx="6" fill="#1c2c3c" stroke="#4a6a7a" stroke-width="0.8"/>
+  <text x="120" y="333" text-anchor="middle" fill="#8aaaba" font-size="12" font-weight="500">浏览器</text>
+  <text x="120" y="348" text-anchor="middle" fill="#4a6a7a" font-size="9">localhost:9999</text>
+
+  <line x1="120" y1="310" x2="120" y2="266" stroke="#4a6a7a" stroke-width="0.8" marker-end="url(#arrowDim)"/>
+
+  <!-- Footer -->
+  <rect x="310" y="380" width="520" height="32" rx="4" fill="#0d1a24" stroke="#1a3a4a" stroke-width="0.8"/>
+  <text x="570" y="401" text-anchor="middle" fill="#3a6a7a" font-size="11" font-weight="500" letter-spacing="2">所有数据留在你的机器上</text>
+
+  <g transform="translate(40,420)">
+    <text x="0" y="0" fill="#5a7a8a" font-size="9" font-weight="500">组件</text>
+    <circle cx="8" cy="16" r="4" fill="#4adeab"/>
+    <text x="18" y="20" fill="#6a8a8a" font-size="9">存储</text>
+    <circle cx="58" cy="16" r="4" fill="#c084fc"/>
+    <text x="68" y="20" fill="#6a8a8a" font-size="9">ML 模型</text>
+    <circle cx="128" cy="16" r="4" fill="#fbbf24"/>
+    <text x="138" y="20" fill="#6a8a8a" font-size="9">界面</text>
+    <circle cx="178" cy="16" r="4" fill="#38bdf8"/>
+    <text x="188" y="20" fill="#6a8a8a" font-size="9">协议</text>
+  </g>
+</svg>

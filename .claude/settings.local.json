@@ -1,7 +1,19 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(find:*)",
+      "Bash(gh api:*)",
+      "Bash(gh repo:*)",
+      "Bash(wsl:*)",
+      "Bash(npx playwright:*)",
+      "Skill(app-screen-recorder)",
+      "Bash(cat:*)",
+      "mcp__memomind__retain",
+      "Bash(claude mcp:*)"
     ]
   }
 }

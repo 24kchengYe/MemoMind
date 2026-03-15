@@ -13,7 +13,7 @@ const OUTPUT_DIR = 'D:/pythonPycharms/MemoMind/docs/demos';
 const TEMP_DIR = 'D:/pythonPycharms/MemoMind/tmp-frames';
 
 async function recordScene(name, actions, options = {}) {
-  const { width = 1280, height = 720, fps = 8, duration = 8000 } = options;
+  const { width = 1280, height = 720, fps = 8, duration = 10000 } = options;
   const framesDir = path.join(TEMP_DIR, name);
   fs.mkdirSync(framesDir, { recursive: true });
 
@@ -21,12 +21,10 @@ async function recordScene(name, actions, options = {}) {
   const context = await browser.newContext({ viewport: { width, height } });
   const page = await context.newPage();
 
-  // Navigate to target page
-  await page.goto(options.url || BASE_URL, { waitUntil: 'domcontentloaded', timeout: 15000 });
-  // Wait for initial load and animations
-  await page.waitForTimeout(2000);
+  await page.goto(options.url || BASE_URL, { waitUntil: 'networkidle', timeout: 20000 });
+  // Wait for API data to load (memories, stats)
+  await page.waitForTimeout(3000);
 
-  // Execute user-defined actions (scroll, click, type, etc.)
   await actions(page);
 
   // Capture frames
@@ -41,7 +39,6 @@ async function recordScene(name, actions, options = {}) {
 
   await browser.close();
 
-  // Generate GIF with ffmpeg (two-pass palette method for quality)
   const outputPath = path.join(OUTPUT_DIR, `${name}.gif`);
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
@@ -55,7 +52,6 @@ async function recordScene(name, actions, options = {}) {
     { stdio: 'pipe' }
   );
 
-  // Cleanup temp frames
   fs.rmSync(framesDir, { recursive: true });
   fs.rmSync(palettePath, { force: true });
 
@@ -63,40 +59,58 @@ async function recordScene(name, actions, options = {}) {
   console.log(`✓ ${name}.gif — ${(stats.size / 1024).toFixed(0)} KB`);
 }
 
-// Record the MemoMind dashboard
 await recordScene('dashboard', async (page) => {
-  // Frame 1: Show the full dashboard loaded (sidebar + main area)
-  await page.waitForTimeout(1500);
+  // 1. Show the dashboard with real data loaded (metrics, memory cards)
+  await page.waitForTimeout(2000);
 
-  // Hover over metric cards to show hover effects
+  // 2. Hover over metric cards
   const metrics = await page.$$('.metric');
   for (const metric of metrics) {
     await metric.hover();
-    await page.waitForTimeout(600);
+    await page.waitForTimeout(500);
   }
-
-  // Move mouse away
   await page.mouse.move(640, 400);
-  await page.waitForTimeout(500);
-
-  // Type something in the search bar
-  await page.click('.search-input');
-  await page.waitForTimeout(300);
-  await page.type('.search-input', 'user preferences', { delay: 80 });
-  await page.waitForTimeout(800);
-
-  // Clear search
-  await page.fill('.search-input', '');
   await page.waitForTimeout(400);
 
-  // Click Graph tab
+  // 3. Scroll down to show memory cards if there are any
+  await page.evaluate(() => window.scrollTo({ top: 200, behavior: 'smooth' }));
+  await page.waitForTimeout(800);
+
+  // 4. Hover over a memory card to show hover effects + delete button
+  const card = await page.$('.memory-card');
+  if (card) {
+    await card.hover();
+    await page.waitForTimeout(800);
+  }
+  await page.mouse.move(640, 300);
+  await page.waitForTimeout(300);
+
+  // 5. Scroll back up
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  await page.waitForTimeout(600);
+
+  // 6. Type a search query
+  await page.click('.search-input');
+  await page.waitForTimeout(200);
+  await page.type('.search-input', 'user preferences', { delay: 70 });
+  await page.waitForTimeout(500);
+
+  // 7. Click Recall button to search
+  await page.click('.search-btn');
+  await page.waitForTimeout(2000);
+
+  // 8. Clear search
+  await page.fill('.search-input', '');
+  await page.waitForTimeout(300);
+
+  // 9. Switch to Graph tab
   const graphTab = await page.$('.view-tab:nth-child(2)');
   if (graphTab) {
     await graphTab.click();
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(2500);
   }
 
-  // Click back to Stream tab
+  // 10. Switch back to Stream
   const streamTab = await page.$('.view-tab:nth-child(1)');
   if (streamTab) {
     await streamTab.click();
@@ -107,9 +121,8 @@ await recordScene('dashboard', async (page) => {
   width: 1280,
   height: 720,
   fps: 8,
-  duration: 8000,
+  duration: 10000,
 });
 
-// Cleanup temp directory
 fs.rmSync(TEMP_DIR, { recursive: true, force: true });
 console.log('Done!');

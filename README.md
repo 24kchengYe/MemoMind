@@ -95,11 +95,26 @@ Claude Code ──MCP (stdio)──→ WSL2
 
 ## Memory Types
 
-| Type | Example | How It's Used |
-|------|---------|---------------|
-| **World** | "User prefers Python over R" | Shapes recommendations |
-| **Experience** | "Last session we debugged auth module" | Provides continuity |
-| **Observation** | "User consistently uses functional style" | Auto-synthesized from patterns |
+MemoMind organizes knowledge into four biomimetic memory pathways — modeled after how human memory actually works:
+
+| Type | What It Captures | Example | How It's Used |
+|------|-----------------|---------|---------------|
+| **World** | Objective facts about the user and environment | "User prefers Python over R" | Shapes recommendations and defaults |
+| **Experience** | Events the agent participated in | "Last session we debugged the auth module" | Provides continuity across sessions |
+| **Observation** | Patterns auto-synthesized from behavior | "User consistently uses functional style" | Refines understanding over time |
+| **Mental Model** | Learned understanding of complex topics | "This codebase follows hexagonal architecture with ports and adapters" | Enables deeper reasoning about project context |
+
+> Unlike flat key-value stores, these types form a **knowledge graph** — entities are linked by relationships, creating retrieval pathways that go far beyond simple keyword matching.
+
+## Use Cases
+
+MemoMind isn't just for remembering preferences. Here are some ways it makes your AI smarter:
+
+- **Coding assistant** — Remembers your project architecture, coding style, naming conventions, and tech stack decisions across sessions
+- **Project management** — Tracks decisions, deadlines, and blockers; reflects on project risks by synthesizing across all stored context
+- **Code review** — Recalls past review feedback patterns; knows which areas of the codebase are fragile
+- **Debugging** — Remembers what was tried before, what worked, what didn't — no more repeating failed approaches
+- **Team onboarding** — New team member's AI instantly inherits the project's accumulated knowledge
 
 ## Key Features
 
@@ -109,6 +124,9 @@ Claude Code ──MCP (stdio)──→ WSL2
 - **Dirt cheap** — fact extraction via OpenRouter costs < $0.01/day
 - **4-way hybrid retrieval** — semantic similarity + BM25 keyword + knowledge graph + temporal search
 - **Reflect capability** — AI can reason across all memories, not just retrieve
+- **Mental models** — builds evolving understanding of complex topics, not just isolated facts
+- **Metadata & filtering** — tag memories with custom metadata for per-project or per-user isolation
+- **Multi-provider LLM** — works with OpenAI, Anthropic, Gemini, Groq, Ollama, LM Studio, and any OpenAI-compatible API via OpenRouter
 - **Web Dashboard** — browse and search all memories visually at `http://127.0.0.1:9999`
 - **Auto-start** — systemd service + Windows startup script, works after reboot
 
@@ -117,10 +135,13 @@ Claude Code ──MCP (stdio)──→ WSL2
 | Feature | MemoMind | Memori | Mem0 | Claude Code built-in |
 |---------|----------|--------|------|---------------------|
 | Privacy | 100% local | Cloud required | Configurable | Local files |
-| Memory type | Facts + knowledge graph | 8 categories | Flat facts | Markdown notes |
-| Retrieval | 4-way hybrid | Semantic + BM25 | Semantic only | Full file load |
+| Memory type | Facts + knowledge graph + mental models | 8 categories | Flat facts | Markdown notes |
+| Retrieval | 4-way hybrid (semantic + BM25 + graph + temporal) | Semantic + BM25 | Semantic only | Full file load |
 | Auto-extract | LLM-powered | LLM-powered | LLM-powered | Manual |
-| Reflect/reason | Yes | No | No | No |
+| Reflect/reason | Yes — cross-memory synthesis | No | No | No |
+| Mental models | Yes — evolving topic understanding | No | No | No |
+| Multi-provider LLM | OpenAI, Anthropic, Gemini, Groq, Ollama, etc. | Limited | OpenAI | N/A |
+| Metadata filtering | Per-user / per-project isolation | Limited | Yes | No |
 | Cost | ~$0.01/day | Free tier limited | Free tier limited | Free |
 
 ## MemoMind + Recall: Two Sides of the Same Coin
@@ -211,9 +232,23 @@ wsl -d Ubuntu -u hindsight -- /opt/memomind-env/memomind-cli.sh memory retain de
 wsl -d Ubuntu -u hindsight -- /opt/memomind-env/memomind-cli.sh memory recall default "What language does user prefer?"
 ```
 
-## Recommended Models (via OpenRouter)
+## Supported LLM Providers
 
-The LLM is only used for fact extraction (not for chatting). Pick the cheapest:
+The LLM is only used for fact extraction (not for chatting). MemoMind supports any OpenAI-compatible API:
+
+| Provider | Configuration | Notes |
+|----------|--------------|-------|
+| **OpenRouter** (default) | `llm_provider="openai"`, `llm_base_url="https://openrouter.ai/api/v1"` | Access 200+ models with one key |
+| **OpenAI** | `llm_provider="openai"` | GPT-4o, GPT-4.1-nano, etc. |
+| **Anthropic** | `llm_provider="anthropic"` | Claude Sonnet, Haiku |
+| **Google Gemini** | `llm_provider="gemini"` | Gemini Flash, Pro |
+| **Groq** | `llm_provider="groq"` | Ultra-fast inference |
+| **Ollama** | `llm_provider="ollama"` | Fully local, no API key needed |
+| **LM Studio** | `llm_provider="lmstudio"` | Local models with OpenAI-compatible API |
+
+### Recommended Models (via OpenRouter)
+
+Pick the cheapest — fact extraction is simple work:
 
 | Model | Cost (per 1M tokens) | Best For |
 |-------|---------------------|----------|
@@ -275,14 +310,22 @@ export HF_ENDPOINT=https://hf-mirror.com  # Use China mirror
 - [x] Local GPU-accelerated embeddings (BAAI/bge-small)
 - [x] Cross-encoder reranking
 - [x] MCP stdio transport
-- [x] Web dashboard for visual memory browsing
+- [x] Multi-provider LLM support (OpenAI, Anthropic, Gemini, Groq, Ollama, etc.)
+- [x] Mental models — evolving topic understanding
+- [x] Metadata filtering and per-user memory isolation
+- [x] Web dashboard with memory stream, search, and graph view
 - [x] Auto-start on boot (systemd + VBS)
 - [ ] Memory import/export (JSON backup)
 - [ ] Multi-agent memory sharing
 - [ ] Automatic memory consolidation and pruning
 - [ ] Support for more MCP clients (Cursor, Windsurf, etc.)
 - [ ] Docker-based installation (no WSL dependency)
-- [ ] Memory visualization graph view in dashboard
+
+## Changelog
+
+- **v1.2** (2026-03-15): Dashboard redesign (glassmorphism, memory cards, graph zoom/pan/tooltips, delete, animated counters, mobile responsive); README rewrite with demo GIF; proxy bridge for WSL-Windows connectivity; service renamed hindsight → memomind
+- **v1.1** (2026-03-12): Web dashboard for visual memory browsing; auto-start on boot; MCP stdio transport
+- **v1.0** (2026-03-09): Initial release — retain/recall/reflect, PostgreSQL + pgvector, GPU-accelerated embeddings, cross-encoder reranking
 
 ## Credits
 
@@ -335,6 +378,28 @@ MemoMind 赋予你的 AI **持久、本地、智能的记忆**。它不仅仅存
 | **跨会话推理** | 不可能 | `reflect` 跨所有记忆综合分析 |
 | **隐私** | 通常基于云 | 100% 本地——数据不出你的电脑 |
 
+## 四种记忆类型
+
+| 类型 | 捕获什么 | 示例 |
+|------|---------|------|
+| **World（世界事实）** | 关于用户和环境的客观事实 | "用户偏好 Python 而非 R" |
+| **Experience（经历）** | AI 参与过的事件 | "上次会话调试了 auth 模块" |
+| **Observation（观察）** | 从行为中自动归纳的模式 | "用户一直使用函数式风格" |
+| **Mental Model（心智模型）** | 对复杂主题的深层理解 | "这个代码库使用六边形架构" |
+
+## 核心能力
+
+- **100% 本地** — PostgreSQL + 嵌入模型运行在 WSL2，数据不出机器
+- **零手动操作** — AI 自主决定记什么、什么时候回忆
+- **GPU 加速** — 使用 NVIDIA GPU 加速本地嵌入和重排序
+- **4 路混合检索** — 语义相似度 + BM25 关键词 + 知识图谱 + 时序搜索
+- **深度反思** — `reflect` 跨所有记忆综合推理，不只是检索
+- **心智模型** — 构建对复杂主题的演化理解，不只是孤立的事实
+- **元数据过滤** — 为记忆添加标签，实现按项目/按用户隔离
+- **多 LLM 支持** — OpenAI、Anthropic、Gemini、Groq、Ollama、LM Studio 等
+- **可视化面板** — 在 `http://127.0.0.1:9999` 浏览和搜索所有记忆
+- **开机自启** — systemd 服务 + Windows 启动脚本
+
 ## 快速开始
 
 ### 前置条件
@@ -370,6 +435,12 @@ claude mcp add --scope user --transport stdio memomind \
 
 - 嵌入模型自动从 `hf-mirror.com` 下载，无需 VPN
 - OpenRouter 大部分模型无需代理（避免使用 Google Gemini 系列）
+
+## 更新日志
+
+- **v1.2** (2026-03-15): Dashboard 全面重新设计（毛玻璃效果、记忆卡片、图谱缩放/平移/提示、删除、动画计数器、移动端适配）；README 重写 + demo GIF；WSL-Windows 代理桥接；服务名 hindsight → memomind
+- **v1.1** (2026-03-12): 可视化记忆面板；开机自启；MCP stdio 传输
+- **v1.0** (2026-03-09): 首次发布——retain/recall/reflect、PostgreSQL + pgvector、GPU 加速嵌入、交叉编码器重排序
 
 ---
 

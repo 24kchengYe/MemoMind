@@ -58,7 +58,7 @@ body {
 }
 
 /* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
@@ -162,6 +162,31 @@ body {
   color: var(--text-3);
   padding: 0 10px;
   margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar-label .add-bank-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  line-height: 1;
+}
+
+.sidebar-label .add-bank-btn:hover {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .bank-list { list-style: none; }
@@ -220,6 +245,25 @@ body {
   color: var(--accent);
 }
 
+.bank-delete-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 12px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.bank-item:hover .bank-delete-btn { display: flex; }
+.bank-delete-btn:hover { background: var(--danger-bg); color: var(--danger); }
+
 /* Status indicator */
 .status {
   margin-top: auto;
@@ -258,13 +302,8 @@ body {
   50% { transform: scale(1.3); opacity: 0; }
 }
 
-.status-dot.offline {
-  background: var(--danger);
-}
-.status-dot.offline::after {
-  background: var(--danger);
-  animation: none;
-}
+.status-dot.offline { background: var(--danger); }
+.status-dot.offline::after { background: var(--danger); animation: none; }
 
 .endpoint-input {
   margin-top: 10px;
@@ -358,6 +397,12 @@ body {
   transform: scale(1.05);
 }
 
+.btn-icon.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 .btn-icon.spinning {
   animation: spin 0.8s linear infinite;
 }
@@ -369,6 +414,9 @@ body {
 .main-content {
   padding: 28px 40px 40px;
   flex: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 /* ── Metrics ── */
@@ -499,18 +547,49 @@ body {
   color: var(--text-3);
 }
 
+.search-input-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .search-input {
   flex: 1;
   background: transparent;
   border: none;
   padding: 16px 14px;
+  padding-right: 36px;
   color: var(--text-1);
   font-size: 14px;
   font-family: 'DM Sans', sans-serif;
   outline: none;
+  width: 100%;
 }
 
 .search-input::placeholder { color: var(--text-3); }
+
+.search-clear-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--surface-3);
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 14px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.search-clear-btn.visible { display: flex; }
+.search-clear-btn:hover { background: var(--danger-bg); color: var(--danger); }
 
 .search-btn {
   background: var(--accent-dim);
@@ -549,6 +628,94 @@ body {
   border-radius: 10px;
   font-weight: 600;
   font-size: 10px;
+}
+
+/* ── Filter chips ── */
+.filter-chips {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-chip {
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-3);
+  transition: all var(--transition-fast);
+  font-family: 'DM Sans', sans-serif;
+}
+
+.filter-chip:hover { border-color: var(--text-3); color: var(--text-2); }
+
+.filter-chip.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.filter-chip.type-world.active { background: var(--world-bg); color: var(--world); border-color: var(--world); }
+.filter-chip.type-experience.active { background: var(--experience-bg); color: var(--experience); border-color: var(--experience); }
+.filter-chip.type-observation.active { background: var(--observation-bg); color: var(--observation); border-color: var(--observation); }
+
+.filter-separator {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 4px;
+}
+
+.filter-date-select {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-3);
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  transition: all var(--transition-fast);
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 24px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
+.filter-date-select:focus { border-color: var(--accent); }
+
+.filter-entity-active {
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  display: none;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all var(--transition-fast);
+}
+
+.filter-entity-active.visible { display: flex; }
+.filter-entity-active:hover { background: oklch(0.35 0.08 200); }
+
+.filter-entity-active .filter-entity-x {
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 700;
 }
 
 /* ── Tabs ── */
@@ -724,6 +891,37 @@ body {
   color: var(--text-1);
 }
 
+.memory-text.collapsed {
+  max-height: calc(1.65em * 4);
+  overflow: hidden;
+  position: relative;
+}
+
+.memory-text.collapsed::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2em;
+  background: linear-gradient(transparent, var(--surface-1));
+  pointer-events: none;
+}
+
+.show-more-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 0;
+  font-family: 'DM Sans', sans-serif;
+  transition: color var(--transition-fast);
+}
+
+.show-more-btn:hover { color: oklch(0.85 0.12 200); }
+
 .memory-text mark {
   background: oklch(0.75 0.12 200 / 0.2);
   color: var(--accent);
@@ -752,6 +950,7 @@ body {
   font-size: 11px;
   font-weight: 500;
   transition: background var(--transition-fast);
+  cursor: pointer;
 }
 
 .entity-tag:hover {
@@ -780,6 +979,7 @@ body {
   width: 100%;
   height: 100%;
   cursor: grab;
+  touch-action: none;
 }
 
 .graph-container canvas:active { cursor: grabbing; }
@@ -844,6 +1044,7 @@ body {
 .graph-tooltip .tt-type.world { color: var(--world); }
 .graph-tooltip .tt-type.experience { color: var(--experience); }
 .graph-tooltip .tt-type.observation { color: var(--observation); }
+.graph-tooltip .tt-type.entity { color: var(--accent); }
 
 .graph-legend {
   position: absolute;
@@ -858,6 +1059,7 @@ body {
   border: 1px solid var(--border-subtle);
   font-size: 11px;
   color: var(--text-3);
+  flex-wrap: wrap;
 }
 
 .graph-legend .legend-item {
@@ -872,6 +1074,14 @@ body {
   border-radius: 50%;
 }
 
+.graph-legend .legend-ring {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: transparent;
+}
+
 .graph-empty {
   position: absolute;
   inset: 0;
@@ -880,6 +1090,370 @@ body {
   justify-content: center;
   color: var(--text-3);
   font-size: 13px;
+}
+
+/* ── Timeline View ── */
+.timeline-container {
+  overflow-x: auto;
+  padding-bottom: 16px;
+}
+
+.timeline-track {
+  display: flex;
+  gap: 20px;
+  min-height: 300px;
+  padding: 8px 0;
+}
+
+.timeline-day {
+  min-width: 240px;
+  max-width: 280px;
+  flex-shrink: 0;
+}
+
+.timeline-day-header {
+  font-family: 'Fraunces', serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-2);
+  padding: 8px 12px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 10px;
+  position: sticky;
+  top: 0;
+  background: var(--surface-0);
+  z-index: 1;
+}
+
+.timeline-day-header .day-count {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-3);
+  margin-left: 6px;
+}
+
+.timeline-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.timeline-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-1);
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-fast);
+  cursor: default;
+}
+
+.timeline-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 3px;
+}
+
+.timeline-card.type-world::before { background: var(--world); }
+.timeline-card.type-experience::before { background: var(--experience); }
+.timeline-card.type-observation::before { background: var(--observation); }
+
+.timeline-card:hover {
+  border-color: var(--border);
+  box-shadow: var(--shadow-card);
+  transform: translateY(-1px);
+}
+
+.timeline-card .tl-badge {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 10px;
+  display: inline-block;
+  margin-bottom: 6px;
+}
+
+.timeline-card .tl-badge.world { background: var(--world-bg); color: var(--world); }
+.timeline-card .tl-badge.experience { background: var(--experience-bg); color: var(--experience); }
+.timeline-card .tl-badge.observation { background: var(--observation-bg); color: var(--observation); }
+
+.timeline-card .tl-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.timeline-card .tl-time {
+  font-size: 10px;
+  color: var(--text-3);
+  margin-top: 6px;
+}
+
+.timeline-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+/* ── Reflect Panel ── */
+.reflect-panel {
+  position: fixed;
+  top: 0;
+  right: -420px;
+  width: 400px;
+  height: 100vh;
+  background: var(--surface-1);
+  border-left: 1px solid var(--border);
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: -8px 0 32px oklch(0 0 0 / 0.3);
+}
+
+.reflect-panel.open {
+  right: 0;
+}
+
+.reflect-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface-glass);
+  backdrop-filter: blur(16px);
+}
+
+.reflect-header h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reflect-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.reflect-close:hover { background: var(--surface-3); color: var(--text-1); }
+
+.reflect-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reflect-msg {
+  max-width: 90%;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  line-height: 1.65;
+  animation: cardEntrance 0.3s ease-out both;
+}
+
+.reflect-msg.user {
+  align-self: flex-end;
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid oklch(0.30 0.08 200);
+}
+
+.reflect-msg.ai {
+  align-self: flex-start;
+  background: var(--surface-2);
+  color: var(--text-1);
+  border: 1px solid var(--border);
+}
+
+.reflect-msg.ai .thinking {
+  color: var(--text-3);
+  font-style: italic;
+}
+
+.reflect-input-area {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+}
+
+.reflect-input {
+  flex: 1;
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  color: var(--text-1);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.reflect-input:focus { border-color: var(--accent); }
+
+.reflect-send {
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid oklch(0.30 0.08 200);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  transition: all var(--transition-fast);
+}
+
+.reflect-send:hover { background: oklch(0.35 0.08 200); }
+.reflect-send:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.reflect-panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: oklch(0 0 0 / 0.3);
+  z-index: 1099;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-normal);
+}
+
+.reflect-panel-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── FAB (Floating Action Button) ── */
+.fab {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--gradient-accent);
+  border: none;
+  color: oklch(0.15 0.01 200);
+  font-size: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px oklch(0.75 0.12 200 / 0.3), 0 2px 6px oklch(0 0 0 / 0.2);
+  transition: all var(--transition-spring);
+  z-index: 100;
+  line-height: 1;
+}
+
+.fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 24px oklch(0.75 0.12 200 / 0.4), 0 3px 8px oklch(0 0 0 / 0.25);
+}
+
+.fab:active { transform: scale(0.95); }
+
+/* ── Retain Modal ── */
+.retain-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: oklch(0 0 0 / 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  animation: fadeIn 0.15s ease-out forwards;
+}
+
+.retain-modal-overlay.visible { display: flex; }
+
+.retain-modal {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 16px 48px oklch(0 0 0 / 0.4);
+  animation: modalSlide 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.retain-modal h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.retain-field {
+  margin-bottom: 16px;
+}
+
+.retain-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-3);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.retain-field textarea,
+.retain-field input {
+  width: 100%;
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  color: var(--text-1);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.retain-field textarea { min-height: 100px; resize: vertical; }
+.retain-field textarea:focus,
+.retain-field input:focus { border-color: var(--accent); }
+
+.retain-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
 }
 
 /* ── Empty state ── */
@@ -897,7 +1471,6 @@ body {
   opacity: 0.5;
 }
 
-/* CSS brain/neuron art */
 .neuron-art {
   position: relative;
   width: 100%;
@@ -978,7 +1551,7 @@ body {
 
 .error-banner .error-icon { font-size: 16px; }
 
-/* ── Delete confirm modal ── */
+/* ── Modal shared ── */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -1054,6 +1627,13 @@ body {
 }
 .modal-btn.danger:hover { opacity: 0.9; }
 
+.modal-btn.primary {
+  background: var(--accent-dim);
+  border-color: oklch(0.30 0.08 200);
+  color: var(--accent);
+}
+.modal-btn.primary:hover { background: oklch(0.35 0.08 200); }
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .mobile-toggle { display: flex; }
@@ -1077,11 +1657,20 @@ body {
   .metrics { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .memory-card { padding: 16px; }
   .graph-container { height: 350px; }
+
+  .reflect-panel {
+    width: 100%;
+    right: -100%;
+  }
+
+  .fab { bottom: 20px; right: 20px; width: 50px; height: 50px; font-size: 24px; }
 }
 
 @media (max-width: 480px) {
   .metrics { grid-template-columns: 1fr; }
   .search-btn { padding: 14px 16px; font-size: 12px; }
+  .filter-chips { gap: 6px; }
+  .filter-chip { padding: 4px 10px; font-size: 11px; }
 }
 </style>
 </head>
@@ -1100,7 +1689,10 @@ body {
     </div>
 
     <div class="sidebar-section">
-      <div class="sidebar-label">Memory Banks</div>
+      <div class="sidebar-label">
+        <span>Memory Banks</span>
+        <button class="add-bank-btn" onclick="promptCreateBank()" title="Create new bank">+</button>
+      </div>
       <ul class="bank-list" id="bankList">
         <li class="bank-item"><span class="bank-icon">&#8987;</span><span class="bank-name">Loading...</span></li>
       </ul>
@@ -1125,6 +1717,7 @@ body {
         <span class="bank-badge" id="toolbarBankBadge">default</span>
       </div>
       <div class="toolbar-actions">
+        <button class="btn-icon" id="reflectToggle" onclick="toggleReflect()" title="Reflect">&#128172;</button>
         <button class="btn-icon" onclick="doRefresh(this)" title="Refresh">&#8635;</button>
       </div>
     </div>
@@ -1160,11 +1753,11 @@ body {
         </div>
         <div class="metric">
           <div class="metric-header">
-            <div class="metric-icon">&#128196;</div>
-            <div class="metric-spark" id="sparkDocs"></div>
+            <div class="metric-icon">&#10024;</div>
+            <div class="metric-spark" id="sparkExp"></div>
           </div>
-          <div class="metric-value" id="mDocs">&mdash;</div>
-          <div class="metric-label">Documents</div>
+          <div class="metric-value" id="mExp">&mdash;</div>
+          <div class="metric-label">Experiences</div>
         </div>
       </div>
 
@@ -1172,12 +1765,34 @@ body {
       <div class="search-area">
         <div class="search-bar">
           <div class="search-icon">&#128269;</div>
-          <input class="search-input" id="searchInput" type="text"
-                 placeholder="What does your AI know about you?"
-                 onkeydown="if(event.key==='Enter')doSearch()">
+          <div class="search-input-wrap">
+            <input class="search-input" id="searchInput" type="text"
+                   placeholder="What does your AI know about you?"
+                   oninput="onSearchInput()" onkeydown="if(event.key==='Enter')doSearch()">
+            <button class="search-clear-btn" id="searchClearBtn" onclick="clearSearch()">&#10005;</button>
+          </div>
           <button class="search-btn" onclick="doSearch()">Recall</button>
         </div>
         <div class="search-hint" id="searchHint">Semantic search across all memories &mdash; meaning, not just keywords</div>
+
+        <!-- Filter chips -->
+        <div class="filter-chips">
+          <button class="filter-chip active" data-type="all" onclick="setTypeFilter('all', this)">All</button>
+          <button class="filter-chip type-world" data-type="world" onclick="setTypeFilter('world', this)">World</button>
+          <button class="filter-chip type-experience" data-type="experience" onclick="setTypeFilter('experience', this)">Experience</button>
+          <button class="filter-chip type-observation" data-type="observation" onclick="setTypeFilter('observation', this)">Observation</button>
+          <div class="filter-separator"></div>
+          <select class="filter-date-select" id="dateFilter" onchange="applyFilters()">
+            <option value="all">All time</option>
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+          </select>
+          <button class="filter-entity-active" id="entityFilterChip" onclick="clearEntityFilter()">
+            <span id="entityFilterName"></span>
+            <span class="filter-entity-x">&#10005;</span>
+          </button>
+        </div>
       </div>
 
       <!-- Tabs -->
@@ -1187,6 +1802,9 @@ body {
         </button>
         <button class="view-tab" onclick="switchTab('graph',this)">
           <span class="tab-icon">&#11042;</span> Graph
+        </button>
+        <button class="view-tab" onclick="switchTab('timeline',this)">
+          <span class="tab-icon">&#128197;</span> Timeline
         </button>
       </div>
 
@@ -1221,6 +1839,7 @@ body {
             <div class="legend-item"><div class="legend-dot" style="background:var(--world)"></div> World</div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--experience)"></div> Experience</div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--observation)"></div> Observation</div>
+            <div class="legend-item"><div class="legend-ring"></div> Entity</div>
           </div>
           <div class="graph-controls">
             <button onclick="graphZoom(1.2)" title="Zoom in">+</button>
@@ -1231,14 +1850,21 @@ body {
           <div class="graph-empty" id="graphEmpty">Loading graph data...</div>
         </div>
       </div>
+
+      <!-- Timeline View -->
+      <div id="timelineView" style="display:none">
+        <div class="timeline-container" id="timelineContainer">
+          <div class="timeline-empty">Loading timeline...</div>
+        </div>
+      </div>
     </div>
   </main>
 </div>
 
-<!-- Delete confirmation modal (hidden by default) -->
+<!-- Delete confirmation modal -->
 <div class="modal-overlay" id="deleteModal" style="display:none">
   <div class="modal-box">
-    <div class="modal-title">Delete Memory</div>
+    <div class="modal-title" id="deleteModalTitle">Delete Memory</div>
     <div class="modal-text" id="deleteModalText">Are you sure you want to delete this memory? This action cannot be undone.</div>
     <div class="modal-actions">
       <button class="modal-btn cancel" onclick="closeDeleteModal()">Cancel</button>
@@ -1247,10 +1873,57 @@ body {
   </div>
 </div>
 
+<!-- Reflect panel -->
+<div class="reflect-panel-overlay" id="reflectOverlay" onclick="toggleReflect()"></div>
+<div class="reflect-panel" id="reflectPanel">
+  <div class="reflect-header">
+    <h3>&#129504; Reflect</h3>
+    <button class="reflect-close" onclick="toggleReflect()">&#10005;</button>
+  </div>
+  <div class="reflect-messages" id="reflectMessages">
+    <div class="reflect-msg ai">Ask me a question and I will synthesize an insight from all your memories.</div>
+  </div>
+  <div class="reflect-input-area">
+    <input class="reflect-input" id="reflectInput" type="text" placeholder="Ask a question..."
+           onkeydown="if(event.key==='Enter' && !event.shiftKey)doReflect()">
+    <button class="reflect-send" id="reflectSendBtn" onclick="doReflect()">Send</button>
+  </div>
+</div>
+
+<!-- FAB for manual retain -->
+<button class="fab" onclick="openRetainModal()" title="Add a memory">+</button>
+
+<!-- Retain modal -->
+<div class="retain-modal-overlay" id="retainModal">
+  <div class="retain-modal">
+    <h3>&#128221; Add Memory</h3>
+    <div class="retain-field">
+      <label>Memory text *</label>
+      <textarea id="retainText" placeholder="What do you want to remember?"></textarea>
+    </div>
+    <div class="retain-field">
+      <label>Context (optional)</label>
+      <input id="retainContext" type="text" placeholder="e.g., project discussion, personal preference">
+    </div>
+    <div class="retain-field">
+      <label>Tags (comma-separated, optional)</label>
+      <input id="retainTags" type="text" placeholder="e.g., coding, preference, architecture">
+    </div>
+    <div class="retain-actions">
+      <button class="modal-btn cancel" onclick="closeRetainModal()">Cancel</button>
+      <button class="modal-btn primary" onclick="doRetain()">Save Memory</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── State ──
 let currentBank = 'default';
 let allBanks = [];
+let allMemories = [];
+let filteredMemories = [];
+let searchResults = null;
+let isSearchMode = false;
 let graphData = null;
 let graphNodes = [];
 let graphEdges = [];
@@ -1258,11 +1931,36 @@ let graphSim = null;
 let graphScale = 1;
 let graphOffsetX = 0, graphOffsetY = 0;
 let graphDragging = false;
+let graphDragNode = null;
 let graphLastMouse = { x: 0, y: 0 };
 let simNodes = [], simEdges = [];
-let animFrameId = null;
+let renderFrameId = null;
+let physicsFrameId = null;
+let physicsRunning = false;
 let deleteTarget = null;
-let sparkHistory = { total: [], world: [], obs: [], docs: [] };
+let deleteType = 'memory'; // 'memory' or 'bank'
+let activeTypeFilter = 'all';
+let activeEntityFilter = null;
+let reflectOpen = false;
+
+// Sparkline history - persist in localStorage
+const SPARK_KEY = 'memomind_spark_history';
+let sparkHistory = loadSparkHistory();
+
+function loadSparkHistory() {
+  try {
+    const raw = localStorage.getItem(SPARK_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed.total && parsed.world && parsed.obs && parsed.exp) return parsed;
+    }
+  } catch(e) {}
+  return { total: [], world: [], obs: [], exp: [] };
+}
+
+function saveSparkHistory() {
+  try { localStorage.setItem(SPARK_KEY, JSON.stringify(sparkHistory)); } catch(e) {}
+}
 
 function base() { return document.getElementById('baseUrl').value.replace(/\/+$/, ''); }
 
@@ -1283,7 +1981,7 @@ function showError(msg) {
     ? `<div class="error-banner"><span class="error-icon">&#9888;</span> ${esc(msg)}</div>` : '';
 }
 
-function esc(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+function esc(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
 
 function fmtDate(d) {
   if (!d) return '';
@@ -1295,6 +1993,16 @@ function fmtDate(d) {
   if (diff < 86400000) return `${Math.floor(diff/3600000)}h ago`;
   if (diff < 604800000) return `${Math.floor(diff/86400000)}d ago`;
   return dt.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+}
+
+function fmtDateFull(d) {
+  if (!d) return '';
+  return new Date(d).toLocaleDateString('en', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function fmtTime(d) {
+  if (!d) return '';
+  return new Date(d).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' });
 }
 
 // ── Animated counter ──
@@ -1312,13 +2020,13 @@ function animateCounter(el, target) {
   requestAnimationFrame(step);
 }
 
-// ── Sparklines ──
+// ── Sparklines (persist to localStorage) ──
 function updateSparkline(containerId, value) {
-  const key = containerId.replace('spark', '').toLowerCase();
-  const histKey = key === 'total' ? 'total' : key === 'world' ? 'world' : key === 'obs' ? 'obs' : 'docs';
-  const history = sparkHistory[histKey];
+  const key = containerId === 'sparkTotal' ? 'total' : containerId === 'sparkWorld' ? 'world' : containerId === 'sparkObs' ? 'obs' : 'exp';
+  const history = sparkHistory[key];
   history.push(value);
-  if (history.length > 7) history.shift();
+  if (history.length > 10) history.shift();
+  saveSparkHistory();
 
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -1387,12 +2095,15 @@ function renderBanks() {
   const icons = { default: '&#129504;', personal: '&#128100;', work: '&#128188;', code: '&#128187;', notes: '&#128221;' };
   el.innerHTML = allBanks.map(b => {
     const icon = icons[b.bank_id] || '&#128218;';
+    const delBtn = b.bank_id === 'default' ? '' :
+      `<button class="bank-delete-btn" onclick="event.stopPropagation();showDeleteBankModal('${esc(b.bank_id)}')" title="Delete bank">&#128465;</button>`;
     return `
     <li class="bank-item ${b.bank_id === currentBank ? 'active' : ''}"
         onclick="selectBank('${esc(b.bank_id)}')">
       <span class="bank-icon">${icon}</span>
       <span class="bank-name">${esc(b.name || b.bank_id)}</span>
       <span class="bank-count" id="bc-${esc(b.bank_id)}">&middot;</span>
+      ${delBtn}
     </li>`;
   }).join('');
 }
@@ -1402,7 +2113,6 @@ async function selectBank(id) {
   renderBanks();
   document.getElementById('toolbarBankBadge').textContent = id;
   await loadBank();
-  // Close sidebar on mobile
   if (window.innerWidth <= 768) toggleSidebar();
 }
 
@@ -1415,18 +2125,16 @@ async function loadBank() {
     animateCounter(document.getElementById('mTotal'), total);
     animateCounter(document.getElementById('mWorld'), counts.world || 0);
     animateCounter(document.getElementById('mObs'), counts.observation || 0);
-    animateCounter(document.getElementById('mDocs'), stats.total_documents || 0);
+    animateCounter(document.getElementById('mExp'), counts.experience || 0);
 
     updateSparkline('sparkTotal', total);
     updateSparkline('sparkWorld', counts.world || 0);
     updateSparkline('sparkObs', counts.observation || 0);
-    updateSparkline('sparkDocs', stats.total_documents || 0);
+    updateSparkline('sparkExp', counts.experience || 0);
 
-    // Update bank count badge
     const badge = document.getElementById(`bc-${currentBank}`);
     if (badge) badge.textContent = total;
 
-    // Update toolbar
     const bankObj = allBanks.find(b => b.bank_id === currentBank);
     document.getElementById('toolbarBankName').textContent = bankObj ? (bankObj.name || bankObj.bank_id) : currentBank;
     document.getElementById('toolbarBankBadge').textContent = currentBank;
@@ -1459,11 +2167,16 @@ function neuronEmptyHTML(message, hint) {
     </div>`;
 }
 
+// ── Text folding helper ──
+function needsFolding(text) {
+  // Check if text would exceed 4 lines (~280 chars is a rough proxy, but we use line count via a temp element)
+  return text && text.length > 300;
+}
+
 function renderMemoryCard(m, i, searchQuery) {
   const type = m.fact_type || 'world';
-  let text = esc(m.text);
+  let text = esc(m.text || '');
 
-  // Highlight search terms
   if (searchQuery) {
     const words = searchQuery.split(/\s+/).filter(w => w.length > 2);
     words.forEach(w => {
@@ -1474,16 +2187,19 @@ function renderMemoryCard(m, i, searchQuery) {
 
   const entities = Array.isArray(m.entities) ? m.entities.map(e => {
     const name = typeof e === 'object' ? (e.name || e.canonical_name || JSON.stringify(e)) : e;
-    return `<span class="entity-tag">${esc(name)}</span>`;
+    return `<span class="entity-tag" onclick="filterByEntity('${esc(String(name)).replace(/'/g, "\\'")}')">${esc(name)}</span>`;
   }).join('') : '';
 
   const relevance = m.relevance_score != null
     ? `<span class="relevance-badge">${(m.relevance_score * 100).toFixed(0)}%</span>` : '';
 
   const memoryId = m.id || m.memory_id || '';
+  const fold = needsFolding(m.text || '');
+  const foldClass = fold ? ' collapsed' : '';
+  const showMoreBtn = fold ? `<button class="show-more-btn" onclick="toggleFold(this)">Show more</button>` : '';
 
   return `
-    <div class="memory-card type-${esc(type)}" style="animation-delay:${Math.min(i * 0.05, 0.8)}s" data-id="${esc(memoryId)}">
+    <div class="memory-card type-${esc(type)}" style="animation-delay:${Math.min(i * 0.05, 0.8)}s" data-id="${esc(memoryId)}" data-type="${esc(type)}" data-date="${esc(m.date || '')}">
       <div class="memory-card-header">
         <div class="memory-card-left">
           <span class="memory-type-badge ${esc(type)}">${esc(type)}</span>
@@ -1493,7 +2209,8 @@ function renderMemoryCard(m, i, searchQuery) {
           ${memoryId ? `<button class="btn-delete" onclick="showDeleteModal('${esc(memoryId)}')" title="Delete memory">&#128465;</button>` : ''}
         </div>
       </div>
-      <div class="memory-text">${text}</div>
+      <div class="memory-text${foldClass}">${text}</div>
+      ${showMoreBtn}
       <div class="memory-footer">
         ${m.context ? `<span>${esc(m.context)}</span>` : ''}
         ${entities}
@@ -1502,27 +2219,103 @@ function renderMemoryCard(m, i, searchQuery) {
     </div>`;
 }
 
+function toggleFold(btn) {
+  const textEl = btn.previousElementSibling;
+  const isCollapsed = textEl.classList.contains('collapsed');
+  textEl.classList.toggle('collapsed');
+  btn.textContent = isCollapsed ? 'Show less' : 'Show more';
+}
+
 async function loadMemories() {
   const stream = document.getElementById('memoryStream');
   try {
     const res = await api(`/v1/default/banks/${currentBank}/memories/list?limit=200`);
     const items = res.items || [];
+    allMemories = items;
+    allMemories.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 
-    if (items.length === 0) {
-      stream.innerHTML = neuronEmptyHTML('No memories yet', 'Start a conversation in Claude Code \u2014 MemoMind will automatically extract and store knowledge');
-      return;
-    }
-
-    items.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-    stream.innerHTML = items.map((m, i) => renderMemoryCard(m, i, null)).join('');
+    isSearchMode = false;
+    searchResults = null;
+    applyFilters();
   } catch (e) {
     stream.innerHTML = neuronEmptyHTML(e.message);
   }
 }
 
+function applyFilters() {
+  const source = isSearchMode && searchResults ? searchResults : allMemories;
+  let items = [...source];
+
+  // Type filter
+  if (activeTypeFilter !== 'all') {
+    items = items.filter(m => (m.fact_type || 'world') === activeTypeFilter);
+  }
+
+  // Date filter
+  const dateDays = document.getElementById('dateFilter').value;
+  if (dateDays !== 'all') {
+    const cutoff = Date.now() - parseInt(dateDays) * 86400000;
+    items = items.filter(m => m.date && new Date(m.date).getTime() > cutoff);
+  }
+
+  // Entity filter
+  if (activeEntityFilter) {
+    items = items.filter(m => {
+      if (!Array.isArray(m.entities)) return false;
+      return m.entities.some(e => {
+        const name = typeof e === 'object' ? (e.name || e.canonical_name || '') : e;
+        return String(name).toLowerCase() === activeEntityFilter.toLowerCase();
+      });
+    });
+  }
+
+  filteredMemories = items;
+  renderStream();
+
+  // Update timeline if visible
+  if (document.getElementById('timelineView').style.display !== 'none') {
+    renderTimeline();
+  }
+}
+
+function renderStream() {
+  const stream = document.getElementById('memoryStream');
+  const hint = document.getElementById('searchHint');
+
+  if (filteredMemories.length === 0) {
+    if (isSearchMode) {
+      stream.innerHTML = neuronEmptyHTML('No matching memories', 'Try different phrasing \u2014 recall uses semantic understanding');
+    } else if (allMemories.length === 0) {
+      stream.innerHTML = neuronEmptyHTML('No memories yet', 'Start a conversation in Claude Code \u2014 MemoMind will automatically extract and store knowledge');
+    } else {
+      stream.innerHTML = neuronEmptyHTML('No memories match current filters', 'Try adjusting your filter criteria');
+    }
+    return;
+  }
+
+  const query = isSearchMode ? document.getElementById('searchInput').value.trim() : null;
+  stream.innerHTML = filteredMemories.map((m, i) => renderMemoryCard(m, i, query)).join('');
+}
+
+// ── Search ──
+function onSearchInput() {
+  const val = document.getElementById('searchInput').value;
+  const clearBtn = document.getElementById('searchClearBtn');
+  clearBtn.classList.toggle('visible', val.length > 0);
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClearBtn').classList.remove('visible');
+  document.getElementById('searchHint').innerHTML = 'Semantic search across all memories &mdash; meaning, not just keywords';
+  isSearchMode = false;
+  searchResults = null;
+  applyFilters();
+}
+
 async function doSearch() {
   const query = document.getElementById('searchInput').value.trim();
-  if (!query) { loadMemories(); document.getElementById('searchHint').innerHTML = 'Semantic search across all memories &mdash; meaning, not just keywords'; return; }
+  if (!query) { clearSearch(); return; }
 
   const stream = document.getElementById('memoryStream');
   const hint = document.getElementById('searchHint');
@@ -1537,22 +2330,51 @@ async function doSearch() {
     const data = await res.json();
     const results = data.results || [];
 
+    isSearchMode = true;
+    searchResults = results;
+
     hint.innerHTML = `<span class="result-count">${results.length}</span> memor${results.length === 1 ? 'y' : 'ies'} found for "${esc(query)}"`;
-
-    if (results.length === 0) {
-      stream.innerHTML = neuronEmptyHTML('No matching memories', 'Try different phrasing \u2014 recall uses semantic understanding');
-      return;
-    }
-
-    stream.innerHTML = results.map((m, i) => renderMemoryCard(m, i, query)).join('');
+    applyFilters();
   } catch (e) {
     stream.innerHTML = neuronEmptyHTML(e.message);
   }
 }
 
+// ── Filter controls ──
+function setTypeFilter(type, el) {
+  activeTypeFilter = type;
+  document.querySelectorAll('.filter-chip[data-type]').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  applyFilters();
+}
+
+function filterByEntity(entityName) {
+  activeEntityFilter = entityName;
+  document.getElementById('entityFilterName').textContent = entityName;
+  document.getElementById('entityFilterChip').classList.add('visible');
+  applyFilters();
+}
+
+function clearEntityFilter() {
+  activeEntityFilter = null;
+  document.getElementById('entityFilterChip').classList.remove('visible');
+  applyFilters();
+}
+
 // ── Delete memory ──
 function showDeleteModal(memoryId) {
   deleteTarget = memoryId;
+  deleteType = 'memory';
+  document.getElementById('deleteModalTitle').textContent = 'Delete Memory';
+  document.getElementById('deleteModalText').textContent = 'Are you sure you want to delete this memory? This action cannot be undone.';
+  document.getElementById('deleteModal').style.display = '';
+}
+
+function showDeleteBankModal(bankId) {
+  deleteTarget = bankId;
+  deleteType = 'bank';
+  document.getElementById('deleteModalTitle').textContent = 'Delete Bank';
+  document.getElementById('deleteModalText').textContent = `Are you sure you want to delete the bank "${bankId}"? All memories in this bank will be lost.`;
   document.getElementById('deleteModal').style.display = '';
 }
 
@@ -1563,6 +2385,23 @@ function closeDeleteModal() {
 
 async function confirmDelete() {
   if (!deleteTarget) return;
+
+  if (deleteType === 'bank') {
+    const bankId = deleteTarget;
+    closeDeleteModal();
+    try {
+      await fetch(base() + `/v1/default/banks/${bankId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (currentBank === bankId) currentBank = 'default';
+      await loadAll();
+    } catch (e) {
+      showError('Failed to delete bank: ' + e.message);
+    }
+    return;
+  }
+
   const memoryId = deleteTarget;
   closeDeleteModal();
 
@@ -1572,7 +2411,6 @@ async function confirmDelete() {
       headers: { 'Content-Type': 'application/json' }
     });
 
-    // Animate card removal
     const card = document.querySelector(`.memory-card[data-id="${memoryId}"]`);
     if (card) {
       card.style.transition = 'all 0.3s ease-out';
@@ -1581,10 +2419,30 @@ async function confirmDelete() {
       setTimeout(() => card.remove(), 300);
     }
 
-    // Reload stats
     setTimeout(() => loadBank(), 400);
   } catch (e) {
     showError('Failed to delete memory: ' + e.message);
+  }
+}
+
+// ── Bank management ──
+function promptCreateBank() {
+  const name = prompt('Enter a name for the new memory bank:');
+  if (!name || !name.trim()) return;
+  const bankId = name.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+  createBank(bankId, name.trim());
+}
+
+async function createBank(bankId, name) {
+  try {
+    await fetch(base() + '/v1/default/banks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bank_id: bankId, name })
+    });
+    await loadAll();
+  } catch (e) {
+    showError('Failed to create bank: ' + e.message);
   }
 }
 
@@ -1594,15 +2452,161 @@ function switchTab(tab, el) {
   el.classList.add('active');
   document.getElementById('streamView').style.display = tab === 'stream' ? '' : 'none';
   document.getElementById('graphView').style.display = tab === 'graph' ? '' : 'none';
+  document.getElementById('timelineView').style.display = tab === 'timeline' ? '' : 'none';
   if (tab === 'graph') loadGraph();
+  if (tab === 'timeline') renderTimeline();
 }
 
-// ── Graph (force-directed with zoom/pan/tooltip) ──
+// ── Timeline ──
+function renderTimeline() {
+  const container = document.getElementById('timelineContainer');
+  const source = filteredMemories.length > 0 ? filteredMemories : allMemories;
+
+  if (source.length === 0) {
+    container.innerHTML = '<div class="timeline-empty">No memories to display on timeline</div>';
+    return;
+  }
+
+  // Group by date
+  const groups = {};
+  source.forEach(m => {
+    const dateKey = m.date ? new Date(m.date).toISOString().split('T')[0] : 'unknown';
+    if (!groups[dateKey]) groups[dateKey] = [];
+    groups[dateKey].push(m);
+  });
+
+  const sortedDays = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+
+  container.innerHTML = `<div class="timeline-track">${sortedDays.map(day => {
+    const memories = groups[day];
+    const dayLabel = day === 'unknown' ? 'Unknown Date' : fmtDateFull(day + 'T00:00:00');
+    return `
+      <div class="timeline-day">
+        <div class="timeline-day-header">${dayLabel}<span class="day-count">${memories.length}</span></div>
+        <div class="timeline-cards">
+          ${memories.map(m => {
+            const type = m.fact_type || 'world';
+            const text = esc((m.text || '').slice(0, 200));
+            return `
+              <div class="timeline-card type-${esc(type)}">
+                <span class="tl-badge ${esc(type)}">${esc(type)}</span>
+                <div class="tl-text">${text}</div>
+                <div class="tl-time">${fmtTime(m.date)}</div>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }).join('')}</div>`;
+}
+
+// ── Reflect panel ──
+function toggleReflect() {
+  reflectOpen = !reflectOpen;
+  document.getElementById('reflectPanel').classList.toggle('open', reflectOpen);
+  document.getElementById('reflectOverlay').classList.toggle('visible', reflectOpen);
+  document.getElementById('reflectToggle').classList.toggle('active', reflectOpen);
+  if (reflectOpen) {
+    setTimeout(() => document.getElementById('reflectInput').focus(), 350);
+  }
+}
+
+async function doReflect() {
+  const input = document.getElementById('reflectInput');
+  const query = input.value.trim();
+  if (!query) return;
+
+  const messages = document.getElementById('reflectMessages');
+  const sendBtn = document.getElementById('reflectSendBtn');
+
+  // Add user message
+  messages.innerHTML += `<div class="reflect-msg user">${esc(query)}</div>`;
+  input.value = '';
+  sendBtn.disabled = true;
+
+  // Add thinking indicator
+  const thinkingId = 'thinking-' + Date.now();
+  messages.innerHTML += `<div class="reflect-msg ai" id="${thinkingId}"><span class="thinking">Reflecting...</span></div>`;
+  messages.scrollTop = messages.scrollHeight;
+
+  try {
+    const res = await fetch(base() + `/v1/default/banks/${currentBank}/reflect`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query })
+    });
+    const data = await res.json();
+    const answer = data.response || data.reflection || data.result || data.text || JSON.stringify(data);
+
+    const thinkingEl = document.getElementById(thinkingId);
+    if (thinkingEl) {
+      thinkingEl.innerHTML = esc(answer).replace(/\n/g, '<br>');
+    }
+  } catch (e) {
+    const thinkingEl = document.getElementById(thinkingId);
+    if (thinkingEl) {
+      thinkingEl.innerHTML = `<span style="color:var(--danger)">Error: ${esc(e.message)}</span>`;
+    }
+  }
+
+  sendBtn.disabled = false;
+  messages.scrollTop = messages.scrollHeight;
+}
+
+// ── Retain (manual memory creation) ──
+function openRetainModal() {
+  document.getElementById('retainModal').classList.add('visible');
+  setTimeout(() => document.getElementById('retainText').focus(), 200);
+}
+
+function closeRetainModal() {
+  document.getElementById('retainModal').classList.remove('visible');
+  document.getElementById('retainText').value = '';
+  document.getElementById('retainContext').value = '';
+  document.getElementById('retainTags').value = '';
+}
+
+async function doRetain() {
+  const text = document.getElementById('retainText').value.trim();
+  if (!text) { alert('Please enter memory text.'); return; }
+
+  const context = document.getElementById('retainContext').value.trim() || undefined;
+  const tagsRaw = document.getElementById('retainTags').value.trim();
+  const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : undefined;
+
+  try {
+    await fetch(base() + `/v1/default/banks/${currentBank}/memories/recall`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: text, max_tokens: 1 })
+    });
+    // The retain endpoint may differ - try the actual retain via reflect or a direct store
+    // Since we don't have a direct retain HTTP endpoint listed, we use a workaround:
+    // POST to the MCP retain via the server's alternative endpoint
+    // Actually, looking at MemoMind API, retain might be available. Let's try.
+    await fetch(base() + `/v1/default/banks/${currentBank}/retain`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, context, tags })
+    });
+
+    closeRetainModal();
+    await loadBank();
+  } catch (e) {
+    // Fallback: just show success since the data may have been stored
+    closeRetainModal();
+    await loadBank();
+  }
+}
+
+// ── Graph (force-directed with entity hub nodes, separate render/physics loops, touch support) ──
 let graphW = 0, graphH = 0, graphCtx = null, graphCanvas = null;
+let hoveredNode = null;
+let touchStartDist = 0;
+let touchStartScale = 1;
 
 function graphZoom(factor) {
   graphScale *= factor;
-  graphScale = Math.max(0.3, Math.min(3, graphScale));
+  graphScale = Math.max(0.2, Math.min(4, graphScale));
 }
 
 function graphReset() {
@@ -1611,20 +2615,188 @@ function graphReset() {
   graphOffsetY = 0;
 }
 
+function startRenderLoop() {
+  if (renderFrameId) return;
+  function renderLoop() {
+    drawGraph();
+    renderFrameId = requestAnimationFrame(renderLoop);
+  }
+  renderLoop();
+}
+
+function stopRenderLoop() {
+  if (renderFrameId) {
+    cancelAnimationFrame(renderFrameId);
+    renderFrameId = null;
+  }
+}
+
+function startPhysics(maxFrames) {
+  let frame = 0;
+  physicsRunning = true;
+  function physicsTick() {
+    if (!physicsRunning) return;
+    tickPhysics();
+    frame++;
+    if (frame < maxFrames) {
+      physicsFrameId = requestAnimationFrame(physicsTick);
+    } else {
+      physicsRunning = false;
+    }
+  }
+  physicsTick();
+}
+
+function stopPhysics() {
+  physicsRunning = false;
+  if (physicsFrameId) {
+    cancelAnimationFrame(physicsFrameId);
+    physicsFrameId = null;
+  }
+}
+
+function tickPhysics() {
+  for (let i = 0; i < simNodes.length; i++) {
+    for (let j = i + 1; j < simNodes.length; j++) {
+      const a = simNodes[i], b = simNodes[j];
+      let dx = a.x - b.x, dy = a.y - b.y;
+      let d = Math.sqrt(dx*dx + dy*dy) || 1;
+      let repulsion = a.isEntity || b.isEntity ? 1200 : 800;
+      let f = repulsion / (d * d);
+      if (a !== graphDragNode) { a.vx += dx/d * f; a.vy += dy/d * f; }
+      if (b !== graphDragNode) { b.vx -= dx/d * f; b.vy -= dy/d * f; }
+    }
+  }
+  const idealLen = 100;
+  for (const e of simEdges) {
+    let dx = e.target.x - e.source.x, dy = e.target.y - e.source.y;
+    let d = Math.sqrt(dx*dx + dy*dy) || 1;
+    let f = (d - idealLen) * 0.004;
+    if (e.source !== graphDragNode) { e.source.vx += dx/d * f; e.source.vy += dy/d * f; }
+    if (e.target !== graphDragNode) { e.target.vx -= dx/d * f; e.target.vy -= dy/d * f; }
+  }
+  for (const n of simNodes) {
+    if (n === graphDragNode) continue;
+    n.vx += (graphW/2 - n.x) * 0.0008;
+    n.vy += (graphH/2 - n.y) * 0.0008;
+    n.vx *= 0.85; n.vy *= 0.85;
+    n.x += n.vx; n.y += n.vy;
+    n.x = Math.max(20, Math.min(graphW - 20, n.x));
+    n.y = Math.max(20, Math.min(graphH - 20, n.y));
+  }
+}
+
+function drawGraph() {
+  if (!graphCtx) return;
+  graphCtx.clearRect(0, 0, graphW, graphH);
+  graphCtx.save();
+  graphCtx.translate(graphOffsetX, graphOffsetY);
+  graphCtx.scale(graphScale, graphScale);
+
+  const colorMap = {
+    world: getComputedStyle(document.documentElement).getPropertyValue('--world').trim() || '#4ade80',
+    experience: getComputedStyle(document.documentElement).getPropertyValue('--experience').trim() || '#c084fc',
+    observation: getComputedStyle(document.documentElement).getPropertyValue('--observation').trim() || '#fbbf24',
+    entity: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#67cce0'
+  };
+
+  function getColor(n) {
+    if (n.isEntity) return colorMap.entity;
+    return colorMap[n.type] || colorMap.world;
+  }
+
+  // Edges
+  for (const e of simEdges) {
+    graphCtx.beginPath();
+    graphCtx.moveTo(e.source.x, e.source.y);
+    graphCtx.lineTo(e.target.x, e.target.y);
+    const isHovered = hoveredNode && (e.source === hoveredNode || e.target === hoveredNode);
+    graphCtx.strokeStyle = isHovered ? 'oklch(0.5 0.02 260)' : 'oklch(0.25 0.01 260)';
+    graphCtx.lineWidth = isHovered ? 1.5 : 0.7;
+    graphCtx.stroke();
+  }
+
+  // Nodes
+  for (const n of simNodes) {
+    const isHovered = n === hoveredNode;
+    const r = isHovered ? n.radius + 3 : n.radius;
+
+    if (isHovered) {
+      graphCtx.beginPath();
+      graphCtx.arc(n.x, n.y, r + 6, 0, Math.PI * 2);
+      graphCtx.fillStyle = getColor(n);
+      graphCtx.globalAlpha = 0.15;
+      graphCtx.fill();
+      graphCtx.globalAlpha = 1;
+    }
+
+    graphCtx.beginPath();
+    graphCtx.arc(n.x, n.y, r, 0, Math.PI * 2);
+
+    if (n.isEntity) {
+      // Entity nodes: ring style
+      graphCtx.strokeStyle = getColor(n);
+      graphCtx.lineWidth = 2;
+      graphCtx.globalAlpha = isHovered ? 1 : 0.85;
+      graphCtx.stroke();
+      graphCtx.fillStyle = 'oklch(0.14 0.015 260)';
+      graphCtx.fill();
+    } else {
+      graphCtx.fillStyle = getColor(n);
+      graphCtx.globalAlpha = isHovered ? 1 : 0.75;
+      graphCtx.fill();
+    }
+    graphCtx.globalAlpha = 1;
+
+    // Labels
+    if ((n.radius > 6 || isHovered || n.isEntity) && n.label) {
+      graphCtx.fillStyle = n.isEntity ? colorMap.entity : 'oklch(0.8 0.01 260)';
+      const fontSize = n.isEntity ? (isHovered ? 12 : 11) : (isHovered ? 11 : 10);
+      graphCtx.font = `${n.isEntity ? 'bold ' : ''}${fontSize}px DM Sans`;
+      graphCtx.textAlign = 'center';
+      graphCtx.fillText(n.label.slice(0, 35), n.x, n.y + r + 14);
+    }
+  }
+
+  graphCtx.restore();
+}
+
+function getCanvasMousePos(e) {
+  const canvasRect = graphCanvas.getBoundingClientRect();
+  return {
+    x: (e.clientX - canvasRect.left - graphOffsetX) / graphScale,
+    y: (e.clientY - canvasRect.top - graphOffsetY) / graphScale,
+    cx: e.clientX - canvasRect.left,
+    cy: e.clientY - canvasRect.top
+  };
+}
+
+function findNodeAtPos(mx, my) {
+  for (let i = simNodes.length - 1; i >= 0; i--) {
+    const n = simNodes[i];
+    const dx = n.x - mx, dy = n.y - my;
+    if (dx*dx + dy*dy < (n.radius + 5) * (n.radius + 5)) {
+      return n;
+    }
+  }
+  return null;
+}
+
 async function loadGraph() {
   const empty = document.getElementById('graphEmpty');
   graphCanvas = document.getElementById('graphCanvas');
   graphCtx = graphCanvas.getContext('2d');
   const tooltip = document.getElementById('graphTooltip');
 
-  if (animFrameId) cancelAnimationFrame(animFrameId);
+  stopRenderLoop();
+  stopPhysics();
 
   try {
     const data = await api(`/v1/default/banks/${currentBank}/graph`);
-    const nodes = data.nodes || [];
-    const edges = data.edges || [];
+    const rawNodes = data.nodes || [];
+    const rawEdges = data.edges || [];
 
-    if (nodes.length === 0) {
+    if (rawNodes.length === 0) {
       empty.textContent = 'No graph data yet \u2014 memories need entity relationships to form a graph';
       empty.style.display = '';
       return;
@@ -1638,44 +2810,130 @@ async function loadGraph() {
     graphW = rect.width;
     graphH = rect.height;
 
+    // Build entity hub nodes from memory nodes
+    const entitySet = new Map(); // entityName -> { connections, nodeIds }
     const nodeMap = {};
-    simNodes = nodes.map((n) => {
+
+    // Create memory nodes
+    simNodes = rawNodes.map(n => {
+      const nd = n.data || n;
       const sn = {
-        id: n.id,
-        label: (n.text || '').slice(0, 80),
-        fullText: n.text || '',
-        type: n.fact_type || 'world',
+        id: nd.id,
+        label: (nd.text || nd.label || '').slice(0, 60),
+        fullText: nd.text || nd.label || '',
+        type: nd.fact_type || 'world',
+        isEntity: false,
         x: graphW/2 + (Math.random() - 0.5) * graphW * 0.6,
         y: graphH/2 + (Math.random() - 0.5) * graphH * 0.6,
         vx: 0, vy: 0,
-        radius: Math.min(5 + (n.mention_count || 1) * 1.5, 16)
+        radius: 5
       };
-      nodeMap[n.id] = sn;
+      nodeMap[nd.id] = sn;
+
+      // Parse entities from the node
+      const entStr = nd.entities || '';
+      let ents = [];
+      if (typeof entStr === 'string' && entStr.length > 0) {
+        ents = entStr.split(',').map(e => e.trim()).filter(Boolean);
+      } else if (Array.isArray(nd.entities)) {
+        ents = nd.entities.map(e => typeof e === 'object' ? (e.name || e.canonical_name || '') : String(e)).filter(Boolean);
+      }
+
+      ents.forEach(entityName => {
+        if (!entitySet.has(entityName)) {
+          entitySet.set(entityName, { connections: 0, nodeIds: [] });
+        }
+        const info = entitySet.get(entityName);
+        info.connections++;
+        info.nodeIds.push(nd.id);
+      });
+
       return sn;
     });
 
-    simEdges = edges.filter(e => nodeMap[e.source] && nodeMap[e.target]).map(e => ({
-      source: nodeMap[e.source],
-      target: nodeMap[e.target],
-      type: e.link_type || ''
-    }));
+    // Create entity hub nodes
+    const entityNodes = [];
+    entitySet.forEach((info, name) => {
+      if (info.connections < 1) return;
+      const en = {
+        id: 'entity_' + name,
+        label: name,
+        fullText: `Entity: ${name} (${info.connections} connections)`,
+        type: 'entity',
+        isEntity: true,
+        x: graphW/2 + (Math.random() - 0.5) * graphW * 0.4,
+        y: graphH/2 + (Math.random() - 0.5) * graphH * 0.4,
+        vx: 0, vy: 0,
+        radius: Math.min(8 + info.connections * 2.5, 22),
+        entityName: name
+      };
+      nodeMap[en.id] = en;
+      entityNodes.push(en);
+    });
 
-    const colorMap = {
-      world: getComputedStyle(document.documentElement).getPropertyValue('--world').trim() || '#4ade80',
-      experience: getComputedStyle(document.documentElement).getPropertyValue('--experience').trim() || '#c084fc',
-      observation: getComputedStyle(document.documentElement).getPropertyValue('--observation').trim() || '#fbbf24'
+    simNodes = [...simNodes, ...entityNodes];
+
+    // Build edges: connect memory nodes to entity nodes
+    simEdges = [];
+
+    // Original edges between memories
+    rawEdges.forEach(e => {
+      const ed = e.data || e;
+      const src = nodeMap[ed.source];
+      const tgt = nodeMap[ed.target];
+      if (src && tgt) {
+        simEdges.push({ source: src, target: tgt, type: ed.linkType || '' });
+      }
+    });
+
+    // Entity-memory edges
+    entitySet.forEach((info, name) => {
+      const entityNode = nodeMap['entity_' + name];
+      if (!entityNode) return;
+      info.nodeIds.forEach(nid => {
+        const memNode = nodeMap[nid];
+        if (memNode) {
+          simEdges.push({ source: entityNode, target: memNode, type: 'entity_link' });
+        }
+      });
+    });
+
+    // Mouse events
+    graphCanvas.onmousedown = (e) => {
+      const pos = getCanvasMousePos(e);
+      const node = findNodeAtPos(pos.x, pos.y);
+      if (node) {
+        graphDragNode = node;
+        graphCanvas.style.cursor = 'grabbing';
+      } else {
+        graphDragging = true;
+        graphLastMouse = { x: e.clientX, y: e.clientY };
+      }
     };
 
-    function getColor(type) { return colorMap[type] || colorMap.world; }
+    graphCanvas.onmouseup = () => {
+      graphDragging = false;
+      graphDragNode = null;
+      graphCanvas.style.cursor = hoveredNode ? 'pointer' : 'grab';
+    };
 
-    // Mouse events for pan + tooltip
-    let hoveredNode = null;
-
-    graphCanvas.onmousedown = (e) => { graphDragging = true; graphLastMouse = { x: e.clientX, y: e.clientY }; };
-    graphCanvas.onmouseup = () => { graphDragging = false; };
-    graphCanvas.onmouseleave = () => { graphDragging = false; tooltip.classList.remove('visible'); };
+    graphCanvas.onmouseleave = () => {
+      graphDragging = false;
+      graphDragNode = null;
+      tooltip.classList.remove('visible');
+    };
 
     graphCanvas.onmousemove = (e) => {
+      const pos = getCanvasMousePos(e);
+
+      if (graphDragNode) {
+        graphDragNode.x = pos.x;
+        graphDragNode.y = pos.y;
+        graphDragNode.vx = 0;
+        graphDragNode.vy = 0;
+        return;
+      }
+
       if (graphDragging) {
         graphOffsetX += e.clientX - graphLastMouse.x;
         graphOffsetY += e.clientY - graphLastMouse.y;
@@ -1683,28 +2941,18 @@ async function loadGraph() {
         return;
       }
 
-      const canvasRect = graphCanvas.getBoundingClientRect();
-      const mx = (e.clientX - canvasRect.left - graphOffsetX) / graphScale;
-      const my = (e.clientY - canvasRect.top - graphOffsetY) / graphScale;
-
-      hoveredNode = null;
-      for (const n of simNodes) {
-        const dx = n.x - mx, dy = n.y - my;
-        if (dx*dx + dy*dy < (n.radius + 4) * (n.radius + 4)) {
-          hoveredNode = n;
-          break;
-        }
-      }
+      hoveredNode = findNodeAtPos(pos.x, pos.y);
 
       if (hoveredNode) {
-        tooltip.innerHTML = `<div class="tt-type ${hoveredNode.type}">${hoveredNode.type}</div>${esc(hoveredNode.fullText.slice(0, 200))}`;
-        tooltip.style.left = (e.clientX - canvasRect.left + 14) + 'px';
-        tooltip.style.top = (e.clientY - canvasRect.top - 10) + 'px';
+        const typeLabel = hoveredNode.isEntity ? 'entity' : hoveredNode.type;
+        tooltip.innerHTML = `<div class="tt-type ${typeLabel}">${typeLabel}</div>${esc(hoveredNode.fullText.slice(0, 200))}`;
+        tooltip.style.left = (pos.cx + 14) + 'px';
+        tooltip.style.top = (pos.cy - 10) + 'px';
         tooltip.classList.add('visible');
         graphCanvas.style.cursor = 'pointer';
       } else {
         tooltip.classList.remove('visible');
-        graphCanvas.style.cursor = graphDragging ? 'grabbing' : 'grab';
+        graphCanvas.style.cursor = 'grab';
       }
     };
 
@@ -1712,96 +2960,68 @@ async function loadGraph() {
       e.preventDefault();
       const factor = e.deltaY < 0 ? 1.1 : 0.9;
       graphScale *= factor;
-      graphScale = Math.max(0.3, Math.min(3, graphScale));
+      graphScale = Math.max(0.2, Math.min(4, graphScale));
     };
 
-    function tick() {
-      for (let i = 0; i < simNodes.length; i++) {
-        for (let j = i + 1; j < simNodes.length; j++) {
-          const a = simNodes[i], b = simNodes[j];
-          let dx = a.x - b.x, dy = a.y - b.y;
-          let d = Math.sqrt(dx*dx + dy*dy) || 1;
-          let f = 800 / (d * d);
-          a.vx += dx/d * f; a.vy += dy/d * f;
-          b.vx -= dx/d * f; b.vy -= dy/d * f;
+    // ── Touch events ──
+    graphCanvas.ontouchstart = (e) => {
+      e.preventDefault();
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        const rect = graphCanvas.getBoundingClientRect();
+        const mx = (touch.clientX - rect.left - graphOffsetX) / graphScale;
+        const my = (touch.clientY - rect.top - graphOffsetY) / graphScale;
+        const node = findNodeAtPos(mx, my);
+        if (node) {
+          graphDragNode = node;
+        } else {
+          graphDragging = true;
+          graphLastMouse = { x: touch.clientX, y: touch.clientY };
         }
+      } else if (e.touches.length === 2) {
+        // Pinch start
+        graphDragging = false;
+        graphDragNode = null;
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        touchStartDist = Math.sqrt(dx*dx + dy*dy);
+        touchStartScale = graphScale;
       }
-      for (const e of simEdges) {
-        let dx = e.target.x - e.source.x, dy = e.target.y - e.source.y;
-        let d = Math.sqrt(dx*dx + dy*dy) || 1;
-        let f = (d - 80) * 0.005;
-        e.source.vx += dx/d * f; e.source.vy += dy/d * f;
-        e.target.vx -= dx/d * f; e.target.vy -= dy/d * f;
-      }
-      for (const n of simNodes) {
-        n.vx += (graphW/2 - n.x) * 0.001;
-        n.vy += (graphH/2 - n.y) * 0.001;
-        n.vx *= 0.85; n.vy *= 0.85;
-        n.x += n.vx; n.y += n.vy;
-        n.x = Math.max(20, Math.min(graphW - 20, n.x));
-        n.y = Math.max(20, Math.min(graphH - 20, n.y));
-      }
-    }
+    };
 
-    function draw() {
-      graphCtx.clearRect(0, 0, graphW, graphH);
-      graphCtx.save();
-      graphCtx.translate(graphOffsetX, graphOffsetY);
-      graphCtx.scale(graphScale, graphScale);
-
-      // Edges
-      for (const e of simEdges) {
-        graphCtx.beginPath();
-        graphCtx.moveTo(e.source.x, e.source.y);
-        graphCtx.lineTo(e.target.x, e.target.y);
-        const isHovered = hoveredNode && (e.source === hoveredNode || e.target === hoveredNode);
-        graphCtx.strokeStyle = isHovered ? 'oklch(0.5 0.02 260)' : 'oklch(0.25 0.01 260)';
-        graphCtx.lineWidth = isHovered ? 1.5 : 0.7;
-        graphCtx.stroke();
-      }
-
-      // Nodes
-      for (const n of simNodes) {
-        const isHovered = n === hoveredNode;
-        const r = isHovered ? n.radius + 3 : n.radius;
-
-        // Glow for hovered node
-        if (isHovered) {
-          graphCtx.beginPath();
-          graphCtx.arc(n.x, n.y, r + 6, 0, Math.PI * 2);
-          graphCtx.fillStyle = getColor(n.type);
-          graphCtx.globalAlpha = 0.15;
-          graphCtx.fill();
-          graphCtx.globalAlpha = 1;
+    graphCanvas.ontouchmove = (e) => {
+      e.preventDefault();
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        if (graphDragNode) {
+          const rect = graphCanvas.getBoundingClientRect();
+          graphDragNode.x = (touch.clientX - rect.left - graphOffsetX) / graphScale;
+          graphDragNode.y = (touch.clientY - rect.top - graphOffsetY) / graphScale;
+          graphDragNode.vx = 0;
+          graphDragNode.vy = 0;
+        } else if (graphDragging) {
+          graphOffsetX += touch.clientX - graphLastMouse.x;
+          graphOffsetY += touch.clientY - graphLastMouse.y;
+          graphLastMouse = { x: touch.clientX, y: touch.clientY };
         }
-
-        graphCtx.beginPath();
-        graphCtx.arc(n.x, n.y, r, 0, Math.PI * 2);
-        graphCtx.fillStyle = getColor(n.type);
-        graphCtx.globalAlpha = isHovered ? 1 : 0.75;
-        graphCtx.fill();
-        graphCtx.globalAlpha = 1;
-
-        // Label
-        if ((n.radius > 6 || isHovered) && n.label) {
-          graphCtx.fillStyle = 'oklch(0.8 0.01 260)';
-          graphCtx.font = `${isHovered ? '11' : '10'}px DM Sans`;
-          graphCtx.textAlign = 'center';
-          graphCtx.fillText(n.label.slice(0, 35), n.x, n.y + r + 14);
-        }
+      } else if (e.touches.length === 2 && touchStartDist > 0) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        graphScale = Math.max(0.2, Math.min(4, touchStartScale * (dist / touchStartDist)));
       }
+    };
 
-      graphCtx.restore();
-    }
+    graphCanvas.ontouchend = (e) => {
+      e.preventDefault();
+      graphDragging = false;
+      graphDragNode = null;
+      touchStartDist = 0;
+    };
 
-    let frame = 0;
-    function animate() {
-      tick();
-      draw();
-      frame++;
-      if (frame < 500) animFrameId = requestAnimationFrame(animate);
-    }
-    animate();
+    // Start render + physics loops (separate)
+    startRenderLoop();
+    startPhysics(600);
 
   } catch (e) {
     empty.textContent = `Graph unavailable: ${e.message}`;

@@ -19,7 +19,13 @@
       "Bash(powershell -Command \"\\(Get-Service iphlpsvc\\).Status\" 2>&1)",
       "Bash(cd:*)",
       "Bash(sleep:*)",
-      "WebFetch(domain:www.mindcraft.com.cn)"
+      "WebFetch(domain:www.mindcraft.com.cn)",
+      "Bash(powershell -Command \"Start-Process powershell -ArgumentList '-Command netsh interface portproxy set v4tov4 listenport=8888 listenaddress=127.0.0.1 connectport=8888 connectaddress=172.17.126.31' -Verb RunAs -Wait\" 2>&1\nsleep 2\ncurl -s --noproxy '*' --max-time 3 http://127.0.0.1:8888/health)",
+      "Bash(powershell -Command \"Start-Process powershell -ArgumentList '-ExecutionPolicy Bypass -File D:\\\\pythonPycharms\\\\MemoMind\\\\update-portproxy.ps1' -Verb RunAs -Wait\" 2>&1\nsleep 3\ncurl -s --noproxy '*' --max-time 5 http://127.0.0.1:8888/health)",
+      "Bash(powershell -Command \"Start-Process powershell -ArgumentList '-Command netsh advfirewall firewall add rule name=\\\\\"\\\\\"\\\\\"WSL MemoMind 8888\\\\\"\\\\\"\\\\\" dir=in action=allow protocol=tcp localport=8888' -Verb RunAs -Wait\" 2>&1\nsleep 2\ncurl -s --noproxy '*' --max-time 5 http://127.0.0.1:8888/health)",
+      "Bash(echo:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebSearch"
     ]
   }
 }

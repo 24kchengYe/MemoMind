@@ -12,7 +12,7 @@ const OUTPUT_DIR = 'D:/pythonPycharms/MemoMind/docs/demos';
 const TEMP_DIR = 'D:/pythonPycharms/MemoMind/tmp-frames';
 
 async function recordScene(name, actions, options = {}) {
-  const { width = 1280, height = 720, fps = 8, duration = 12000 } = options;
+  const { width = 1280, height = 720, fps = 10, duration = 15000 } = options;
   const framesDir = path.join(TEMP_DIR, name);
   fs.mkdirSync(framesDir, { recursive: true });
 
@@ -21,7 +21,7 @@ async function recordScene(name, actions, options = {}) {
   const page = await context.newPage();
 
   await page.goto(options.url || BASE_URL, { waitUntil: 'networkidle', timeout: 20000 });
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(2500);
 
   await actions(page);
 
@@ -40,12 +40,13 @@ async function recordScene(name, actions, options = {}) {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
   const palettePath = path.join(TEMP_DIR, `${name}-palette.png`);
+  // Use stats_mode=full for better animation quality (not diff)
   execSync(
-    `ffmpeg -y -framerate ${fps} -i "${framesDir}/frame-%04d.png" -vf "fps=${fps},scale=${width}:-1:flags=lanczos,palettegen=max_colors=128:stats_mode=diff" "${palettePath}"`,
+    `ffmpeg -y -framerate ${fps} -i "${framesDir}/frame-%04d.png" -vf "fps=${fps},scale=${width}:-1:flags=lanczos,palettegen=max_colors=256:stats_mode=full" "${palettePath}"`,
     { stdio: 'pipe' }
   );
   execSync(
-    `ffmpeg -y -framerate ${fps} -i "${framesDir}/frame-%04d.png" -i "${palettePath}" -lavfi "fps=${fps},scale=${width}:-1:flags=lanczos [x]; [x][1:v] paletteuse=dither=bayer:bayer_scale=3" -loop 0 "${outputPath}"`,
+    `ffmpeg -y -framerate ${fps} -i "${framesDir}/frame-%04d.png" -i "${palettePath}" -lavfi "fps=${fps},scale=${width}:-1:flags=lanczos [x]; [x][1:v] paletteuse=dither=sierra2_4a" -loop 0 "${outputPath}"`,
     { stdio: 'pipe' }
   );
 
@@ -56,98 +57,101 @@ async function recordScene(name, actions, options = {}) {
   console.log(`✓ ${name}.gif — ${(stats.size / 1024).toFixed(0)} KB`);
 }
 
-// Main demo: show all new features
 await recordScene('dashboard', async (page) => {
-  // 1. Show dashboard with data loaded (metrics, filters, tabs)
+  // 1. Show full dashboard with data
   await page.waitForTimeout(1500);
 
-  // 2. Hover metric cards
-  const metrics = await page.$$('.metric');
-  for (const m of metrics.slice(0, 3)) {
-    await m.hover();
-    await page.waitForTimeout(400);
-  }
-  await page.mouse.move(640, 300);
+  // 2. Scroll down to show memory cards, then back up
+  await page.evaluate(() => window.scrollTo({ top: 300, behavior: 'smooth' }));
+  await page.waitForTimeout(1000);
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  await page.waitForTimeout(800);
+
+  // 3. Click "World" filter
+  try {
+    const chips = await page.$$('.filter-chip');
+    if (chips.length > 1) {
+      await chips[1].click(); // World
+      await page.waitForTimeout(1200);
+      await chips[0].click(); // All - reset
+      await page.waitForTimeout(600);
+    }
+  } catch(e) {}
+
+  // 4. Type search and recall
+  await page.click('.search-input');
+  await page.waitForTimeout(200);
+  await page.type('.search-input', 'AI tools', { delay: 60 });
   await page.waitForTimeout(300);
+  await page.click('.search-btn');
+  await page.waitForTimeout(1800);
 
-  // 3. Click a type filter chip (e.g., "World")
-  const worldChip = await page.$('.filter-chip:nth-child(2)');
-  if (worldChip) {
-    await worldChip.click();
-    await page.waitForTimeout(1000);
-  }
+  // 5. Clear search
+  try {
+    const clear = await page.$('.search-clear');
+    if (clear) await clear.click();
+  } catch(e) {}
+  await page.waitForTimeout(600);
 
-  // 4. Click "All" to reset
-  const allChip = await page.$('.filter-chip:nth-child(1)');
-  if (allChip) {
-    await allChip.click();
-    await page.waitForTimeout(500);
-  }
+  // 6. Switch to Timeline tab
+  try {
+    const tabs = await page.$$('.view-tab');
+    if (tabs.length >= 3) {
+      await tabs[2].click(); // Timeline
+      await page.waitForTimeout(1800);
+    }
+  } catch(e) {}
 
-  // 5. Type a search
-  const searchInput = await page.$('.search-input');
-  if (searchInput) {
-    await searchInput.click();
-    await page.waitForTimeout(200);
-    await page.type('.search-input', '张业成', { delay: 80 });
-    await page.waitForTimeout(300);
-    await page.click('.search-btn');
-    await page.waitForTimeout(1500);
-  }
+  // 7. Switch to Graph tab
+  try {
+    const tabs = await page.$$('.view-tab');
+    if (tabs.length >= 2) {
+      await tabs[1].click(); // Graph
+      await page.waitForTimeout(2500);
+    }
+  } catch(e) {}
 
-  // 6. Clear search
-  const clearBtn = await page.$('.search-clear');
-  if (clearBtn) {
-    await clearBtn.click();
-    await page.waitForTimeout(500);
-  }
+  // 8. Back to Stream
+  try {
+    const tabs = await page.$$('.view-tab');
+    if (tabs.length >= 1) {
+      await tabs[0].click(); // Stream
+      await page.waitForTimeout(600);
+    }
+  } catch(e) {}
 
-  // 7. Click Timeline tab
-  const timelineTab = await page.$('.view-tab:nth-child(3)');
-  if (timelineTab) {
-    await timelineTab.click();
-    await page.waitForTimeout(1500);
-  }
+  // 9. Open Reflect panel
+  try {
+    const reflectBtn = await page.$('.btn-reflect');
+    if (reflectBtn) {
+      await reflectBtn.click();
+      await page.waitForTimeout(1500);
+      await reflectBtn.click(); // close
+      await page.waitForTimeout(500);
+    }
+  } catch(e) {}
 
-  // 8. Click Graph tab
-  const graphTab = await page.$('.view-tab:nth-child(2)');
-  if (graphTab) {
-    await graphTab.click();
-    await page.waitForTimeout(2000);
-  }
+  // 10. Click the FAB button to show retain modal, then close
+  try {
+    const fab = await page.$('.fab-btn');
+    if (fab) {
+      await fab.click();
+      await page.waitForTimeout(1200);
+      // Close modal (click overlay or cancel)
+      const cancel = await page.$('.retain-modal .modal-btn.cancel');
+      if (cancel) await cancel.click();
+      else await page.keyboard.press('Escape');
+      await page.waitForTimeout(500);
+    }
+  } catch(e) {}
 
-  // 9. Back to Stream
-  const streamTab = await page.$('.view-tab:nth-child(1)');
-  if (streamTab) {
-    await streamTab.click();
-    await page.waitForTimeout(500);
-  }
-
-  // 10. Show the Reflect panel briefly
-  const reflectBtn = await page.$('.btn-reflect');
-  if (reflectBtn) {
-    await reflectBtn.click();
-    await page.waitForTimeout(1500);
-    // Close it
-    await reflectBtn.click();
-    await page.waitForTimeout(500);
-  }
-
-  // 11. Hover a memory card to show actions
-  const card = await page.$('.memory-card');
-  if (card) {
-    await card.hover();
-    await page.waitForTimeout(800);
-  }
-
-  await page.mouse.move(640, 400);
   await page.waitForTimeout(500);
 }, {
   url: BASE_URL,
   width: 1280,
   height: 720,
-  fps: 8,
-  duration: 12000,
+  fps: 10,
+  duration: 15000,
 });
 
 fs.rmSync(TEMP_DIR, { recursive: true, force: true });

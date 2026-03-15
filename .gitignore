@@ -1,0 +1,10 @@
+run.sh
+start.sh
+*.env
+.env*
+data/
+wsl/
+DockerDesktopInstaller.exe
+ubuntu-backup.tar
+__pycache__/
+*.pyc

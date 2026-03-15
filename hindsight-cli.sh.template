@@ -1,0 +1,11 @@
+#!/bin/bash
+# MemoMind CLI wrapper - copy to /opt/hindsight-env/hindsight-cli.sh
+unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY all_proxy no_proxy
+export HOME=/home/hindsight
+export PATH=/usr/local/bin:/usr/bin:/bin:/home/hindsight/.local/bin
+export HF_ENDPOINT=https://hf-mirror.com
+export HINDSIGHT_API_LLM_API_KEY="sk-or-v1-YOUR_OPENROUTER_KEY"      # <-- Replace
+export HINDSIGHT_API_LLM_URL="https://openrouter.ai/api/v1"
+export HINDSIGHT_API_LLM_MODEL="qwen/qwen3.5-9b"
+source /opt/hindsight-env/bin/activate
+exec hindsight-embed "$@"

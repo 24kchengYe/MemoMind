@@ -13,7 +13,9 @@
       "Skill(app-screen-recorder)",
       "Bash(cat:*)",
       "mcp__memomind__retain",
-      "Bash(claude mcp:*)"
+      "Bash(claude mcp:*)",
+      "Bash(netsh interface:*)",
+      "Bash(ipconfig)"
     ]
   }
 }

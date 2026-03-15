@@ -290,6 +290,13 @@ export HF_ENDPOINT=https://hf-mirror.com  # Use China mirror
 - LLM routing via [OpenRouter](https://openrouter.ai/)
 - China mirror by [hf-mirror.com](https://hf-mirror.com/)
 
+## Contributors
+
+<a href="https://github.com/24kchengYe">
+  <img src="https://github.com/24kchengYe.png" width="60" style="border-radius:50%" alt="zyc"/>
+  <br/><sub><b>zyc</b></sub>
+</a>
+
 ## License
 
 MIT

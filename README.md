@@ -150,6 +150,7 @@ You don't do anything — the AI handles it all.
 - **Multi-provider LLM** — works with OpenAI, Anthropic, Gemini, Groq, Ollama, LM Studio, and any OpenAI-compatible API
 - **Web Dashboard** — browse and search all memories visually at `http://127.0.0.1:9999`
 - **Auto-start** — systemd service + Windows startup script, works after reboot
+- **Backup & export** — one-click JSON export from dashboard + automated weekly backup to private GitHub repo
 
 ## Use Cases
 
@@ -403,6 +404,56 @@ alice_prefs = client.recall("user-alice", "editor preferences")
 # → Only returns Alice's preferences, not Bob's
 ```
 
+## Backup & Export
+
+MemoMind provides two ways to protect your memory data:
+
+**Manual export** — Click the 💾 button in the dashboard toolbar to download a complete JSON backup of all memories, entities, tags, relationships, and graph data.
+
+**Automated weekly backup** — A Python script that exports all memories and pushes to a private GitHub repo:
+
+```bash
+# 1. Create a private repo for backups
+gh repo create your-username/memomind-backup --private
+
+# 2. Set up the backup directory
+mkdir memomind-memory && cd memomind-memory
+git init && git remote add origin https://github.com/your-username/memomind-backup.git
+cp /path/to/MemoMind/backup-memomind.py .
+
+# 3. Edit backup-memomind.py — set BACKUP_DIR to this directory
+
+# 4. Test manually
+python backup-memomind.py
+
+# 5. Schedule weekly (Windows Task Scheduler)
+# Action: pythonw.exe  Arguments: path\to\backup-memomind.py
+# Trigger: Weekly, Sunday 3:00 AM
+```
+
+**Export format** — portable JSON, not tied to any system:
+
+```json
+{
+  "version": "1.0",
+  "format": "memomind-export",
+  "memories": [
+    {
+      "text": "User prefers FastAPI over Express",
+      "entities": ["FastAPI", "Express"],
+      "tags": ["tech-stack"],
+      "date": "2026-03-15T...",
+      "fact_type": "world",
+      "source_memory_ids": [],
+      "history": []
+    }
+  ],
+  "graph": { "nodes": [...], "edges": [...] }
+}
+```
+
+When a better memory system comes along, your data is ready to migrate — all text, entities, timestamps, tags, relationships, and provenance are preserved.
+
 ## Resource Usage
 
 | Component | Idle | Active |
@@ -462,7 +513,7 @@ export HF_ENDPOINT=https://hf-mirror.com  # Use China mirror
 - [x] Metadata filtering and per-user memory isolation
 - [x] Web dashboard with memory stream, search, and graph view
 - [x] Auto-start on boot (systemd + VBS)
-- [ ] Memory import/export (JSON backup)
+- [x] Memory export (JSON backup) + automated weekly backup to GitHub
 - [ ] Multi-agent memory sharing
 - [x] Memory evolution via configurable consolidation mission
 - [ ] Automatic memory pruning
@@ -471,7 +522,7 @@ export HF_ENDPOINT=https://hf-mirror.com  # Use China mirror
 
 ## Changelog
 
-- **v1.3** (2026-03-15): Multilingual embedding (bge-m3, 100+ languages); split LLM config (deepseek-chat for retain, gpt-4o-mini for consolidation); architecture diagrams (SVG); memory evolution via configurable consolidation mission; deployment audit with 14 fixes for fresh-clone install
+- **v1.3** (2026-03-16): Memory export (dashboard 💾 button + weekly auto-backup to GitHub); multilingual embedding (bge-m3, 100+ languages); split LLM config (deepseek-chat for retain, gpt-4o-mini for consolidation); architecture diagrams (SVG); memory evolution; dashboard redesign (reflect UI, timeline, entity graph, search filters, bank management); 14 deployment fixes
 - **v1.2** (2026-03-15): Dashboard redesign (glassmorphism, memory cards, graph zoom/pan/tooltips, delete, animated counters, mobile responsive); README rewrite with demo GIF; dual LLM mode (China direct via MindCraft / international via proxy bridge); retain speed 50s → 13s
 - **v1.1** (2026-03-12): Web dashboard for visual memory browsing; auto-start on boot; MCP stdio transport
 - **v1.0** (2026-03-09): Initial release — retain/recall/reflect, PostgreSQL + pgvector, GPU-accelerated embeddings, cross-encoder reranking
@@ -655,6 +706,29 @@ Observation 不只是累积——它们会**进化**。巩固引擎自动合并�
 - **可视化面板** — 在 `http://127.0.0.1:9999` 浏览和搜索所有记忆
 - **开机自启** — systemd 服务 + Windows 启动脚本
 
+## 备份与导出
+
+**手动导出** — 点击面板工具栏的 💾 按钮，一键下载完整 JSON 备份（含所有记忆、实体、标签、关系图谱）。
+
+**每周自动备份** — Python 脚本自动导出并推送到私密 GitHub 仓库：
+
+```bash
+# 1. 创建私密仓库
+gh repo create your-username/memomind-backup --private
+
+# 2. 配置备份目录
+mkdir memomind-memory && cd memomind-memory
+git init && git remote add origin https://github.com/your-username/memomind-backup.git
+cp /path/to/MemoMind/backup-memomind.py .
+
+# 3. 手动测试
+python backup-memomind.py
+
+# 4. 设置 Windows 定时任务（每周日凌晨 3:00）
+```
+
+**导出格式** — 标准 JSON，不绑定任何系统。以后迁移到更好的记忆系统时，所有文本、实体、时间戳、标签、关系链路都保留。
+
 ---
 
 ## 快速开始
@@ -708,7 +782,7 @@ NEEDS_PROXY = False
 
 ## 更新日志
 
-- **v1.3** (2026-03-15): 多语言嵌入模型（bge-m3，100+ 语言）；LLM 分离配置（retain 用 deepseek-chat，consolidation 用 gpt-4o-mini）；架构图（SVG）；记忆进化（可配置巩固 mission）；14 项部署审计修复
+- **v1.3** (2026-03-16): 记忆导出（面板 💾 按钮 + 每周自动备份到 GitHub）；多语言嵌入模型（bge-m3）；LLM 分离配置；架构图（SVG）；记忆进化；面板重做（Reflect UI、时间线、实体图谱、搜索过滤、Bank 管理）；14 项部署修复
 - **v1.2** (2026-03-15): Dashboard 全面重新设计；README 重写 + demo GIF；双 LLM 模式（国内直连 MindCraft / 国际走代理桥接）；retain 速度 50s → 13s
 - **v1.1** (2026-03-12): 可视化记忆面板；开机自启；MCP stdio 传输
 - **v1.0** (2026-03-09): 首次发布——retain/recall/reflect、PostgreSQL + pgvector、GPU 加速嵌入、交叉编码器重排序

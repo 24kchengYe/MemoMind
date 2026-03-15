@@ -16,7 +16,10 @@
       "Bash(claude mcp:*)",
       "Bash(netsh interface:*)",
       "Bash(ipconfig)",
-      "Bash(powershell -Command \"\\(Get-Service iphlpsvc\\).Status\" 2>&1)"
+      "Bash(powershell -Command \"\\(Get-Service iphlpsvc\\).Status\" 2>&1)",
+      "Bash(cd:*)",
+      "Bash(sleep:*)",
+      "WebFetch(domain:www.mindcraft.com.cn)"
     ]
   }
 }

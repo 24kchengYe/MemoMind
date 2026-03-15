@@ -198,7 +198,7 @@ sudo systemctl start memomind
 ```bash
 # stdio mode (recommended, no port forwarding needed)
 claude mcp add --scope user --transport stdio memomind \
-  -- wsl -d Ubuntu -u hindsight -e /opt/memomind-env/bin/python3 /opt/memomind-env/mcp_stdio.py
+  -- wsl -d Ubuntu -u memomind -e /opt/memomind-env/bin/python3 /opt/memomind-env/mcp_stdio.py
 ```
 
 <details>
@@ -228,8 +228,8 @@ wsl -d Ubuntu -e bash -c "curl -s http://localhost:8888/health"
 # → {"status":"healthy","database":"connected"}
 
 # Test memory via CLI
-wsl -d Ubuntu -u hindsight -- /opt/memomind-env/memomind-cli.sh memory retain default "User prefers Python"
-wsl -d Ubuntu -u hindsight -- /opt/memomind-env/memomind-cli.sh memory recall default "What language does user prefer?"
+wsl -d Ubuntu -u memomind -- /opt/memomind-env/memomind-cli.sh memory retain default "User prefers Python"
+wsl -d Ubuntu -u memomind -- /opt/memomind-env/memomind-cli.sh memory recall default "What language does user prefer?"
 ```
 
 ## Supported LLM Providers
@@ -360,14 +360,13 @@ export HF_ENDPOINT=https://hf-mirror.com  # Use China mirror
 
 ## Changelog
 
-- **v1.2** (2026-03-15): Dashboard redesign (glassmorphism, memory cards, graph zoom/pan/tooltips, delete, animated counters, mobile responsive); README rewrite with demo GIF; dual LLM mode (China direct via MindCraft / international via proxy bridge); service renamed hindsight → memomind; retain speed 50s → 13s
+- **v1.2** (2026-03-15): Dashboard redesign (glassmorphism, memory cards, graph zoom/pan/tooltips, delete, animated counters, mobile responsive); README rewrite with demo GIF; dual LLM mode (China direct via MindCraft / international via proxy bridge); retain speed 50s → 13s
 - **v1.1** (2026-03-12): Web dashboard for visual memory browsing; auto-start on boot; MCP stdio transport
 - **v1.0** (2026-03-09): Initial release — retain/recall/reflect, PostgreSQL + pgvector, GPU-accelerated embeddings, cross-encoder reranking
 
 ## Credits
 
-- Core memory engine powered by [Hindsight](https://github.com/vectorize-io/hindsight) (MIT)
-- LLM routing via [OpenRouter](https://openrouter.ai/)
+- LLM API via [MindCraft](https://www.mindcraft.com.cn/) / [OpenRouter](https://openrouter.ai/)
 - China mirror by [hf-mirror.com](https://hf-mirror.com/)
 
 ## Contributors
@@ -465,7 +464,7 @@ sudo systemctl start memomind
 
 # 5. 在 Claude Code 中注册 MCP
 claude mcp add --scope user --transport stdio memomind \
-  -- wsl -d Ubuntu -u hindsight -e /opt/memomind-env/bin/python3 /opt/memomind-env/mcp_stdio.py
+  -- wsl -d Ubuntu -u memomind -e /opt/memomind-env/bin/python3 /opt/memomind-env/mcp_stdio.py
 ```
 
 ### LLM 配置
@@ -489,7 +488,7 @@ NEEDS_PROXY = False
 
 ## 更新日志
 
-- **v1.2** (2026-03-15): Dashboard 全面重新设计；README 重写 + demo GIF；双 LLM 模式（国内直连 MindCraft / 国际走代理桥接）；服务名 hindsight → memomind；retain 速度 50s → 13s
+- **v1.2** (2026-03-15): Dashboard 全面重新设计；README 重写 + demo GIF；双 LLM 模式（国内直连 MindCraft / 国际走代理桥接）；retain 速度 50s → 13s
 - **v1.1** (2026-03-12): 可视化记忆面板；开机自启；MCP stdio 传输
 - **v1.0** (2026-03-09): 首次发布——retain/recall/reflect、PostgreSQL + pgvector、GPU 加速嵌入、交叉编码器重排序
 

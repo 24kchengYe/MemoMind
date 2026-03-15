@@ -2792,9 +2792,17 @@ async function loadGraph() {
   stopPhysics();
 
   try {
-    const data = await api(`/v1/default/banks/${currentBank}/graph`);
+    // Fetch graph and memory types in parallel
+    const [data, memList] = await Promise.all([
+      api(`/v1/default/banks/${currentBank}/graph`),
+      api(`/v1/default/banks/${currentBank}/memories/list?limit=500`)
+    ]);
     const rawNodes = data.nodes || [];
     const rawEdges = data.edges || [];
+
+    // Build type lookup from memories list (graph API doesn't include fact_type)
+    const typeById = {};
+    (memList.items || []).forEach(m => { if (m.id) typeById[m.id] = m.fact_type || 'world'; });
 
     if (rawNodes.length === 0) {
       empty.textContent = 'No graph data yet \u2014 memories need entity relationships to form a graph';
@@ -2821,7 +2829,7 @@ async function loadGraph() {
         id: nd.id,
         label: (nd.text || nd.label || '').slice(0, 60),
         fullText: nd.text || nd.label || '',
-        type: nd.fact_type || 'world',
+        type: typeById[nd.id] || nd.fact_type || 'world',
         isEntity: false,
         x: graphW/2 + (Math.random() - 0.5) * graphW * 0.6,
         y: graphH/2 + (Math.random() - 0.5) * graphH * 0.6,

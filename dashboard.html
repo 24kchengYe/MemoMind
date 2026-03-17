@@ -2906,7 +2906,7 @@ async function loadGraph() {
     entitySet.forEach((info, name) => {
       if (info.connections < 1) return;
       const entityId = 'entity_' + name;
-      const size = Math.min(3 + info.connections * 1, 8);
+      const size = Math.min(2 + info.connections * 0.6, 5);
 
       graph.addNode(entityId, {
         label: name,

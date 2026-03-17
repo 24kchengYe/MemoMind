@@ -1984,10 +1984,20 @@ body {
 <script src="https://unpkg.com/sigma@2.4.0/build/sigma.min.js"></script>
 <script>
 // Inline ForceAtlas2-style layout (the npm package has no UMD build)
+// Seeded random for deterministic layout
+function seededRandom(seed) {
+  let s = seed;
+  return function() {
+    s = (s * 16807 + 0) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
 function simpleForceLayout(graph, iterations) {
+  const rng = seededRandom(42);
   const nodes = {};
   graph.forEachNode((key, attrs) => {
-    nodes[key] = { x: attrs.x, y: attrs.y, dx: 0, dy: 0, size: attrs.size || 3 };
+    nodes[key] = { x: rng() * 3000, y: rng() * 3000, dx: 0, dy: 0, size: attrs.size || 3 };
   });
   const keys = Object.keys(nodes);
   const N = keys.length;
@@ -3083,10 +3093,25 @@ async function loadGraph() {
     });
 
     // Right-click context menu for memory nodes
-    sigmaInstance.on('rightClickNode', ({ node, event }) => {
-      event.original.preventDefault();
+    // Right-click: use DOM contextmenu event + sigma nodeAtPosition
+    container.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      // Find node at mouse position
+      const rect = container.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const coord = sigmaInstance.viewportToGraph({ x, y });
+      // Find closest node within threshold
+      let closestNode = null, closestDist = 20;
+      graph.forEachNode((key, attrs) => {
+        const dx = attrs.x - coord.x, dy = attrs.y - coord.y;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < closestDist) { closestDist = d; closestNode = key; }
+      });
+      if (!closestNode) return;
+      const node = closestNode;
       const attrs = graphNodeAttrs[node];
-      if (!attrs || attrs.isEntity) return; // no menu for entity nodes
+      if (!attrs || attrs.isEntity) return;
 
       // Remove existing menu
       const old = document.getElementById('graphCtxMenu');
@@ -3094,7 +3119,7 @@ async function loadGraph() {
 
       const menu = document.createElement('div');
       menu.id = 'graphCtxMenu';
-      menu.style.cssText = `position:fixed;left:${event.original.clientX}px;top:${event.original.clientY}px;
+      menu.style.cssText = `position:fixed;left:${e.clientX}px;top:${e.clientY}px;
         background:oklch(0.18 0.015 260);border:1px solid oklch(0.3 0.02 260);border-radius:6px;
         padding:4px 0;z-index:9999;min-width:140px;box-shadow:0 4px 16px rgba(0,0,0,0.4);font-size:13px;`;
 
@@ -3115,6 +3140,28 @@ async function loadGraph() {
           loadGraph();
           loadBank();
         } catch(e) { showError(e.message); }
+      }));
+
+      menu.appendChild(makeItem('Edit memory', 'var(--accent)', () => {
+        const newText = prompt('Edit memory text:', attrs.fullText);
+        if (newText && newText !== attrs.fullText) {
+          // MemoMind API doesn't have a PATCH endpoint for memory text.
+          // Workaround: delete old + retain new with same context
+          (async () => {
+            try {
+              // Delete old
+              await fetch(base() + `/v1/default/banks/${currentBank}/memories/${node}`, { method: 'DELETE' });
+              // Retain new
+              await fetch(base() + `/v1/default/banks/${currentBank}/memories`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: newText })
+              });
+              loadGraph();
+              loadBank();
+            } catch(e) { showError('Edit failed: ' + e.message); }
+          })();
+        }
       }));
 
       menu.appendChild(makeItem('View in stream', 'var(--text-1)', () => {

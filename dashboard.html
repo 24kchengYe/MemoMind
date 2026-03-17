@@ -1992,8 +1992,8 @@ function simpleForceLayout(graph, iterations) {
   const keys = Object.keys(nodes);
   const N = keys.length;
   // Scale repulsion with node count
-  const repulsion = Math.max(2000, N * 50);
-  const idealDist = Math.max(120, 600 / Math.sqrt(N));
+  const repulsion = Math.max(5000, N * 120);
+  const idealDist = Math.max(200, 1000 / Math.sqrt(N));
   for (let iter = 0; iter < iterations; iter++) {
     const cooling = 1 - iter / iterations; // slow down over time
     // Repulsion (all pairs)
@@ -2018,7 +2018,7 @@ function simpleForceLayout(graph, iterations) {
       b.dx -= dx / d * f; b.dy -= dy / d * f;
     });
     // Gentle gravity toward center
-    const cx = 500, cy = 500;
+    const cx = 1500, cy = 1500;
     for (const key of keys) {
       const n = nodes[key];
       n.dx += (cx - n.x) * 0.0005;
@@ -2867,9 +2867,9 @@ async function loadGraph() {
 
       graph.addNode(nodeId, {
         label: (nd.text || nd.label || '').slice(0, 30),
-        x: Math.random() * 1000,
-        y: Math.random() * 1000,
-        size: 0.3,
+        x: Math.random() * 3000,
+        y: Math.random() * 3000,
+        size: 3,
         color: color,
         type: 'circle'
       });
@@ -2906,12 +2906,12 @@ async function loadGraph() {
     entitySet.forEach((info, name) => {
       if (info.connections < 1) return;
       const entityId = 'entity_' + name;
-      const size = Math.min(0.8 + info.connections * 0.2, 2);
+      const size = Math.min(6 + info.connections * 1.5, 14);
 
       graph.addNode(entityId, {
         label: name,
-        x: Math.random() * 1000,
-        y: Math.random() * 1000,
+        x: Math.random() * 3000,
+        y: Math.random() * 3000,
         size: size,
         color: NODE_COLORS.entity,
         type: 'circle'
@@ -2990,22 +2990,21 @@ async function loadGraph() {
     sigmaInstance = new Sigma(graph, container, {
       renderEdgeLabels: false,
       labelFont: 'DM Sans, system-ui, sans-serif',
-      labelSize: 13,
-      labelColor: { color: '#99aabb' },
-      labelRenderedSizeThreshold: 4,
-      labelDensity: 0.5,
-      minCameraRatio: 0.1,
+      labelSize: 12,
+      labelColor: { color: '#8899aa' },
+      labelRenderedSizeThreshold: 3,
+      labelDensity: 0.4,
+      minCameraRatio: 0.05,
       maxCameraRatio: 10,
       defaultEdgeType: 'line',
+      stagePadding: 40,
+      nodeProgramClasses: {},
       edgeReducer: (edge, data) => {
         return { ...data };
       },
       nodeReducer: (node, data) => {
         return { ...data };
       },
-      minCameraRatio: 0.05,
-      maxCameraRatio: 10,
-      stagePadding: 30
     });
 
     // Tooltip on hover

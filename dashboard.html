@@ -2715,10 +2715,10 @@ const NODE_COLORS = {
 };
 
 const EDGE_COLORS = {
-  entity: '#5ba8c8',
-  entity_link: '#3e8fa8',
-  semantic: '#9966cc',
-  temporal: '#444455'
+  entity: '#2a5a6a',
+  entity_link: '#1e4a5a',
+  semantic: '#4a3366',
+  temporal: '#222233'
 };
 
 function graphZoom(factor) {
@@ -2869,7 +2869,7 @@ async function loadGraph() {
         label: (nd.text || nd.label || '').slice(0, 30),
         x: Math.random() * 1000,
         y: Math.random() * 1000,
-        size: 1,
+        size: 0.3,
         color: color,
         type: 'circle'
       });
@@ -2906,7 +2906,7 @@ async function loadGraph() {
     entitySet.forEach((info, name) => {
       if (info.connections < 1) return;
       const entityId = 'entity_' + name;
-      const size = Math.min(2 + info.connections * 0.6, 5);
+      const size = Math.min(0.8 + info.connections * 0.2, 2);
 
       graph.addNode(entityId, {
         label: name,
@@ -2941,7 +2941,7 @@ async function loadGraph() {
       const color = EDGE_COLORS[edgeType] || EDGE_COLORS.temporal;
       try {
         graph.addEdge(src, tgt, {
-          size: edgeType === 'semantic' ? Math.max(0.5, weight * 1.5) : 0.5,
+          size: edgeType === 'semantic' ? Math.max(0.2, weight * 0.5) : 0.2,
           color: color,
           origColor: color,
           edgeType: edgeType,
@@ -2958,7 +2958,7 @@ async function loadGraph() {
         if (!graph.hasNode(nid)) return;
         try {
           graph.addEdge(entityId, nid, {
-            size: 0.4,
+            size: 0.15,
             color: EDGE_COLORS.entity_link,
             origColor: EDGE_COLORS.entity_link,
             edgeType: 'entity_link',
@@ -3081,6 +3081,60 @@ async function loadGraph() {
     // Click background -> reset focus
     sigmaInstance.on('clickStage', () => {
       if (!isDragging) clearFocus();
+    });
+
+    // Right-click context menu for memory nodes
+    sigmaInstance.on('rightClickNode', ({ node, event }) => {
+      event.original.preventDefault();
+      const attrs = graphNodeAttrs[node];
+      if (!attrs || attrs.isEntity) return; // no menu for entity nodes
+
+      // Remove existing menu
+      const old = document.getElementById('graphCtxMenu');
+      if (old) old.remove();
+
+      const menu = document.createElement('div');
+      menu.id = 'graphCtxMenu';
+      menu.style.cssText = `position:fixed;left:${event.original.clientX}px;top:${event.original.clientY}px;
+        background:oklch(0.18 0.015 260);border:1px solid oklch(0.3 0.02 260);border-radius:6px;
+        padding:4px 0;z-index:9999;min-width:140px;box-shadow:0 4px 16px rgba(0,0,0,0.4);font-size:13px;`;
+
+      const makeItem = (label, color, onclick) => {
+        const item = document.createElement('div');
+        item.textContent = label;
+        item.style.cssText = `padding:8px 16px;cursor:pointer;color:${color};`;
+        item.onmouseenter = () => item.style.background = 'oklch(0.22 0.015 260)';
+        item.onmouseleave = () => item.style.background = 'none';
+        item.onclick = () => { menu.remove(); onclick(); };
+        return item;
+      };
+
+      menu.appendChild(makeItem('Delete memory', 'oklch(0.7 0.18 25)', async () => {
+        if (!confirm('Delete this memory?\\n\\n' + attrs.fullText.slice(0, 100))) return;
+        try {
+          await fetch(base() + `/v1/default/banks/${currentBank}/memories/${node}`, { method: 'DELETE' });
+          loadGraph();
+          loadBank();
+        } catch(e) { showError(e.message); }
+      }));
+
+      menu.appendChild(makeItem('View in stream', 'var(--text-1)', () => {
+        switchTab('stream', document.querySelector('.view-tab'));
+        document.getElementById('searchInput').value = attrs.fullText.slice(0, 30);
+        doSearch();
+      }));
+
+      menu.appendChild(makeItem('Copy text', 'var(--text-2)', () => {
+        navigator.clipboard.writeText(attrs.fullText);
+      }));
+
+      document.body.appendChild(menu);
+
+      // Close on click elsewhere
+      const closeMenu = (e) => {
+        if (!menu.contains(e.target)) { menu.remove(); document.removeEventListener('click', closeMenu); }
+      };
+      setTimeout(() => document.addEventListener('click', closeMenu), 10);
     });
 
     // Apply default edge filter (hide temporal by default)

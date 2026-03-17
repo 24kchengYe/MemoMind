@@ -3034,8 +3034,43 @@ async function loadGraph() {
       tooltip.classList.remove('visible');
     });
 
-    // Focus mode: click node -> highlight 1-hop neighbors
-    sigmaInstance.on('clickNode', ({ node }) => {
+    // Drag support
+    let draggedNode = null;
+    let isDragging = false;
+
+    sigmaInstance.on('downNode', ({ node, event }) => {
+      isDragging = true;
+      draggedNode = node;
+      graph.setNodeAttribute(node, 'highlighted', true);
+      // Disable sigma camera movement while dragging
+      sigmaInstance.getCamera().disable();
+    });
+
+    sigmaInstance.getMouseCaptor().on('mousemovebody', (e) => {
+      if (!isDragging || !draggedNode) return;
+      // Convert viewport coords to graph coords
+      const pos = sigmaInstance.viewportToGraph(e);
+      graph.setNodeAttribute(draggedNode, 'x', pos.x);
+      graph.setNodeAttribute(draggedNode, 'y', pos.y);
+      // Prevent sigma click event
+      e.preventSigmaDefault();
+      e.original.preventDefault();
+      e.original.stopPropagation();
+    });
+
+    sigmaInstance.getMouseCaptor().on('mouseup', () => {
+      if (draggedNode) {
+        graph.removeNodeAttribute(draggedNode, 'highlighted');
+      }
+      isDragging = false;
+      draggedNode = null;
+      sigmaInstance.getCamera().enable();
+    });
+
+    // Focus mode: click node -> highlight 1-hop neighbors (only if not dragging)
+    sigmaInstance.on('clickNode', ({ node, event }) => {
+      // Skip focus if we just finished dragging
+      if (isDragging) return;
       if (focusedNode === node) {
         clearFocus();
       } else {
@@ -3045,7 +3080,7 @@ async function loadGraph() {
 
     // Click background -> reset focus
     sigmaInstance.on('clickStage', () => {
-      clearFocus();
+      if (!isDragging) clearFocus();
     });
 
     // Apply default edge filter (hide temporal by default)

@@ -975,14 +975,10 @@ body {
   overflow: hidden;
 }
 
-.graph-container canvas {
+.graph-container .sigma-container {
   width: 100%;
   height: 100%;
-  cursor: grab;
-  touch-action: none;
 }
-
-.graph-container canvas:active { cursor: grabbing; }
 
 .graph-controls {
   position: absolute;
@@ -991,6 +987,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  z-index: 10;
 }
 
 .graph-controls button {
@@ -1060,6 +1057,7 @@ body {
   font-size: 11px;
   color: var(--text-3);
   flex-wrap: wrap;
+  z-index: 10;
 }
 
 .graph-legend .legend-item {
@@ -1090,6 +1088,57 @@ body {
   justify-content: center;
   color: var(--text-3);
   font-size: 13px;
+  z-index: 10;
+}
+
+.graph-filter-bar {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: var(--surface-glass);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  font-size: 11px;
+  color: var(--text-3);
+  z-index: 10;
+  flex-wrap: wrap;
+}
+
+.graph-filter-bar label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.graph-filter-bar input[type="checkbox"] {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.graph-filter-bar .edge-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.graph-filter-bar .edge-slider-wrap input[type="range"] {
+  width: 80px;
+  height: 4px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.graph-filter-bar .slider-val {
+  font-variant-numeric: tabular-nums;
+  min-width: 28px;
+  text-align: right;
 }
 
 /* ── Timeline View ── */
@@ -1835,20 +1884,30 @@ body {
       <!-- Graph View -->
       <div id="graphView" style="display:none">
         <div class="graph-container">
-          <canvas id="graphCanvas"></canvas>
+          <div id="sigmaContainer" style="width:100%;height:100%"></div>
           <div class="graph-legend">
             <div class="legend-item"><div class="legend-dot" style="background:var(--world)"></div> World</div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--experience)"></div> Experience</div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--observation)"></div> Observation</div>
             <div class="legend-item"><div class="legend-ring"></div> Entity</div>
             <div style="width:100%;height:1px;background:oklch(0.25 0.01 260);margin:4px 0"></div>
-            <div class="legend-item"><div style="width:16px;height:2px;background:oklch(0.55 0.10 200);border-radius:1px"></div> Entity link</div>
-            <div class="legend-item"><div style="width:16px;height:2px;background:oklch(0.45 0.10 300);border-radius:1px"></div> Semantic</div>
-            <div class="legend-item"><div style="width:16px;height:0;border-top:1px dashed oklch(0.35 0.01 260)"></div> Temporal</div>
+            <div class="legend-item"><div style="width:16px;height:2px;background:#5ba8c8;border-radius:1px"></div> Entity link</div>
+            <div class="legend-item"><div style="width:16px;height:2px;background:#9966cc;border-radius:1px"></div> Semantic</div>
+            <div class="legend-item"><div style="width:16px;height:0;border-top:1px dashed #555"></div> Temporal</div>
+          </div>
+          <div class="graph-filter-bar" id="graphFilterBar">
+            <label><input type="checkbox" id="filterEntity" checked onchange="applyGraphEdgeFilter()"> Entity</label>
+            <label><input type="checkbox" id="filterSemantic" checked onchange="applyGraphEdgeFilter()"> Semantic</label>
+            <label><input type="checkbox" id="filterTemporal" onchange="applyGraphEdgeFilter()"> Temporal</label>
+            <div class="edge-slider-wrap">
+              <span>Weight</span>
+              <input type="range" id="edgeWeightSlider" min="0" max="100" value="0" oninput="applyGraphEdgeFilter()">
+              <span class="slider-val" id="edgeWeightVal">0</span>
+            </div>
           </div>
           <div class="graph-controls">
-            <button onclick="graphZoom(1.2)" title="Zoom in">+</button>
-            <button onclick="graphZoom(0.8)" title="Zoom out">&minus;</button>
+            <button onclick="graphZoom(1.3)" title="Zoom in">+</button>
+            <button onclick="graphZoom(0.77)" title="Zoom out">&minus;</button>
             <button onclick="graphReset()" title="Reset view">&#8634;</button>
           </div>
           <div class="graph-tooltip" id="graphTooltip"></div>
@@ -1921,6 +1980,9 @@ body {
   </div>
 </div>
 
+<script src="https://unpkg.com/graphology@0.25.4/dist/graphology.umd.min.js"></script>
+<script src="https://unpkg.com/sigma@2.4.0/build/sigma.min.js"></script>
+<script src="https://unpkg.com/graphology-layout-forceatlas2@0.10.1/dist/graphology-layout-forceatlas2.min.js"></script>
 <script>
 // ── State ──
 let currentBank = 'default';
@@ -1929,19 +1991,10 @@ let allMemories = [];
 let filteredMemories = [];
 let searchResults = null;
 let isSearchMode = false;
-let graphData = null;
-let graphNodes = [];
-let graphEdges = [];
-let graphSim = null;
-let graphScale = 1;
-let graphOffsetX = 0, graphOffsetY = 0;
-let graphDragging = false;
-let graphDragNode = null;
-let graphLastMouse = { x: 0, y: 0 };
-let simNodes = [], simEdges = [];
-let renderFrameId = null;
-let physicsFrameId = null;
-let physicsRunning = false;
+let sigmaInstance = null;
+let sigmaGraph = null;
+let focusedNode = null;
+let graphNodeAttrs = {}; // id -> { fullText, date, type, isEntity, connCount }
 let deleteTarget = null;
 let deleteType = 'memory'; // 'memory' or 'bank'
 let activeTypeFilter = 'all';
@@ -2603,220 +2656,125 @@ async function doRetain() {
   }
 }
 
-// ── Graph (force-directed with entity hub nodes, separate render/physics loops, touch support) ──
-let graphW = 0, graphH = 0, graphCtx = null, graphCanvas = null;
-let hoveredNode = null;
-let touchStartDist = 0;
-let touchStartScale = 1;
+// ── Graph (sigma.js + graphology + forceAtlas2) ──
+const NODE_COLORS = {
+  world: '#4adeab',
+  experience: '#c084fc',
+  observation: '#fbbf24',
+  entity: '#67cce0'
+};
+
+const EDGE_COLORS = {
+  entity: '#5ba8c8',
+  entity_link: '#3e8fa8',
+  semantic: '#9966cc',
+  temporal: '#444455'
+};
 
 function graphZoom(factor) {
-  graphScale *= factor;
-  graphScale = Math.max(0.2, Math.min(4, graphScale));
+  if (!sigmaInstance) return;
+  const camera = sigmaInstance.getCamera();
+  camera.animatedZoom({ ratio: camera.ratio / factor });
 }
 
 function graphReset() {
-  graphScale = 1;
-  graphOffsetX = 0;
-  graphOffsetY = 0;
+  if (!sigmaInstance) return;
+  sigmaInstance.getCamera().animatedReset();
+  clearFocus();
 }
 
-function startRenderLoop() {
-  if (renderFrameId) return;
-  function renderLoop() {
-    drawGraph();
-    renderFrameId = requestAnimationFrame(renderLoop);
-  }
-  renderLoop();
+function clearFocus() {
+  if (!sigmaGraph || !focusedNode) return;
+  focusedNode = null;
+  sigmaGraph.forEachNode((n) => {
+    sigmaGraph.setNodeAttribute(n, 'hidden', false);
+    const orig = graphNodeAttrs[n];
+    if (orig) {
+      sigmaGraph.setNodeAttribute(n, 'color', orig.origColor);
+    }
+  });
+  sigmaGraph.forEachEdge((e) => {
+    sigmaGraph.setEdgeAttribute(e, 'hidden', false);
+    const origColor = sigmaGraph.getEdgeAttribute(e, 'origColor');
+    if (origColor) sigmaGraph.setEdgeAttribute(e, 'color', origColor);
+  });
+  applyGraphEdgeFilter();
 }
 
-function stopRenderLoop() {
-  if (renderFrameId) {
-    cancelAnimationFrame(renderFrameId);
-    renderFrameId = null;
-  }
-}
+function focusOnNode(nodeKey) {
+  if (!sigmaGraph) return;
+  focusedNode = nodeKey;
 
-function startPhysics(maxFrames) {
-  let frame = 0;
-  physicsRunning = true;
-  function physicsTick() {
-    if (!physicsRunning) return;
-    tickPhysics();
-    frame++;
-    if (frame < maxFrames) {
-      physicsFrameId = requestAnimationFrame(physicsTick);
+  const neighbors = new Set();
+  neighbors.add(nodeKey);
+  sigmaGraph.forEachNeighbor(nodeKey, (neighbor) => { neighbors.add(neighbor); });
+
+  sigmaGraph.forEachNode((n) => {
+    if (neighbors.has(n)) {
+      sigmaGraph.setNodeAttribute(n, 'hidden', false);
+      const orig = graphNodeAttrs[n];
+      if (orig) sigmaGraph.setNodeAttribute(n, 'color', orig.origColor);
     } else {
-      physicsRunning = false;
+      sigmaGraph.setNodeAttribute(n, 'color', '#222233');
     }
-  }
-  physicsTick();
-}
+  });
 
-function stopPhysics() {
-  physicsRunning = false;
-  if (physicsFrameId) {
-    cancelAnimationFrame(physicsFrameId);
-    physicsFrameId = null;
-  }
-}
-
-function tickPhysics() {
-  for (let i = 0; i < simNodes.length; i++) {
-    for (let j = i + 1; j < simNodes.length; j++) {
-      const a = simNodes[i], b = simNodes[j];
-      let dx = a.x - b.x, dy = a.y - b.y;
-      let d = Math.sqrt(dx*dx + dy*dy) || 1;
-      let repulsion = a.isEntity || b.isEntity ? 1200 : 800;
-      let f = repulsion / (d * d);
-      if (a !== graphDragNode) { a.vx += dx/d * f; a.vy += dy/d * f; }
-      if (b !== graphDragNode) { b.vx -= dx/d * f; b.vy -= dy/d * f; }
-    }
-  }
-  const idealLen = 100;
-  for (const e of simEdges) {
-    let dx = e.target.x - e.source.x, dy = e.target.y - e.source.y;
-    let d = Math.sqrt(dx*dx + dy*dy) || 1;
-    let f = (d - idealLen) * 0.004;
-    if (e.source !== graphDragNode) { e.source.vx += dx/d * f; e.source.vy += dy/d * f; }
-    if (e.target !== graphDragNode) { e.target.vx -= dx/d * f; e.target.vy -= dy/d * f; }
-  }
-  for (const n of simNodes) {
-    if (n === graphDragNode) continue;
-    n.vx += (graphW/2 - n.x) * 0.0008;
-    n.vy += (graphH/2 - n.y) * 0.0008;
-    n.vx *= 0.85; n.vy *= 0.85;
-    n.x += n.vx; n.y += n.vy;
-    n.x = Math.max(20, Math.min(graphW - 20, n.x));
-    n.y = Math.max(20, Math.min(graphH - 20, n.y));
-  }
-}
-
-function drawGraph() {
-  if (!graphCtx) return;
-  graphCtx.clearRect(0, 0, graphW, graphH);
-  graphCtx.save();
-  graphCtx.translate(graphOffsetX, graphOffsetY);
-  graphCtx.scale(graphScale, graphScale);
-
-  const colorMap = {
-    world: getComputedStyle(document.documentElement).getPropertyValue('--world').trim() || '#4ade80',
-    experience: getComputedStyle(document.documentElement).getPropertyValue('--experience').trim() || '#c084fc',
-    observation: getComputedStyle(document.documentElement).getPropertyValue('--observation').trim() || '#fbbf24',
-    entity: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#67cce0'
-  };
-
-  function getColor(n) {
-    if (n.isEntity) return colorMap.entity;
-    return colorMap[n.type] || colorMap.world;
-  }
-
-  // Edge color/style by type
-  const edgeStyles = {
-    entity:      { color: 'oklch(0.55 0.10 200)', hoverColor: 'oklch(0.70 0.12 200)', width: 0.8, dash: [] },         // cyan
-    entity_link: { color: 'oklch(0.45 0.08 200)', hoverColor: 'oklch(0.65 0.10 200)', width: 0.6, dash: [] },         // dim cyan
-    semantic:    { color: 'oklch(0.45 0.10 300)', hoverColor: 'oklch(0.65 0.14 300)', width: 1.0, dash: [] },          // purple
-    temporal:    { color: 'oklch(0.22 0.01 260)', hoverColor: 'oklch(0.40 0.02 260)', width: 0.4, dash: [3, 4] },     // dim dashed
-  };
-  const defaultEdge = { color: 'oklch(0.25 0.01 260)', hoverColor: 'oklch(0.5 0.02 260)', width: 0.5, dash: [] };
-
-  // Draw edges grouped by type (temporal first = behind, entity/semantic on top)
-  const edgeOrder = ['temporal', 'entity_link', 'entity', 'semantic'];
-  const edgesByType = {};
-  for (const e of simEdges) {
-    const t = e.type || 'temporal';
-    (edgesByType[t] = edgesByType[t] || []).push(e);
-  }
-
-  for (const etype of edgeOrder) {
-    const edges = edgesByType[etype] || [];
-    const style = edgeStyles[etype] || defaultEdge;
-    for (const e of edges) {
-      const isHovered = hoveredNode && (e.source === hoveredNode || e.target === hoveredNode);
-      graphCtx.beginPath();
-      graphCtx.setLineDash(style.dash);
-      graphCtx.moveTo(e.source.x, e.source.y);
-      graphCtx.lineTo(e.target.x, e.target.y);
-      graphCtx.strokeStyle = isHovered ? style.hoverColor : style.color;
-      graphCtx.lineWidth = isHovered ? style.width + 0.8 : (etype === 'semantic' ? style.width * (0.5 + e.weight) : style.width);
-      graphCtx.stroke();
-    }
-    graphCtx.setLineDash([]);
-  }
-
-  // Nodes
-  for (const n of simNodes) {
-    const isHovered = n === hoveredNode;
-    const r = isHovered ? n.radius + 3 : n.radius;
-
-    if (isHovered) {
-      graphCtx.beginPath();
-      graphCtx.arc(n.x, n.y, r + 6, 0, Math.PI * 2);
-      graphCtx.fillStyle = getColor(n);
-      graphCtx.globalAlpha = 0.15;
-      graphCtx.fill();
-      graphCtx.globalAlpha = 1;
-    }
-
-    graphCtx.beginPath();
-    graphCtx.arc(n.x, n.y, r, 0, Math.PI * 2);
-
-    if (n.isEntity) {
-      // Entity nodes: ring style
-      graphCtx.strokeStyle = getColor(n);
-      graphCtx.lineWidth = 2;
-      graphCtx.globalAlpha = isHovered ? 1 : 0.85;
-      graphCtx.stroke();
-      graphCtx.fillStyle = 'oklch(0.14 0.015 260)';
-      graphCtx.fill();
+  sigmaGraph.forEachEdge((e, attrs, src, tgt) => {
+    if (neighbors.has(src) && neighbors.has(tgt)) {
+      sigmaGraph.setEdgeAttribute(e, 'hidden', false);
+      const origColor = sigmaGraph.getEdgeAttribute(e, 'origColor');
+      if (origColor) sigmaGraph.setEdgeAttribute(e, 'color', origColor);
     } else {
-      graphCtx.fillStyle = getColor(n);
-      graphCtx.globalAlpha = isHovered ? 1 : 0.75;
-      graphCtx.fill();
+      sigmaGraph.setEdgeAttribute(e, 'hidden', true);
     }
-    graphCtx.globalAlpha = 1;
-
-    // Labels
-    if ((n.radius > 6 || isHovered || n.isEntity) && n.label) {
-      graphCtx.fillStyle = n.isEntity ? colorMap.entity : 'oklch(0.8 0.01 260)';
-      const fontSize = n.isEntity ? (isHovered ? 12 : 11) : (isHovered ? 11 : 10);
-      graphCtx.font = `${n.isEntity ? 'bold ' : ''}${fontSize}px DM Sans`;
-      graphCtx.textAlign = 'center';
-      graphCtx.fillText(n.label.slice(0, 35), n.x, n.y + r + 14);
-    }
-  }
-
-  graphCtx.restore();
+  });
 }
 
-function getCanvasMousePos(e) {
-  const canvasRect = graphCanvas.getBoundingClientRect();
-  return {
-    x: (e.clientX - canvasRect.left - graphOffsetX) / graphScale,
-    y: (e.clientY - canvasRect.top - graphOffsetY) / graphScale,
-    cx: e.clientX - canvasRect.left,
-    cy: e.clientY - canvasRect.top
-  };
-}
+function applyGraphEdgeFilter() {
+  if (!sigmaGraph) return;
+  const showEntity = document.getElementById('filterEntity').checked;
+  const showSemantic = document.getElementById('filterSemantic').checked;
+  const showTemporal = document.getElementById('filterTemporal').checked;
+  const minWeight = parseInt(document.getElementById('edgeWeightSlider').value) / 100;
+  document.getElementById('edgeWeightVal').textContent = document.getElementById('edgeWeightSlider').value;
 
-function findNodeAtPos(mx, my) {
-  for (let i = simNodes.length - 1; i >= 0; i--) {
-    const n = simNodes[i];
-    const dx = n.x - mx, dy = n.y - my;
-    if (dx*dx + dy*dy < (n.radius + 5) * (n.radius + 5)) {
-      return n;
+  sigmaGraph.forEachEdge((e, attrs) => {
+    const edgeType = attrs.edgeType || 'temporal';
+    let hidden = false;
+
+    if (edgeType === 'entity' || edgeType === 'entity_link') {
+      hidden = !showEntity;
+    } else if (edgeType === 'semantic') {
+      hidden = !showSemantic || (attrs.weight || 0) < minWeight;
+    } else if (edgeType === 'temporal') {
+      hidden = !showTemporal;
     }
-  }
-  return null;
+
+    // Respect focus mode
+    if (focusedNode && !hidden) {
+      const neighbors = new Set();
+      neighbors.add(focusedNode);
+      sigmaGraph.forEachNeighbor(focusedNode, (nb) => neighbors.add(nb));
+      const src = sigmaGraph.source(e);
+      const tgt = sigmaGraph.target(e);
+      if (!(neighbors.has(src) && neighbors.has(tgt))) hidden = true;
+    }
+
+    sigmaGraph.setEdgeAttribute(e, 'hidden', hidden);
+  });
 }
 
 async function loadGraph() {
   const empty = document.getElementById('graphEmpty');
-  graphCanvas = document.getElementById('graphCanvas');
-  graphCtx = graphCanvas.getContext('2d');
+  const container = document.getElementById('sigmaContainer');
   const tooltip = document.getElementById('graphTooltip');
 
-  stopRenderLoop();
-  stopPhysics();
+  // Destroy previous instance
+  if (sigmaInstance) {
+    sigmaInstance.kill();
+    sigmaInstance = null;
+    sigmaGraph = null;
+  }
 
   try {
     // Fetch graph and memory types in parallel
@@ -2827,7 +2785,7 @@ async function loadGraph() {
     const rawNodes = data.nodes || [];
     const rawEdges = data.edges || [];
 
-    // Build type lookup from memories list (graph API doesn't include fact_type)
+    // Build type lookup from memories list
     const typeById = {};
     (memList.items || []).forEach(m => { if (m.id) typeById[m.id] = m.fact_type || 'world'; });
 
@@ -2838,35 +2796,44 @@ async function loadGraph() {
     }
     empty.style.display = 'none';
 
-    const rect = graphCanvas.parentElement.getBoundingClientRect();
-    graphCanvas.width = rect.width * 2;
-    graphCanvas.height = rect.height * 2;
-    graphCtx.scale(2, 2);
-    graphW = rect.width;
-    graphH = rect.height;
+    // Create graphology graph
+    const Graph = graphology;
+    const graph = new Graph({ multi: true, type: 'undirected' });
+    sigmaGraph = graph;
+    graphNodeAttrs = {};
 
     // Build entity hub nodes from memory nodes
-    const entitySet = new Map(); // entityName -> { connections, nodeIds }
-    const nodeMap = {};
+    const entitySet = new Map();
+    const nodeIdSet = new Set();
 
-    // Create memory nodes
-    simNodes = rawNodes.map(n => {
+    rawNodes.forEach(n => {
       const nd = n.data || n;
-      const sn = {
-        id: nd.id,
-        label: (nd.text || nd.label || '').slice(0, 60),
+      const nodeId = String(nd.id);
+      if (nodeIdSet.has(nodeId)) return;
+      nodeIdSet.add(nodeId);
+
+      const type = typeById[nd.id] || nd.fact_type || 'world';
+      const color = NODE_COLORS[type] || NODE_COLORS.world;
+
+      graph.addNode(nodeId, {
+        label: (nd.text || nd.label || '').slice(0, 50),
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: 4,
+        color: color,
+        type: 'circle'
+      });
+
+      graphNodeAttrs[nodeId] = {
         fullText: nd.text || nd.label || '',
         date: nd.date || '',
-        type: typeById[nd.id] || nd.fact_type || 'world',
+        type: type,
         isEntity: false,
-        x: graphW/2 + (Math.random() - 0.5) * graphW * 0.6,
-        y: graphH/2 + (Math.random() - 0.5) * graphH * 0.6,
-        vx: 0, vy: 0,
-        radius: 5
+        connCount: 0,
+        origColor: color
       };
-      nodeMap[nd.id] = sn;
 
-      // Parse entities from the node
+      // Parse entities
       const entStr = nd.entities || '';
       let ents = [];
       if (typeof entStr === 'string' && entStr.length > 0) {
@@ -2881,192 +2848,166 @@ async function loadGraph() {
         }
         const info = entitySet.get(entityName);
         info.connections++;
-        info.nodeIds.push(nd.id);
+        info.nodeIds.push(nodeId);
       });
-
-      return sn;
     });
 
     // Create entity hub nodes
-    const entityNodes = [];
     entitySet.forEach((info, name) => {
       if (info.connections < 1) return;
-      const en = {
-        id: 'entity_' + name,
+      const entityId = 'entity_' + name;
+      const size = Math.min(6 + info.connections * 2, 18);
+
+      graph.addNode(entityId, {
         label: name,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: size,
+        color: NODE_COLORS.entity,
+        type: 'circle'
+      });
+
+      graphNodeAttrs[entityId] = {
         fullText: `Entity: ${name} (${info.connections} connections)`,
+        date: '',
         type: 'entity',
         isEntity: true,
-        x: graphW/2 + (Math.random() - 0.5) * graphW * 0.4,
-        y: graphH/2 + (Math.random() - 0.5) * graphH * 0.4,
-        vx: 0, vy: 0,
-        radius: Math.min(8 + info.connections * 2.5, 22),
-        entityName: name
+        connCount: info.connections,
+        origColor: NODE_COLORS.entity
       };
-      nodeMap[en.id] = en;
-      entityNodes.push(en);
     });
 
-    simNodes = [...simNodes, ...entityNodes];
-
-    // Build edges: connect memory nodes to entity nodes
-    simEdges = [];
+    // Build edges
+    let edgeIdx = 0;
 
     // Original edges between memories
     rawEdges.forEach(e => {
       const ed = e.data || e;
-      const src = nodeMap[ed.source];
-      const tgt = nodeMap[ed.target];
-      if (src && tgt) {
-        simEdges.push({ source: src, target: tgt, type: ed.linkType || '', weight: ed.weight || 0, entityName: ed.entityName || '' });
-      }
+      const src = String(ed.source);
+      const tgt = String(ed.target);
+      if (!graph.hasNode(src) || !graph.hasNode(tgt)) return;
+      const edgeType = ed.linkType || 'temporal';
+      const weight = ed.weight || 0;
+      const color = EDGE_COLORS[edgeType] || EDGE_COLORS.temporal;
+      try {
+        graph.addEdge(src, tgt, {
+          size: edgeType === 'semantic' ? Math.max(1, weight * 3) : 1,
+          color: color,
+          origColor: color,
+          edgeType: edgeType,
+          weight: weight
+        });
+      } catch(err) { /* skip duplicate edges */ }
     });
 
     // Entity-memory edges
     entitySet.forEach((info, name) => {
-      const entityNode = nodeMap['entity_' + name];
-      if (!entityNode) return;
+      const entityId = 'entity_' + name;
+      if (!graph.hasNode(entityId)) return;
       info.nodeIds.forEach(nid => {
-        const memNode = nodeMap[nid];
-        if (memNode) {
-          simEdges.push({ source: entityNode, target: memNode, type: 'entity_link' });
-        }
+        if (!graph.hasNode(nid)) return;
+        try {
+          graph.addEdge(entityId, nid, {
+            size: 0.8,
+            color: EDGE_COLORS.entity_link,
+            origColor: EDGE_COLORS.entity_link,
+            edgeType: 'entity_link',
+            weight: 0
+          });
+        } catch(err) {}
       });
     });
 
-    // Mouse events
-    graphCanvas.onmousedown = (e) => {
-      const pos = getCanvasMousePos(e);
-      const node = findNodeAtPos(pos.x, pos.y);
-      if (node) {
-        graphDragNode = node;
-        graphCanvas.style.cursor = 'grabbing';
-      } else {
-        graphDragging = true;
-        graphLastMouse = { x: e.clientX, y: e.clientY };
+    // Update connCount for all nodes
+    graph.forEachNode((n) => {
+      const attrs = graphNodeAttrs[n];
+      if (attrs) attrs.connCount = graph.degree(n);
+    });
+
+    // Scale memory node sizes by degree
+    graph.forEachNode((n) => {
+      const attrs = graphNodeAttrs[n];
+      if (attrs && !attrs.isEntity) {
+        const deg = graph.degree(n);
+        graph.setNodeAttribute(n, 'size', Math.max(3, Math.min(4 + deg * 0.8, 12)));
       }
-    };
+    });
 
-    graphCanvas.onmouseup = () => {
-      graphDragging = false;
-      graphDragNode = null;
-      graphCanvas.style.cursor = hoveredNode ? 'pointer' : 'grab';
-    };
+    // Run ForceAtlas2 layout
+    const FA2Layout = graphologyLayoutForceAtlas2;
+    const sensibleSettings = FA2Layout.inferSettings(graph);
+    FA2Layout.assign(graph, {
+      iterations: 200,
+      settings: {
+        ...sensibleSettings,
+        gravity: 1,
+        scalingRatio: 4,
+        barnesHutOptimize: graph.order > 500,
+        slowDown: 5
+      }
+    });
 
-    graphCanvas.onmouseleave = () => {
-      graphDragging = false;
-      graphDragNode = null;
+    // Create sigma instance
+    sigmaInstance = new Sigma(graph, container, {
+      renderEdgeLabels: false,
+      labelFont: 'DM Sans, system-ui, sans-serif',
+      labelSize: 11,
+      labelColor: { color: '#b0b0cc' },
+      labelRenderedSizeThreshold: 6,
+      defaultEdgeType: 'line',
+      edgeReducer: (edge, data) => {
+        return { ...data };
+      },
+      nodeReducer: (node, data) => {
+        return { ...data };
+      },
+      minCameraRatio: 0.05,
+      maxCameraRatio: 10,
+      stagePadding: 30
+    });
+
+    // Tooltip on hover
+    sigmaInstance.on('enterNode', ({ node, event }) => {
+      const attrs = graphNodeAttrs[node];
+      if (!attrs) return;
+      const typeLabel = attrs.isEntity ? 'entity' : attrs.type;
+      const dateStr = attrs.date ? new Date(attrs.date).toLocaleString('zh-CN', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit' }) : '';
+      let ttHtml = `<div class="tt-type ${typeLabel}">${typeLabel}</div>`;
+      ttHtml += esc(attrs.fullText.slice(0, 200));
+      if (attrs.isEntity) {
+        ttHtml += `<div style="margin-top:6px;font-size:10px;color:#8888aa">${attrs.connCount} connections</div>`;
+      } else if (dateStr) {
+        ttHtml += `<div style="margin-top:6px;font-size:10px;color:#8888aa">${dateStr}</div>`;
+      }
+      tooltip.innerHTML = ttHtml;
+
+      const mouseEvt = event.original || event;
+      const containerRect = container.getBoundingClientRect();
+      tooltip.style.left = (mouseEvt.clientX - containerRect.left + 14) + 'px';
+      tooltip.style.top = (mouseEvt.clientY - containerRect.top - 10) + 'px';
+      tooltip.classList.add('visible');
+    });
+
+    sigmaInstance.on('leaveNode', () => {
       tooltip.classList.remove('visible');
-    };
+    });
 
-    graphCanvas.onmousemove = (e) => {
-      const pos = getCanvasMousePos(e);
-
-      if (graphDragNode) {
-        graphDragNode.x = pos.x;
-        graphDragNode.y = pos.y;
-        graphDragNode.vx = 0;
-        graphDragNode.vy = 0;
-        return;
-      }
-
-      if (graphDragging) {
-        graphOffsetX += e.clientX - graphLastMouse.x;
-        graphOffsetY += e.clientY - graphLastMouse.y;
-        graphLastMouse = { x: e.clientX, y: e.clientY };
-        return;
-      }
-
-      hoveredNode = findNodeAtPos(pos.x, pos.y);
-
-      if (hoveredNode) {
-        const typeLabel = hoveredNode.isEntity ? 'entity' : hoveredNode.type;
-        const dateStr = hoveredNode.date ? new Date(hoveredNode.date).toLocaleString('zh-CN', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit' }) : '';
-        const connCount = simEdges.filter(e => e.source === hoveredNode || e.target === hoveredNode).length;
-        let ttHtml = `<div class="tt-type ${typeLabel}">${typeLabel}</div>`;
-        ttHtml += esc(hoveredNode.fullText.slice(0, 200));
-        if (hoveredNode.isEntity) {
-          ttHtml += `<div style="margin-top:6px;font-size:10px;color:oklch(0.6 0.02 260)">${connCount} connections</div>`;
-        } else {
-          if (dateStr) ttHtml += `<div style="margin-top:6px;font-size:10px;color:oklch(0.6 0.02 260)">${dateStr}</div>`;
-        }
-        tooltip.innerHTML = ttHtml;
-        tooltip.style.left = (pos.cx + 14) + 'px';
-        tooltip.style.top = (pos.cy - 10) + 'px';
-        tooltip.classList.add('visible');
-        graphCanvas.style.cursor = 'pointer';
+    // Focus mode: click node -> highlight 1-hop neighbors
+    sigmaInstance.on('clickNode', ({ node }) => {
+      if (focusedNode === node) {
+        clearFocus();
       } else {
-        tooltip.classList.remove('visible');
-        graphCanvas.style.cursor = 'grab';
+        focusOnNode(node);
       }
-    };
+    });
 
-    graphCanvas.onwheel = (e) => {
-      e.preventDefault();
-      const factor = e.deltaY < 0 ? 1.1 : 0.9;
-      graphScale *= factor;
-      graphScale = Math.max(0.2, Math.min(4, graphScale));
-    };
+    // Click background -> reset focus
+    sigmaInstance.on('clickStage', () => {
+      clearFocus();
+    });
 
-    // ── Touch events ──
-    graphCanvas.ontouchstart = (e) => {
-      e.preventDefault();
-      if (e.touches.length === 1) {
-        const touch = e.touches[0];
-        const rect = graphCanvas.getBoundingClientRect();
-        const mx = (touch.clientX - rect.left - graphOffsetX) / graphScale;
-        const my = (touch.clientY - rect.top - graphOffsetY) / graphScale;
-        const node = findNodeAtPos(mx, my);
-        if (node) {
-          graphDragNode = node;
-        } else {
-          graphDragging = true;
-          graphLastMouse = { x: touch.clientX, y: touch.clientY };
-        }
-      } else if (e.touches.length === 2) {
-        // Pinch start
-        graphDragging = false;
-        graphDragNode = null;
-        const dx = e.touches[0].clientX - e.touches[1].clientX;
-        const dy = e.touches[0].clientY - e.touches[1].clientY;
-        touchStartDist = Math.sqrt(dx*dx + dy*dy);
-        touchStartScale = graphScale;
-      }
-    };
-
-    graphCanvas.ontouchmove = (e) => {
-      e.preventDefault();
-      if (e.touches.length === 1) {
-        const touch = e.touches[0];
-        if (graphDragNode) {
-          const rect = graphCanvas.getBoundingClientRect();
-          graphDragNode.x = (touch.clientX - rect.left - graphOffsetX) / graphScale;
-          graphDragNode.y = (touch.clientY - rect.top - graphOffsetY) / graphScale;
-          graphDragNode.vx = 0;
-          graphDragNode.vy = 0;
-        } else if (graphDragging) {
-          graphOffsetX += touch.clientX - graphLastMouse.x;
-          graphOffsetY += touch.clientY - graphLastMouse.y;
-          graphLastMouse = { x: touch.clientX, y: touch.clientY };
-        }
-      } else if (e.touches.length === 2 && touchStartDist > 0) {
-        const dx = e.touches[0].clientX - e.touches[1].clientX;
-        const dy = e.touches[0].clientY - e.touches[1].clientY;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        graphScale = Math.max(0.2, Math.min(4, touchStartScale * (dist / touchStartDist)));
-      }
-    };
-
-    graphCanvas.ontouchend = (e) => {
-      e.preventDefault();
-      graphDragging = false;
-      graphDragNode = null;
-      touchStartDist = 0;
-    };
-
-    // Start render + physics loops (separate)
-    startRenderLoop();
-    startPhysics(600);
+    // Apply default edge filter (hide temporal by default)
+    applyGraphEdgeFilter();
 
   } catch (e) {
     empty.textContent = `Graph unavailable: ${e.message}`;

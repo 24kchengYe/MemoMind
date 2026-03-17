@@ -527,6 +527,7 @@ export HF_ENDPOINT=https://hf-mirror.com  # Use China mirror
 
 ## Changelog
 
+- **v1.4** (2026-03-16): WebGL graph rendering (sigma.js, 50,000+ nodes); graph edge filtering (type toggles + weight threshold); auto-prune stale observations weekly; backup optimization (filter temporal edges, 60% smaller)
 - **v1.3** (2026-03-16): Memory export (dashboard 💾 button + weekly auto-backup to GitHub); multilingual embedding (bge-m3, 100+ languages); split LLM config (deepseek-chat for retain, gpt-4o-mini for consolidation); architecture diagrams (SVG); memory evolution; dashboard redesign (reflect UI, timeline, entity graph, search filters, bank management); 14 deployment fixes
 - **v1.2** (2026-03-15): Dashboard redesign (glassmorphism, memory cards, graph zoom/pan/tooltips, delete, animated counters, mobile responsive); README rewrite with demo GIF; dual LLM mode (China direct via MindCraft / international via proxy bridge); retain speed 50s → 13s
 - **v1.1** (2026-03-12): Web dashboard for visual memory browsing; auto-start on boot; MCP stdio transport
@@ -793,6 +794,7 @@ NEEDS_PROXY = False
 
 ## 更新日志
 
+- **v1.4** (2026-03-16): WebGL 图谱渲染（sigma.js，支持 50,000+ 节点）；图谱边过滤（按类型/权重）；观察自动剪枝（每周清理低价值 observation）；备份优化（过滤 temporal 边）
 - **v1.3** (2026-03-16): 记忆导出（面板 💾 按钮 + 每周自动备份到 GitHub）；多语言嵌入模型（bge-m3）；LLM 分离配置；架构图（SVG）；记忆进化；面板重做（Reflect UI、时间线、实体图谱、搜索过滤、Bank 管理）；14 项部署修复
 - **v1.2** (2026-03-15): Dashboard 全面重新设计；README 重写 + demo GIF；双 LLM 模式（国内直连 MindCraft / 国际走代理桥接）；retain 速度 50s → 13s
 - **v1.1** (2026-03-12): 可视化记忆面板；开机自启；MCP stdio 传输

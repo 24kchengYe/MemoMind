@@ -1982,7 +1982,52 @@ body {
 
 <script src="https://unpkg.com/graphology@0.25.4/dist/graphology.umd.min.js"></script>
 <script src="https://unpkg.com/sigma@2.4.0/build/sigma.min.js"></script>
-<script src="https://unpkg.com/graphology-layout-forceatlas2@0.10.1/dist/graphology-layout-forceatlas2.min.js"></script>
+<script>
+// Inline ForceAtlas2-style layout (the npm package has no UMD build)
+function simpleForceLayout(graph, iterations) {
+  const nodes = {};
+  graph.forEachNode((key, attrs) => {
+    nodes[key] = { x: attrs.x || Math.random() * 1000, y: attrs.y || Math.random() * 1000, dx: 0, dy: 0, size: attrs.size || 5 };
+  });
+  for (let iter = 0; iter < iterations; iter++) {
+    const keys = Object.keys(nodes);
+    // Repulsion
+    for (let i = 0; i < keys.length; i++) {
+      for (let j = i + 1; j < keys.length; j++) {
+        const a = nodes[keys[i]], b = nodes[keys[j]];
+        let dx = a.x - b.x, dy = a.y - b.y;
+        let d = Math.sqrt(dx * dx + dy * dy) || 1;
+        let f = 800 / (d * d);
+        a.dx += dx / d * f; a.dy += dy / d * f;
+        b.dx -= dx / d * f; b.dy -= dy / d * f;
+      }
+    }
+    // Attraction (edges)
+    graph.forEachEdge((edge, attrs, source, target) => {
+      if (!nodes[source] || !nodes[target]) return;
+      const a = nodes[source], b = nodes[target];
+      let dx = b.x - a.x, dy = b.y - a.y;
+      let d = Math.sqrt(dx * dx + dy * dy) || 1;
+      let f = (d - 80) * 0.005;
+      a.dx += dx / d * f; a.dy += dy / d * f;
+      b.dx -= dx / d * f; b.dy -= dy / d * f;
+    });
+    // Gravity + apply
+    for (const key of keys) {
+      const n = nodes[key];
+      n.dx += (500 - n.x) * 0.001;
+      n.dy += (500 - n.y) * 0.001;
+      n.dx *= 0.85; n.dy *= 0.85;
+      n.x += n.dx; n.y += n.dy;
+    }
+  }
+  // Apply positions back to graph
+  for (const key of Object.keys(nodes)) {
+    graph.setNodeAttribute(key, 'x', nodes[key].x);
+    graph.setNodeAttribute(key, 'y', nodes[key].y);
+  }
+}
+</script>
 <script>
 // ── State ──
 let currentBank = 'default';
@@ -2933,19 +2978,8 @@ async function loadGraph() {
       }
     });
 
-    // Run ForceAtlas2 layout
-    const FA2Layout = graphologyLayoutForceAtlas2;
-    const sensibleSettings = FA2Layout.inferSettings(graph);
-    FA2Layout.assign(graph, {
-      iterations: 200,
-      settings: {
-        ...sensibleSettings,
-        gravity: 1,
-        scalingRatio: 4,
-        barnesHutOptimize: graph.order > 500,
-        slowDown: 5
-      }
-    });
+    // Run force-directed layout
+    simpleForceLayout(graph, 300);
 
     // Create sigma instance
     sigmaInstance = new Sigma(graph, container, {

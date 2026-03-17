@@ -516,9 +516,12 @@ export HF_ENDPOINT=https://hf-mirror.com  # Use China mirror
 - [x] Web dashboard with memory stream, search, and graph view
 - [x] Auto-start on boot (systemd + VBS)
 - [x] Memory export (JSON backup) + automated weekly backup to GitHub
+- [x] Observation pruning (auto-cleanup stale observations weekly)
+- [x] WebGL graph rendering (sigma.js, handles 50,000+ nodes)
+- [x] Graph edge filtering (hide temporal, weight threshold slider)
+- [x] Backup optimization (filter temporal edges, reduce file size)
 - [ ] Multi-agent memory sharing
 - [x] Memory evolution via configurable consolidation mission
-- [ ] Automatic memory pruning
 - [ ] Support for more MCP clients (Cursor, Windsurf, etc.)
 - [ ] Docker-based installation (no WSL dependency)
 

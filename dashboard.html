@@ -1987,42 +1987,47 @@ body {
 function simpleForceLayout(graph, iterations) {
   const nodes = {};
   graph.forEachNode((key, attrs) => {
-    nodes[key] = { x: attrs.x || Math.random() * 1000, y: attrs.y || Math.random() * 1000, dx: 0, dy: 0, size: attrs.size || 5 };
+    nodes[key] = { x: attrs.x, y: attrs.y, dx: 0, dy: 0, size: attrs.size || 3 };
   });
+  const keys = Object.keys(nodes);
+  const N = keys.length;
+  // Scale repulsion with node count
+  const repulsion = Math.max(2000, N * 50);
+  const idealDist = Math.max(120, 600 / Math.sqrt(N));
   for (let iter = 0; iter < iterations; iter++) {
-    const keys = Object.keys(nodes);
-    // Repulsion
-    for (let i = 0; i < keys.length; i++) {
-      for (let j = i + 1; j < keys.length; j++) {
+    const cooling = 1 - iter / iterations; // slow down over time
+    // Repulsion (all pairs)
+    for (let i = 0; i < N; i++) {
+      for (let j = i + 1; j < N; j++) {
         const a = nodes[keys[i]], b = nodes[keys[j]];
         let dx = a.x - b.x, dy = a.y - b.y;
         let d = Math.sqrt(dx * dx + dy * dy) || 1;
-        let f = 800 / (d * d);
+        let f = repulsion / (d * d) * cooling;
         a.dx += dx / d * f; a.dy += dy / d * f;
         b.dx -= dx / d * f; b.dy -= dy / d * f;
       }
     }
-    // Attraction (edges)
+    // Attraction (edges only — weaker to allow spread)
     graph.forEachEdge((edge, attrs, source, target) => {
       if (!nodes[source] || !nodes[target]) return;
       const a = nodes[source], b = nodes[target];
       let dx = b.x - a.x, dy = b.y - a.y;
       let d = Math.sqrt(dx * dx + dy * dy) || 1;
-      let f = (d - 80) * 0.005;
+      let f = (d - idealDist) * 0.003 * cooling;
       a.dx += dx / d * f; a.dy += dy / d * f;
       b.dx -= dx / d * f; b.dy -= dy / d * f;
     });
-    // Gravity + apply
+    // Gentle gravity toward center
+    const cx = 500, cy = 500;
     for (const key of keys) {
       const n = nodes[key];
-      n.dx += (500 - n.x) * 0.001;
-      n.dy += (500 - n.y) * 0.001;
-      n.dx *= 0.85; n.dy *= 0.85;
+      n.dx += (cx - n.x) * 0.0005;
+      n.dy += (cy - n.y) * 0.0005;
+      n.dx *= 0.8; n.dy *= 0.8;
       n.x += n.dx; n.y += n.dy;
     }
   }
-  // Apply positions back to graph
-  for (const key of Object.keys(nodes)) {
+  for (const key of keys) {
     graph.setNodeAttribute(key, 'x', nodes[key].x);
     graph.setNodeAttribute(key, 'y', nodes[key].y);
   }
@@ -2861,10 +2866,10 @@ async function loadGraph() {
       const color = NODE_COLORS[type] || NODE_COLORS.world;
 
       graph.addNode(nodeId, {
-        label: (nd.text || nd.label || '').slice(0, 50),
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: 4,
+        label: (nd.text || nd.label || '').slice(0, 30),
+        x: Math.random() * 1000,
+        y: Math.random() * 1000,
+        size: 2.5,
         color: color,
         type: 'circle'
       });
@@ -2901,12 +2906,12 @@ async function loadGraph() {
     entitySet.forEach((info, name) => {
       if (info.connections < 1) return;
       const entityId = 'entity_' + name;
-      const size = Math.min(6 + info.connections * 2, 18);
+      const size = Math.min(4 + info.connections * 1.5, 12);
 
       graph.addNode(entityId, {
         label: name,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
+        x: Math.random() * 1000,
+        y: Math.random() * 1000,
         size: size,
         color: NODE_COLORS.entity,
         type: 'circle'
@@ -2936,7 +2941,7 @@ async function loadGraph() {
       const color = EDGE_COLORS[edgeType] || EDGE_COLORS.temporal;
       try {
         graph.addEdge(src, tgt, {
-          size: edgeType === 'semantic' ? Math.max(1, weight * 3) : 1,
+          size: edgeType === 'semantic' ? Math.max(0.5, weight * 1.5) : 0.5,
           color: color,
           origColor: color,
           edgeType: edgeType,
@@ -2953,7 +2958,7 @@ async function loadGraph() {
         if (!graph.hasNode(nid)) return;
         try {
           graph.addEdge(entityId, nid, {
-            size: 0.8,
+            size: 0.4,
             color: EDGE_COLORS.entity_link,
             origColor: EDGE_COLORS.entity_link,
             edgeType: 'entity_link',
@@ -2985,9 +2990,12 @@ async function loadGraph() {
     sigmaInstance = new Sigma(graph, container, {
       renderEdgeLabels: false,
       labelFont: 'DM Sans, system-ui, sans-serif',
-      labelSize: 11,
-      labelColor: { color: '#b0b0cc' },
-      labelRenderedSizeThreshold: 6,
+      labelSize: 10,
+      labelColor: { color: '#8899aa' },
+      labelRenderedSizeThreshold: 5,
+      labelDensity: 0.3,
+      minCameraRatio: 0.1,
+      maxCameraRatio: 10,
       defaultEdgeType: 'line',
       edgeReducer: (edge, data) => {
         return { ...data };

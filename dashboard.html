@@ -2050,6 +2050,200 @@ body {
 @media (max-width: 768px) {
   .bulk-action-bar { left: 0; }
 }
+
+/* ── Feature: Memory Confidence Badge ── */
+.confidence-badge {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.confidence-badge.strong {
+  background: var(--world-bg);
+  color: var(--world);
+}
+.confidence-badge.moderate {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.confidence-badge.weak {
+  background: var(--surface-3);
+  color: var(--text-3);
+}
+
+/* ── Feature: History Timeline ── */
+.btn-history {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+.btn-history:hover {
+  background: var(--accent-dim);
+  border-color: oklch(0.30 0.08 200);
+  color: var(--accent);
+}
+.history-dropdown {
+  display: none;
+  margin-top: 10px;
+  padding: 12px 16px;
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  animation: cardEntrance 0.2s ease-out;
+}
+.history-dropdown.visible { display: block; }
+.history-timeline {
+  position: relative;
+  padding-left: 18px;
+}
+.history-timeline::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--border);
+  border-radius: 1px;
+}
+.history-entry {
+  position: relative;
+  margin-bottom: 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.history-entry:last-child { margin-bottom: 0; }
+.history-entry::before {
+  content: '';
+  position: absolute;
+  left: -18px;
+  top: 5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--surface-0);
+  z-index: 1;
+}
+.history-entry .history-date {
+  font-size: 10px;
+  color: var(--text-3);
+  margin-bottom: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.history-entry .history-text {
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.history-empty {
+  font-size: 12px;
+  color: var(--text-3);
+  font-style: italic;
+  padding: 4px 0;
+}
+.history-loading {
+  font-size: 11px;
+  color: var(--text-3);
+  font-style: italic;
+}
+
+/* ── Feature: Privacy Lock ── */
+.btn-privacy {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+.btn-privacy:hover {
+  background: var(--surface-3);
+  color: var(--text-1);
+}
+.btn-privacy.is-private {
+  color: var(--observation);
+}
+.memory-card.is-private .memory-text {
+  opacity: 0.6;
+}
+.memory-card.is-private .memory-card-header::after {
+  content: '\1F512';
+  font-size: 12px;
+  margin-left: 6px;
+}
+.privacy-filter-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-3);
+  cursor: pointer;
+  user-select: none;
+}
+.privacy-filter-wrap input[type="checkbox"] {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* ── Feature: Custom Links in Graph ── */
+.graph-custom-link-prompt {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--surface-2);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  z-index: 20;
+  box-shadow: 0 8px 24px oklch(0 0 0 / 0.4);
+  display: none;
+  min-width: 260px;
+}
+.graph-custom-link-prompt.visible { display: block; }
+.graph-custom-link-prompt label {
+  font-size: 12px;
+  color: var(--text-2);
+  display: block;
+  margin-bottom: 8px;
+}
+.graph-custom-link-prompt input {
+  width: 100%;
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: var(--text-1);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  margin-bottom: 12px;
+}
+.graph-custom-link-prompt input:focus { border-color: var(--accent); }
+.graph-custom-link-prompt .prompt-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
 </style>
 </head>
 <body>
@@ -2180,6 +2374,11 @@ body {
             <span id="entityFilterName"></span>
             <span class="filter-entity-x">&#10005;</span>
           </button>
+          <div class="filter-separator"></div>
+          <label class="privacy-filter-wrap">
+            <input type="checkbox" id="showPrivateToggle" checked onchange="applyFilters()">
+            <span>Show private</span>
+          </label>
         </div>
       </div>
 
@@ -2233,6 +2432,7 @@ body {
             <div class="legend-item"><div style="width:16px;height:2px;background:#5ba8c8;border-radius:1px"></div> Entity link &mdash; share a person, place, or concept</div>
             <div class="legend-item"><div style="width:16px;height:2px;background:#9966cc;border-radius:1px"></div> Semantic &mdash; similar meaning</div>
             <div class="legend-item"><div style="width:16px;height:0;border-top:1px dashed #555"></div> Temporal &mdash; close in time</div>
+            <div class="legend-item"><div style="width:16px;height:0;border-top:2px dashed #e68a2e"></div> Custom &mdash; user-defined link</div>
             <div style="width:100%;height:1px;background:oklch(0.25 0.01 260);margin:4px 0"></div>
             <span class="dup-badge" id="dupBadge" onclick="showDuplicates()"></span>
           </div>
@@ -2240,6 +2440,7 @@ body {
             <label><input type="checkbox" id="filterEntity" checked onchange="applyGraphEdgeFilter()"> Entity</label>
             <label><input type="checkbox" id="filterSemantic" checked onchange="applyGraphEdgeFilter()"> Semantic</label>
             <label><input type="checkbox" id="filterTemporal" onchange="applyGraphEdgeFilter()"> Temporal</label>
+            <label><input type="checkbox" id="filterCustom" checked onchange="applyGraphEdgeFilter()"> Custom</label>
             <div class="edge-slider-wrap">
               <span>Weight</span>
               <input type="range" id="edgeWeightSlider" min="0" max="100" value="0" oninput="applyGraphEdgeFilter()">
@@ -2254,6 +2455,14 @@ body {
                 <option value="time_period">Time period</option>
               </select>
             </label>
+          </div>
+          <div class="graph-custom-link-prompt" id="customLinkPrompt">
+            <label>Add custom link label between two nodes:</label>
+            <input type="text" id="customLinkLabel" placeholder="e.g., related to, caused by, depends on" onkeydown="if(event.key==='Enter')confirmCustomLink()">
+            <div class="prompt-actions">
+              <button class="modal-btn cancel" onclick="cancelCustomLink()">Cancel</button>
+              <button class="modal-btn primary" onclick="confirmCustomLink()">Add</button>
+            </div>
           </div>
           <div class="graph-controls">
             <button onclick="graphZoom(1.3)" title="Zoom in">+</button>
@@ -2684,6 +2893,15 @@ function renderMemoryCard(m, i, searchQuery) {
   const relevance = m.relevance_score != null
     ? `<span class="relevance-badge">${(m.relevance_score * 100).toFixed(0)}%</span>` : '';
 
+  // Feature: Confidence badge based on proof_count
+  const proofCount = m.proof_count || 0;
+  let confidenceHtml = '';
+  if (proofCount > 0) {
+    const confClass = proofCount > 3 ? 'strong' : proofCount > 1 ? 'moderate' : 'weak';
+    const confLabel = proofCount === 1 ? '1 proof' : `${proofCount} proofs`;
+    confidenceHtml = `<span class="confidence-badge ${confClass}">${confLabel}</span>`;
+  }
+
   const memoryId = m.id || m.memory_id || '';
   const fold = needsFolding(m.text || '');
   const foldClass = fold ? ' collapsed' : '';
@@ -2727,10 +2945,11 @@ function renderMemoryCard(m, i, searchQuery) {
 
   // Feature 5: Bulk checkbox
   const selectClass = selectModeOn ? ' select-mode' : '';
+  const privateClass = memoryId && isMemoryPrivate(memoryId) ? ' is-private' : '';
   const checkboxHtml = `<input type="checkbox" class="bulk-checkbox" onclick="event.stopPropagation();toggleMemorySelection('${esc(memoryId)}', this)" ${selectedMemoryIds.has(memoryId) ? 'checked' : ''}>`;
 
   return `
-    <div class="memory-card type-${esc(type)}${agedClass}${selectClass}" style="animation-delay:${Math.min(i * 0.05, 0.8)}s" data-id="${esc(memoryId)}" data-type="${esc(type)}" data-date="${esc(m.date || '')}">
+    <div class="memory-card type-${esc(type)}${agedClass}${selectClass}${privateClass}" style="animation-delay:${Math.min(i * 0.05, 0.8)}s" data-id="${esc(memoryId)}" data-type="${esc(type)}" data-date="${esc(m.date || '')}">
       ${checkboxHtml}
       <div class="memory-card-header">
         <div class="memory-card-left">
@@ -2738,16 +2957,20 @@ function renderMemoryCard(m, i, searchQuery) {
           ${relevance}
         </div>
         <div class="memory-card-actions">
+          ${memoryId && type === 'observation' ? `<button class="btn-history" onclick="toggleHistory('${esc(memoryId)}', this)" title="View history">&#128337;</button>` : ''}
+          ${memoryId ? `<button class="btn-privacy ${isMemoryPrivate(memoryId) ? 'is-private' : ''}" onclick="togglePrivacy('${esc(memoryId)}', this)" title="Toggle private">${isMemoryPrivate(memoryId) ? '&#128274;' : '&#128275;'}</button>` : ''}
           ${memoryId ? `<button class="btn-delete" onclick="showDeleteModal('${esc(memoryId)}')" title="Delete memory">&#128465;</button>` : ''}
         </div>
       </div>
       <div class="memory-text${foldClass}">${text}</div>
       ${showMoreBtn}
       ${provenanceHtml}
+      ${memoryId && type === 'observation' ? `<div class="history-dropdown" id="history-${esc(memoryId)}" data-loaded="false"></div>` : ''}
       <div class="memory-footer">
         ${m.context ? `<span>${esc(m.context)}</span>` : ''}
         ${entities}
         <span class="memory-date">${fmtDate(m.date)}</span>
+        ${confidenceHtml}
       </div>
       ${agingHtml}
     </div>`;
@@ -2800,6 +3023,15 @@ function applyFilters() {
         const name = typeof e === 'object' ? (e.name || e.canonical_name || '') : e;
         return String(name).toLowerCase() === activeEntityFilter.toLowerCase();
       });
+    });
+  }
+
+  // Privacy filter
+  const showPrivate = document.getElementById('showPrivateToggle').checked;
+  if (!showPrivate) {
+    items = items.filter(m => {
+      const memId = m.id || m.memory_id || '';
+      return !isMemoryPrivate(memId);
     });
   }
 
@@ -3214,6 +3446,7 @@ function applyGraphEdgeFilter() {
   const showEntity = document.getElementById('filterEntity').checked;
   const showSemantic = document.getElementById('filterSemantic').checked;
   const showTemporal = document.getElementById('filterTemporal').checked;
+  const showCustom = document.getElementById('filterCustom').checked;
   const minWeight = parseInt(document.getElementById('edgeWeightSlider').value) / 100;
   document.getElementById('edgeWeightVal').textContent = document.getElementById('edgeWeightSlider').value;
 
@@ -3227,6 +3460,8 @@ function applyGraphEdgeFilter() {
       hidden = !showSemantic || (attrs.weight || 0) < minWeight;
     } else if (edgeType === 'temporal') {
       hidden = !showTemporal;
+    } else if (edgeType === 'custom') {
+      hidden = !showCustom;
     }
 
     // Respect focus mode
@@ -3281,6 +3516,14 @@ async function loadGraph() {
     sigmaGraph = graph;
     graphNodeAttrs = {};
 
+    // Entity stopwords filter — reduce noise in the graph
+    const ENTITY_STOPWORDS = new Set([
+      'user', '用户', 'it', 'this', 'that', 'today', 'yesterday', 'now',
+      'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be',
+      'he', 'she', 'they', 'we', 'i', 'me', 'my', 'his', 'her',
+      'thing', 'stuff', 'something', 'everything', 'nothing'
+    ]);
+
     // Build entity hub nodes from memory nodes
     const entitySet = new Map();
     const nodeIdSet = new Set();
@@ -3322,6 +3565,8 @@ async function loadGraph() {
       }
 
       ents.forEach(entityName => {
+        // Skip stopword entities
+        if (ENTITY_STOPWORDS.has(entityName.toLowerCase())) return;
         if (!entitySet.has(entityName)) {
           entitySet.set(entityName, { connections: 0, nodeIds: [] });
         }
@@ -3457,6 +3702,11 @@ async function loadGraph() {
       ttHtml += esc(attrs.fullText.slice(0, 200));
       if (attrs.isEntity) {
         ttHtml += `<div style="margin-top:6px;font-size:10px;color:#8888aa">${attrs.connCount} connections</div>`;
+        // Entity Hierarchy Hint: show co-occurring entities
+        const coOccur = getCoOccurringEntities(node, graph, graphNodeAttrs);
+        if (coOccur.length > 0) {
+          ttHtml += `<div style="margin-top:4px;font-size:10px;color:var(--accent)">Often appears with: ${coOccur.join(', ')}</div>`;
+        }
       } else if (dateStr) {
         ttHtml += `<div style="margin-top:6px;font-size:10px;color:#8888aa">${dateStr}</div>`;
       }
@@ -3507,9 +3757,26 @@ async function loadGraph() {
     });
 
     // Focus mode: click node -> highlight 1-hop neighbors (only if not dragging)
+    // Shift+Click: custom link creation between two nodes
     sigmaInstance.on('clickNode', ({ node, event }) => {
       // Skip focus if we just finished dragging
       if (isDragging) return;
+      const mouseEvt = event.original || event;
+      if (mouseEvt.shiftKey) {
+        // Custom link creation mode
+        if (!customLinkFirstNode) {
+          customLinkFirstNode = node;
+          // Highlight the first node
+          graph.setNodeAttribute(node, 'color', '#e68a2e');
+        } else if (customLinkFirstNode !== node) {
+          customLinkSecondNode = node;
+          showCustomLinkPrompt();
+          // Reset first node color
+          const orig = graphNodeAttrs[customLinkFirstNode];
+          if (orig) graph.setNodeAttribute(customLinkFirstNode, 'color', orig.origColor);
+        }
+        return;
+      }
       if (focusedNode === node) {
         clearFocus();
       } else {
@@ -3519,7 +3786,16 @@ async function loadGraph() {
 
     // Click background -> reset focus
     sigmaInstance.on('clickStage', () => {
-      if (!isDragging) clearFocus();
+      if (!isDragging) {
+        clearFocus();
+        // Reset custom link state if clicking background
+        if (customLinkFirstNode) {
+          const orig = graphNodeAttrs[customLinkFirstNode];
+          if (orig && graph.hasNode(customLinkFirstNode)) graph.setNodeAttribute(customLinkFirstNode, 'color', orig.origColor);
+          customLinkFirstNode = null;
+          customLinkSecondNode = null;
+        }
+      }
     });
 
     // Right-click context menu for memory nodes
@@ -3612,6 +3888,9 @@ async function loadGraph() {
       };
       setTimeout(() => document.addEventListener('click', closeMenu), 10);
     });
+
+    // Render custom links from localStorage
+    renderCustomLinksOnGraph(graph);
 
     // Apply default edge filter (hide temporal by default)
     applyGraphEdgeFilter();
@@ -3950,6 +4229,189 @@ function applyClusterColoring() {
       }
     });
   }
+}
+
+// ── Feature: Memory Confidence (proof_count) ──
+// proof_count is read from the memory object in renderMemoryCard, no extra function needed.
+
+// ── Feature: History Timeline for Observations ──
+async function toggleHistory(memoryId, btn) {
+  const container = document.getElementById('history-' + memoryId);
+  if (!container) return;
+  const isVisible = container.classList.contains('visible');
+  if (isVisible) {
+    container.classList.remove('visible');
+    return;
+  }
+  container.classList.add('visible');
+  if (container.dataset.loaded === 'true') return;
+  container.innerHTML = '<div class="history-loading">Loading history...</div>';
+  try {
+    const detail = await api(`/v1/default/banks/${currentBank}/memories/${memoryId}`);
+    const history = detail.history || [];
+    if (history.length === 0) {
+      container.innerHTML = '<div class="history-empty">No changes recorded yet</div>';
+    } else {
+      container.innerHTML = '<div class="history-timeline">' + history.map(h => {
+        const dateStr = h.date ? new Date(h.date).toLocaleString('en', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown date';
+        return `<div class="history-entry"><div class="history-date">${esc(dateStr)}</div><div class="history-text">${esc((h.old_text || h.text || h.content || JSON.stringify(h)).slice(0, 300))}</div></div>`;
+      }).join('') + '</div>';
+    }
+    container.dataset.loaded = 'true';
+  } catch (e) {
+    // Try alternative endpoint
+    try {
+      const res = await fetch(base() + `/v1/default/banks/${currentBank}/memories/${memoryId}/history`);
+      if (res.ok) {
+        const data = await res.json();
+        const history = data.history || data.entries || data || [];
+        if (Array.isArray(history) && history.length > 0) {
+          container.innerHTML = '<div class="history-timeline">' + history.map(h => {
+            const dateStr = h.date || h.changed_at || h.timestamp || '';
+            const fmtD = dateStr ? new Date(dateStr).toLocaleString('en', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown date';
+            return `<div class="history-entry"><div class="history-date">${esc(fmtD)}</div><div class="history-text">${esc((h.old_text || h.text || h.content || JSON.stringify(h)).slice(0, 300))}</div></div>`;
+          }).join('') + '</div>';
+        } else {
+          container.innerHTML = '<div class="history-empty">No changes recorded yet</div>';
+        }
+      } else {
+        container.innerHTML = '<div class="history-empty">No changes recorded yet</div>';
+      }
+    } catch (e2) {
+      container.innerHTML = '<div class="history-empty">No changes recorded yet</div>';
+    }
+    container.dataset.loaded = 'true';
+  }
+}
+
+// ── Feature: Privacy Tag ──
+function isMemoryPrivate(memoryId) {
+  if (!memoryId) return false;
+  try {
+    return localStorage.getItem('memomind_private_' + memoryId) === 'true';
+  } catch (e) { return false; }
+}
+
+function togglePrivacy(memoryId, btn) {
+  const isPrivate = isMemoryPrivate(memoryId);
+  if (isPrivate) {
+    localStorage.removeItem('memomind_private_' + memoryId);
+  } else {
+    localStorage.setItem('memomind_private_' + memoryId, 'true');
+  }
+  // Re-render to update visual state
+  applyFilters();
+}
+
+// ── Feature: Custom Edge Type UI (Shift+Click two nodes) ──
+let customLinkFirstNode = null;
+let customLinkSecondNode = null;
+
+function getCustomLinks() {
+  try {
+    const raw = localStorage.getItem('memomind_custom_links');
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) { return []; }
+}
+
+function saveCustomLinks(links) {
+  try { localStorage.setItem('memomind_custom_links', JSON.stringify(links)); } catch (e) {}
+}
+
+function showCustomLinkPrompt() {
+  document.getElementById('customLinkLabel').value = '';
+  document.getElementById('customLinkPrompt').classList.add('visible');
+  document.getElementById('customLinkLabel').focus();
+}
+
+function cancelCustomLink() {
+  document.getElementById('customLinkPrompt').classList.remove('visible');
+  customLinkFirstNode = null;
+  customLinkSecondNode = null;
+}
+
+function confirmCustomLink() {
+  const label = document.getElementById('customLinkLabel').value.trim();
+  if (!label || !customLinkFirstNode || !customLinkSecondNode) {
+    cancelCustomLink();
+    return;
+  }
+  const links = getCustomLinks();
+  links.push({
+    source: customLinkFirstNode,
+    target: customLinkSecondNode,
+    label: label,
+    created: new Date().toISOString()
+  });
+  saveCustomLinks(links);
+  document.getElementById('customLinkPrompt').classList.remove('visible');
+
+  // Add the edge to the graph immediately
+  if (sigmaGraph && sigmaGraph.hasNode(customLinkFirstNode) && sigmaGraph.hasNode(customLinkSecondNode)) {
+    try {
+      sigmaGraph.addEdge(customLinkFirstNode, customLinkSecondNode, {
+        size: 0.4,
+        color: '#e68a2e',
+        origColor: '#e68a2e',
+        edgeType: 'custom',
+        weight: 0,
+        label: label
+      });
+    } catch (err) { /* duplicate edge */ }
+  }
+
+  customLinkFirstNode = null;
+  customLinkSecondNode = null;
+  applyGraphEdgeFilter();
+}
+
+function renderCustomLinksOnGraph(graph) {
+  const links = getCustomLinks();
+  links.forEach(link => {
+    if (graph.hasNode(link.source) && graph.hasNode(link.target)) {
+      try {
+        graph.addEdge(link.source, link.target, {
+          size: 0.4,
+          color: '#e68a2e',
+          origColor: '#e68a2e',
+          edgeType: 'custom',
+          weight: 0,
+          label: link.label || 'custom'
+        });
+      } catch (err) { /* duplicate edge */ }
+    }
+  });
+}
+
+// ── Feature: Entity Hierarchy Hint (co-occurring entities) ──
+function getCoOccurringEntities(entityNodeKey, graph, nodeAttrs) {
+  // Find memory nodes connected to this entity
+  const memoryNodes = [];
+  graph.forEachNeighbor(entityNodeKey, (nb) => {
+    const nbAttrs = nodeAttrs[nb];
+    if (nbAttrs && !nbAttrs.isEntity) {
+      memoryNodes.push(nb);
+    }
+  });
+
+  // Find other entity nodes that share these memory nodes
+  const entityCounts = {};
+  const thisEntityName = entityNodeKey.replace('entity_', '');
+  memoryNodes.forEach(memNode => {
+    graph.forEachNeighbor(memNode, (nb) => {
+      const nbAttrs = nodeAttrs[nb];
+      if (nbAttrs && nbAttrs.isEntity && nb !== entityNodeKey) {
+        const name = nb.replace('entity_', '');
+        entityCounts[name] = (entityCounts[name] || 0) + 1;
+      }
+    });
+  });
+
+  // Sort by count and return top 3
+  return Object.entries(entityCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([name]) => name);
 }
 
 // ── Init ──

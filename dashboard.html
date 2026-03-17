@@ -1721,6 +1721,335 @@ body {
   .filter-chips { gap: 6px; }
   .filter-chip { padding: 4px 10px; font-size: 11px; }
 }
+
+/* ── Feature: Recency Toggle ── */
+.recency-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-3);
+  cursor: pointer;
+  user-select: none;
+}
+.recency-toggle-wrap .toggle-track {
+  width: 32px; height: 16px;
+  border-radius: 8px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  position: relative;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+  flex-shrink: 0;
+}
+.recency-toggle-wrap .toggle-track.on {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+}
+.recency-toggle-wrap .toggle-thumb {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--text-3);
+  position: absolute;
+  top: 1px; left: 1px;
+  transition: transform var(--transition-fast), background var(--transition-fast);
+}
+.recency-toggle-wrap .toggle-track.on .toggle-thumb {
+  transform: translateX(16px);
+  background: var(--accent);
+}
+.recency-tooltip-icon {
+  font-size: 11px;
+  color: var(--text-3);
+  cursor: help;
+  position: relative;
+}
+.recency-tooltip-icon:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface-3);
+  color: var(--text-1);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  white-space: nowrap;
+  border: 1px solid var(--border);
+  z-index: 100;
+  pointer-events: none;
+  box-shadow: var(--shadow-card);
+}
+
+/* ── Feature: Observation Provenance ── */
+.provenance-label {
+  font-size: 11px;
+  color: var(--observation);
+  opacity: 0.8;
+  cursor: pointer;
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: opacity var(--transition-fast);
+}
+.provenance-label:hover { opacity: 1; }
+.provenance-label .prov-arrow {
+  font-size: 10px;
+  transition: transform var(--transition-fast);
+}
+.provenance-label.expanded .prov-arrow { transform: rotate(90deg); }
+.provenance-sources {
+  display: none;
+  margin-top: 8px;
+  padding-left: 12px;
+  border-left: 2px solid var(--observation-bg);
+}
+.provenance-sources.visible { display: block; }
+.provenance-source-item {
+  font-size: 12px;
+  color: var(--text-3);
+  line-height: 1.5;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.provenance-source-item:last-child { border-bottom: none; }
+.provenance-loading { font-size: 11px; color: var(--text-3); font-style: italic; }
+
+/* ── Feature: Entity Duplicate Warning ── */
+.dup-badge {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: oklch(0.25 0.08 75 / 0.4);
+  color: var(--observation);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.dup-badge.visible { display: inline-flex; }
+.dup-badge:hover { background: oklch(0.30 0.08 75 / 0.5); }
+.dup-list-overlay {
+  position: fixed;
+  inset: 0;
+  background: oklch(0 0 0 / 0.5);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.dup-list-overlay.visible { display: flex; }
+.dup-list-box {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  max-width: 420px;
+  width: 90%;
+  max-height: 60vh;
+  overflow-y: auto;
+  box-shadow: 0 16px 48px oklch(0 0 0 / 0.4);
+}
+.dup-list-box h4 {
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.dup-pair {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 13px;
+  color: var(--text-2);
+  display: flex; align-items: center; gap: 8px;
+}
+.dup-pair:last-child { border-bottom: none; }
+.dup-pair .dup-arrow { color: var(--text-3); font-size: 11px; }
+.dup-pair code {
+  background: var(--surface-3);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+/* ── Feature: Aging Reminder ── */
+.memory-card.aged::before {
+  background: oklch(0.70 0.14 75) !important;
+}
+.aging-badge {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: oklch(0.25 0.08 75 / 0.4);
+  color: oklch(0.75 0.14 75);
+  white-space: nowrap;
+}
+.still-accurate-link {
+  font-size: 11px;
+  color: oklch(0.70 0.14 75);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  transition: color var(--transition-fast);
+  padding: 0;
+}
+.still-accurate-link:hover { color: oklch(0.80 0.14 75); }
+.aging-actions {
+  display: none;
+  gap: 6px;
+  margin-top: 6px;
+  animation: cardEntrance 0.2s ease-out;
+}
+.aging-actions.visible { display: flex; }
+.aging-actions button {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: all var(--transition-fast);
+}
+.aging-actions .btn-confirm {
+  background: var(--world-bg);
+  color: var(--world);
+  border-color: oklch(0.30 0.06 155);
+}
+.aging-actions .btn-confirm:hover { background: oklch(0.25 0.06 155); }
+.aging-actions .btn-outdated {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border-color: oklch(0.30 0.06 25);
+}
+.aging-actions .btn-outdated:hover { background: oklch(0.25 0.06 25); }
+
+/* ── Feature: Bulk Operations ── */
+.btn-icon.select-mode-btn.active {
+  background: oklch(0.30 0.08 75 / 0.5);
+  color: oklch(0.80 0.14 75);
+  border-color: oklch(0.70 0.14 75);
+}
+.memory-card .bulk-checkbox {
+  display: none;
+  position: absolute;
+  top: 20px;
+  left: -32px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  z-index: 5;
+}
+.memory-card.select-mode { padding-left: 44px; }
+.memory-card.select-mode .bulk-checkbox { display: block; left: 14px; }
+.bulk-action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 280px;
+  right: 0;
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+  padding: 12px 40px;
+  display: none;
+  align-items: center;
+  gap: 16px;
+  z-index: 200;
+  box-shadow: 0 -4px 16px oklch(0 0 0 / 0.3);
+  animation: cardEntrance 0.2s ease-out;
+}
+.bulk-action-bar.visible { display: flex; }
+.bulk-action-bar .bulk-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+  flex: 1;
+}
+.bulk-action-bar .bulk-select-all-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-3);
+  cursor: pointer;
+}
+.bulk-action-bar .bulk-select-all-wrap input { accent-color: var(--accent); cursor: pointer; }
+.bulk-action-bar button {
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 1px solid var(--border);
+}
+.bulk-action-bar .bulk-delete {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: white;
+}
+.bulk-action-bar .bulk-delete:hover { opacity: 0.9; }
+.bulk-action-bar .bulk-cancel {
+  background: var(--surface-3);
+  color: var(--text-2);
+}
+.bulk-action-bar .bulk-cancel:hover { background: var(--surface-2); color: var(--text-1); }
+
+/* ── Feature: Graph Legend Tooltip ── */
+.legend-info-icon {
+  font-size: 11px;
+  color: var(--text-3);
+  cursor: help;
+  position: relative;
+  margin-left: 2px;
+}
+.legend-info-icon:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: 120%;
+  left: 0;
+  background: var(--surface-3);
+  color: var(--text-1);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  white-space: normal;
+  width: 220px;
+  border: 1px solid var(--border);
+  z-index: 100;
+  pointer-events: none;
+  box-shadow: var(--shadow-card);
+  line-height: 1.5;
+}
+
+/* ── Feature: Cluster dropdown ── */
+.graph-cluster-select {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--surface-2);
+  color: var(--text-3);
+  border: 1px solid var(--border);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 20px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+}
+.graph-cluster-select:focus { border-color: var(--accent); }
+
+@media (max-width: 768px) {
+  .bulk-action-bar { left: 0; }
+}
 </style>
 </head>
 <body>
@@ -1766,6 +2095,7 @@ body {
         <span class="bank-badge" id="toolbarBankBadge">default</span>
       </div>
       <div class="toolbar-actions">
+        <button class="btn-icon select-mode-btn" id="selectModeBtn" onclick="toggleSelectMode()" title="Select mode">&#9745;</button>
         <button class="btn-icon" onclick="exportMemories()" title="Export all memories as JSON">&#128190;</button>
         <button class="btn-icon" id="reflectToggle" onclick="toggleReflect()" title="Reflect">&#128172;</button>
         <button class="btn-icon" onclick="doRefresh(this)" title="Refresh">&#8635;</button>
@@ -1838,6 +2168,14 @@ body {
             <option value="30">Last 30 days</option>
             <option value="90">Last 90 days</option>
           </select>
+          <div class="filter-separator"></div>
+          <label class="recency-toggle-wrap" onclick="toggleRecency()">
+            <div class="toggle-track" id="recencyTrack">
+              <div class="toggle-thumb"></div>
+            </div>
+            <span>Recency boost</span>
+            <span class="recency-tooltip-icon" data-tip="Weight recent memories higher in search results">(i)</span>
+          </label>
           <button class="filter-entity-active" id="entityFilterChip" onclick="clearEntityFilter()">
             <span id="entityFilterName"></span>
             <span class="filter-entity-x">&#10005;</span>
@@ -1885,15 +2223,18 @@ body {
       <div id="graphView" style="display:none">
         <div class="graph-container">
           <div id="sigmaContainer" style="width:100%;height:100%"></div>
-          <div class="graph-legend">
+          <div class="graph-legend" id="graphLegend">
+            <div class="legend-item" style="font-weight:600;color:var(--text-2)">Legend <span class="legend-info-icon" data-tip="Nodes = memories (colored) and entities (gray outline). Edges = relationships between them.">(i)</span></div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--world)"></div> World</div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--experience)"></div> Experience</div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--observation)"></div> Observation</div>
             <div class="legend-item"><div class="legend-ring"></div> Entity</div>
             <div style="width:100%;height:1px;background:oklch(0.25 0.01 260);margin:4px 0"></div>
-            <div class="legend-item"><div style="width:16px;height:2px;background:#5ba8c8;border-radius:1px"></div> Entity link</div>
-            <div class="legend-item"><div style="width:16px;height:2px;background:#9966cc;border-radius:1px"></div> Semantic</div>
-            <div class="legend-item"><div style="width:16px;height:0;border-top:1px dashed #555"></div> Temporal</div>
+            <div class="legend-item"><div style="width:16px;height:2px;background:#5ba8c8;border-radius:1px"></div> Entity link &mdash; share a person, place, or concept</div>
+            <div class="legend-item"><div style="width:16px;height:2px;background:#9966cc;border-radius:1px"></div> Semantic &mdash; similar meaning</div>
+            <div class="legend-item"><div style="width:16px;height:0;border-top:1px dashed #555"></div> Temporal &mdash; close in time</div>
+            <div style="width:100%;height:1px;background:oklch(0.25 0.01 260);margin:4px 0"></div>
+            <span class="dup-badge" id="dupBadge" onclick="showDuplicates()"></span>
           </div>
           <div class="graph-filter-bar" id="graphFilterBar">
             <label><input type="checkbox" id="filterEntity" checked onchange="applyGraphEdgeFilter()"> Entity</label>
@@ -1904,6 +2245,15 @@ body {
               <input type="range" id="edgeWeightSlider" min="0" max="100" value="0" oninput="applyGraphEdgeFilter()">
               <span class="slider-val" id="edgeWeightVal">0</span>
             </div>
+            <div style="width:1px;height:16px;background:var(--border);margin:0 4px"></div>
+            <label style="display:flex;align-items:center;gap:4px">
+              Cluster by:
+              <select class="graph-cluster-select" id="clusterBySelect" onchange="applyClusterColoring()">
+                <option value="none">None</option>
+                <option value="entity_type">Entity type</option>
+                <option value="time_period">Time period</option>
+              </select>
+            </label>
           </div>
           <div class="graph-controls">
             <button onclick="graphZoom(1.3)" title="Zoom in">+</button>
@@ -1976,6 +2326,25 @@ body {
     <div class="retain-actions">
       <button class="modal-btn cancel" onclick="closeRetainModal()">Cancel</button>
       <button class="modal-btn primary" onclick="doRetain()">Save Memory</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk action bar -->
+<div class="bulk-action-bar" id="bulkActionBar">
+  <label class="bulk-select-all-wrap"><input type="checkbox" id="bulkSelectAll" onchange="toggleSelectAll()"> Select all visible</label>
+  <span class="bulk-count" id="bulkCount">0 selected</span>
+  <button class="bulk-delete" onclick="bulkDelete()">Delete selected</button>
+  <button class="bulk-cancel" onclick="toggleSelectMode()">Cancel</button>
+</div>
+
+<!-- Duplicate entities overlay -->
+<div class="dup-list-overlay" id="dupOverlay" onclick="if(event.target===this)this.classList.remove('visible')">
+  <div class="dup-list-box">
+    <h4>&#9888;&#65039; Potential Duplicate Entities</h4>
+    <div id="dupListContent"></div>
+    <div style="margin-top:14px;text-align:right">
+      <button class="modal-btn cancel" onclick="document.getElementById('dupOverlay').classList.remove('visible')">Close</button>
     </div>
   </div>
 </div>
@@ -2060,6 +2429,10 @@ let deleteType = 'memory'; // 'memory' or 'bank'
 let activeTypeFilter = 'all';
 let activeEntityFilter = null;
 let reflectOpen = false;
+let recencyBoostOn = false;
+let selectModeOn = false;
+let selectedMemoryIds = new Set();
+let detectedDuplicates = [];
 
 // Sparkline history - persist in localStorage
 const SPARK_KEY = 'memomind_spark_history';
@@ -2316,8 +2689,49 @@ function renderMemoryCard(m, i, searchQuery) {
   const foldClass = fold ? ' collapsed' : '';
   const showMoreBtn = fold ? `<button class="show-more-btn" onclick="toggleFold(this)">Show more</button>` : '';
 
+  // Feature 2: Observation provenance
+  let provenanceHtml = '';
+  if (type === 'observation' && memoryId) {
+    const srcCount = (m.source_memory_ids && m.source_memory_ids.length) || (m.source_memories && m.source_memories.length) || 0;
+    if (srcCount > 0) {
+      provenanceHtml = `
+        <div class="provenance-label" onclick="toggleProvenance('${esc(memoryId)}', this)">
+          <span class="prov-arrow">&#9654;</span> Based on ${srcCount} fact${srcCount !== 1 ? 's' : ''}
+        </div>
+        <div class="provenance-sources" id="prov-${esc(memoryId)}" data-loaded="false"></div>`;
+    } else {
+      // We don't know the count yet; show a clickable placeholder
+      provenanceHtml = `
+        <div class="provenance-label" onclick="toggleProvenance('${esc(memoryId)}', this)">
+          <span class="prov-arrow">&#9654;</span> View source facts
+        </div>
+        <div class="provenance-sources" id="prov-${esc(memoryId)}" data-loaded="false"></div>`;
+    }
+  }
+
+  // Feature 4: Aging reminder
+  const aged = isMemoryAged(m) && !isConfirmedRecently(memoryId);
+  const agedClass = aged ? ' aged' : '';
+  let agingHtml = '';
+  if (aged && memoryId) {
+    agingHtml = `
+      <div class="aging-wrap" style="margin-top:6px">
+        <span class="aging-badge">60+ days old</span>
+        <button class="still-accurate-link" onclick="toggleAgingActions('${esc(memoryId)}')">Still accurate?</button>
+        <div class="aging-actions" id="aging-actions-${esc(memoryId)}">
+          <button class="btn-confirm" onclick="confirmStillAccurate('${esc(memoryId)}', this)">Yes, still true</button>
+          <button class="btn-outdated" onclick="markOutdated('${esc(memoryId)}')">No, outdated</button>
+        </div>
+      </div>`;
+  }
+
+  // Feature 5: Bulk checkbox
+  const selectClass = selectModeOn ? ' select-mode' : '';
+  const checkboxHtml = `<input type="checkbox" class="bulk-checkbox" onclick="event.stopPropagation();toggleMemorySelection('${esc(memoryId)}', this)" ${selectedMemoryIds.has(memoryId) ? 'checked' : ''}>`;
+
   return `
-    <div class="memory-card type-${esc(type)}" style="animation-delay:${Math.min(i * 0.05, 0.8)}s" data-id="${esc(memoryId)}" data-type="${esc(type)}" data-date="${esc(m.date || '')}">
+    <div class="memory-card type-${esc(type)}${agedClass}${selectClass}" style="animation-delay:${Math.min(i * 0.05, 0.8)}s" data-id="${esc(memoryId)}" data-type="${esc(type)}" data-date="${esc(m.date || '')}">
+      ${checkboxHtml}
       <div class="memory-card-header">
         <div class="memory-card-left">
           <span class="memory-type-badge ${esc(type)}">${esc(type)}</span>
@@ -2329,11 +2743,13 @@ function renderMemoryCard(m, i, searchQuery) {
       </div>
       <div class="memory-text${foldClass}">${text}</div>
       ${showMoreBtn}
+      ${provenanceHtml}
       <div class="memory-footer">
         ${m.context ? `<span>${esc(m.context)}</span>` : ''}
         ${entities}
         <span class="memory-date">${fmtDate(m.date)}</span>
       </div>
+      ${agingHtml}
     </div>`;
 }
 
@@ -2386,6 +2802,9 @@ function applyFilters() {
       });
     });
   }
+
+  // Feature 1: recency boost
+  items = applyRecencyBoost(items);
 
   filteredMemories = items;
   renderStream();
@@ -2937,6 +3356,17 @@ async function loadGraph() {
       };
     });
 
+    // Feature 3: Detect duplicate entities
+    const allEntityNames = [...entitySet.keys()];
+    detectedDuplicates = detectDuplicateEntities(allEntityNames);
+    const dupBadge = document.getElementById('dupBadge');
+    if (detectedDuplicates.length > 0) {
+      dupBadge.innerHTML = `&#9888; ${detectedDuplicates.length} potential duplicate${detectedDuplicates.length > 1 ? 's' : ''}`;
+      dupBadge.classList.add('visible');
+    } else {
+      dupBadge.classList.remove('visible');
+    }
+
     // Build edges
     let edgeIdx = 0;
 
@@ -3254,6 +3684,271 @@ async function exportMemories() {
     URL.revokeObjectURL(url);
   } catch(e) {
     showError('Export failed: ' + e.message);
+  }
+}
+
+// ── Feature 1: Recency Toggle ──
+function toggleRecency() {
+  recencyBoostOn = !recencyBoostOn;
+  document.getElementById('recencyTrack').classList.toggle('on', recencyBoostOn);
+  if (isSearchMode && searchResults) {
+    applyFilters();
+  }
+}
+
+function applyRecencyBoost(items) {
+  if (!recencyBoostOn || !isSearchMode) return items;
+  const now = Date.now();
+  return [...items].sort((a, b) => {
+    const scoreA = computeBoostedScore(a, now);
+    const scoreB = computeBoostedScore(b, now);
+    return scoreB - scoreA;
+  });
+}
+
+function computeBoostedScore(m, now) {
+  const relevance = m.relevance_score || 0;
+  const daysSince = m.date ? (now - new Date(m.date).getTime()) / 86400000 : 60;
+  const recency = 1 / (1 + daysSince / 30);
+  return relevance * 0.7 + recency * 0.3;
+}
+
+// ── Feature 2: Observation Provenance ──
+async function toggleProvenance(memoryId, btn) {
+  const container = document.getElementById('prov-' + memoryId);
+  if (!container) return;
+  const isExpanded = container.classList.contains('visible');
+  if (isExpanded) {
+    container.classList.remove('visible');
+    btn.classList.remove('expanded');
+    return;
+  }
+  btn.classList.add('expanded');
+  container.classList.add('visible');
+  if (container.dataset.loaded === 'true') return;
+  container.innerHTML = '<div class="provenance-loading">Loading source memories...</div>';
+  try {
+    const detail = await api(`/v1/default/banks/${currentBank}/memories/${memoryId}`);
+    const sources = detail.source_memories || [];
+    if (sources.length === 0) {
+      container.innerHTML = '<div class="provenance-source-item" style="font-style:italic">No source details available</div>';
+    } else {
+      container.innerHTML = sources.map(s =>
+        `<div class="provenance-source-item">${esc(s.text || s.id || 'Unknown')}</div>`
+      ).join('');
+    }
+    container.dataset.loaded = 'true';
+  } catch (e) {
+    container.innerHTML = `<div class="provenance-source-item" style="color:var(--danger)">Failed to load: ${esc(e.message)}</div>`;
+  }
+}
+
+// ── Feature 3: Entity Duplicate Detection ──
+function detectDuplicateEntities(entityNames) {
+  const dupes = [];
+  const names = [...entityNames];
+  for (let i = 0; i < names.length; i++) {
+    for (let j = i + 1; j < names.length; j++) {
+      const a = names[i], b = names[j];
+      if (a === b) continue;
+      const aLow = a.toLowerCase(), bLow = b.toLowerCase();
+      if (aLow === bLow || aLow.includes(bLow) || bLow.includes(aLow)) {
+        dupes.push([a, b]);
+      }
+    }
+  }
+  return dupes;
+}
+
+function showDuplicates() {
+  const overlay = document.getElementById('dupOverlay');
+  const content = document.getElementById('dupListContent');
+  if (detectedDuplicates.length === 0) {
+    content.innerHTML = '<p style="color:var(--text-3);font-size:13px">No duplicates detected.</p>';
+  } else {
+    content.innerHTML = detectedDuplicates.map(pair =>
+      `<div class="dup-pair"><code>${esc(pair[0])}</code> <span class="dup-arrow">&#8596;</span> <code>${esc(pair[1])}</code></div>`
+    ).join('');
+  }
+  overlay.classList.add('visible');
+}
+
+// ── Feature 4: Aging Reminder ──
+function isMemoryAged(m) {
+  if (!m.date) return false;
+  const daysSince = (Date.now() - new Date(m.date).getTime()) / 86400000;
+  return daysSince > 60;
+}
+
+function isConfirmedRecently(memoryId) {
+  try {
+    const ts = localStorage.getItem('memomind_confirmed_' + memoryId);
+    if (!ts) return false;
+    const daysSince = (Date.now() - parseInt(ts)) / 86400000;
+    return daysSince < 90;
+  } catch (e) { return false; }
+}
+
+function confirmStillAccurate(memoryId, btn) {
+  localStorage.setItem('memomind_confirmed_' + memoryId, String(Date.now()));
+  const card = btn.closest('.memory-card');
+  if (card) {
+    card.classList.remove('aged');
+    const agingWrap = card.querySelector('.aging-wrap');
+    if (agingWrap) agingWrap.remove();
+  }
+}
+
+function markOutdated(memoryId) {
+  showDeleteModal(memoryId);
+}
+
+function toggleAgingActions(memoryId) {
+  const el = document.getElementById('aging-actions-' + memoryId);
+  if (el) el.classList.toggle('visible');
+}
+
+// ── Feature 5: Bulk Operations ──
+function toggleSelectMode() {
+  selectModeOn = !selectModeOn;
+  document.getElementById('selectModeBtn').classList.toggle('active', selectModeOn);
+  document.getElementById('bulkActionBar').classList.toggle('visible', selectModeOn);
+  selectedMemoryIds.clear();
+  updateBulkCount();
+  document.querySelectorAll('.memory-card').forEach(card => {
+    card.classList.toggle('select-mode', selectModeOn);
+    const cb = card.querySelector('.bulk-checkbox');
+    if (cb) cb.checked = false;
+  });
+  if (!selectModeOn) {
+    document.getElementById('bulkSelectAll').checked = false;
+  }
+}
+
+function toggleMemorySelection(memoryId, checkbox) {
+  if (checkbox.checked) {
+    selectedMemoryIds.add(memoryId);
+  } else {
+    selectedMemoryIds.delete(memoryId);
+  }
+  updateBulkCount();
+}
+
+function toggleSelectAll() {
+  const allChecked = document.getElementById('bulkSelectAll').checked;
+  document.querySelectorAll('.memory-card.select-mode .bulk-checkbox').forEach(cb => {
+    cb.checked = allChecked;
+    const memId = cb.closest('.memory-card').dataset.id;
+    if (allChecked) selectedMemoryIds.add(memId);
+    else selectedMemoryIds.delete(memId);
+  });
+  updateBulkCount();
+}
+
+function updateBulkCount() {
+  const n = selectedMemoryIds.size;
+  document.getElementById('bulkCount').textContent = n + ' selected';
+}
+
+async function bulkDelete() {
+  if (selectedMemoryIds.size === 0) return;
+  if (!confirm(`Delete ${selectedMemoryIds.size} selected memories? This cannot be undone.`)) return;
+  const ids = [...selectedMemoryIds];
+  for (const id of ids) {
+    try {
+      await fetch(base() + `/v1/default/banks/${currentBank}/memories/${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
+      const card = document.querySelector(`.memory-card[data-id="${id}"]`);
+      if (card) { card.style.opacity = '0'; card.style.transform = 'translateX(20px) scale(0.95)'; }
+    } catch (e) { /* continue */ }
+  }
+  selectedMemoryIds.clear();
+  toggleSelectMode();
+  setTimeout(() => loadBank(), 400);
+}
+
+// ── Feature 7: Cluster Coloring ──
+const CLUSTER_PALETTES = {
+  entity_type: ['#4adeab', '#c084fc', '#fbbf24', '#67cce0', '#f472b6', '#a3e635', '#fb923c', '#818cf8'],
+  time_period: ['#4adeab', '#67cce0', '#c084fc', '#fbbf24', '#f472b6', '#a3e635', '#fb923c', '#818cf8']
+};
+
+function applyClusterColoring() {
+  if (!sigmaGraph) return;
+  const mode = document.getElementById('clusterBySelect').value;
+
+  if (mode === 'none') {
+    // Restore original colors
+    sigmaGraph.forEachNode((n) => {
+      const attrs = graphNodeAttrs[n];
+      if (attrs) sigmaGraph.setNodeAttribute(n, 'color', attrs.origColor);
+    });
+    return;
+  }
+
+  if (mode === 'entity_type') {
+    // Color nodes by their most-connected entity
+    const entityColors = {};
+    let colorIdx = 0;
+    const palette = CLUSTER_PALETTES.entity_type;
+
+    sigmaGraph.forEachNode((n) => {
+      const attrs = graphNodeAttrs[n];
+      if (!attrs) return;
+      if (attrs.isEntity) {
+        if (!entityColors[n]) {
+          entityColors[n] = palette[colorIdx % palette.length];
+          colorIdx++;
+        }
+        sigmaGraph.setNodeAttribute(n, 'color', entityColors[n]);
+      }
+    });
+
+    // Color memory nodes by their most-connected entity
+    sigmaGraph.forEachNode((n) => {
+      const attrs = graphNodeAttrs[n];
+      if (!attrs || attrs.isEntity) return;
+      let bestEntity = null, bestDeg = 0;
+      sigmaGraph.forEachNeighbor(n, (nb) => {
+        const nbAttrs = graphNodeAttrs[nb];
+        if (nbAttrs && nbAttrs.isEntity) {
+          const deg = sigmaGraph.degree(nb);
+          if (deg > bestDeg) { bestDeg = deg; bestEntity = nb; }
+        }
+      });
+      if (bestEntity && entityColors[bestEntity]) {
+        sigmaGraph.setNodeAttribute(n, 'color', entityColors[bestEntity]);
+      }
+    });
+  }
+
+  if (mode === 'time_period') {
+    // Color by month
+    const monthColors = {};
+    let colorIdx = 0;
+    const palette = CLUSTER_PALETTES.time_period;
+
+    sigmaGraph.forEachNode((n) => {
+      const attrs = graphNodeAttrs[n];
+      if (!attrs || attrs.isEntity) return;
+      if (!attrs.date) {
+        sigmaGraph.setNodeAttribute(n, 'color', '#555566');
+        return;
+      }
+      const month = new Date(attrs.date).toISOString().slice(0, 7); // YYYY-MM
+      if (!monthColors[month]) {
+        monthColors[month] = palette[colorIdx % palette.length];
+        colorIdx++;
+      }
+      sigmaGraph.setNodeAttribute(n, 'color', monthColors[month]);
+    });
+
+    // Keep entity nodes their original color
+    sigmaGraph.forEachNode((n) => {
+      const attrs = graphNodeAttrs[n];
+      if (attrs && attrs.isEntity) {
+        sigmaGraph.setNodeAttribute(n, 'color', attrs.origColor);
+      }
+    });
   }
 }
 

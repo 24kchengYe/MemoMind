@@ -2869,7 +2869,7 @@ async function loadGraph() {
         label: (nd.text || nd.label || '').slice(0, 30),
         x: Math.random() * 1000,
         y: Math.random() * 1000,
-        size: 2.5,
+        size: 1.5,
         color: color,
         type: 'circle'
       });
@@ -2906,7 +2906,7 @@ async function loadGraph() {
     entitySet.forEach((info, name) => {
       if (info.connections < 1) return;
       const entityId = 'entity_' + name;
-      const size = Math.min(4 + info.connections * 1.5, 12);
+      const size = Math.min(3 + info.connections * 1, 8);
 
       graph.addNode(entityId, {
         label: name,

@@ -52,7 +52,7 @@ os.environ["HINDSIGHT_API_EMBEDDINGS_LOCAL_MODEL"] = "BAAI/bge-m3"
 # ── Consolidation uses a stronger model for better observation merging ──
 # (retain still uses LLM_MODEL above for speed/cost; consolidation needs better instruction following)
 os.environ["HINDSIGHT_API_CONSOLIDATION_LLM_PROVIDER"] = "openai"
-os.environ["HINDSIGHT_API_CONSOLIDATION_LLM_MODEL"] = "gpt-4o-mini"
+os.environ["HINDSIGHT_API_CONSOLIDATION_LLM_MODEL"] = "gpt-4o"
 os.environ["HINDSIGHT_API_CONSOLIDATION_LLM_API_KEY"] = LLM_API_KEY
 os.environ["HINDSIGHT_API_CONSOLIDATION_LLM_BASE_URL"] = LLM_BASE_URL
 

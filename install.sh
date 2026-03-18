@@ -80,9 +80,16 @@ fi
 SERVER_PY=$(find /opt/memomind-env -name 'server.py' -path '*/hindsight/*' | head -1)
 if [ -n "$SERVER_PY" ]; then
     sed -i 's/def start(self, timeout: float = [0-9.]*/def start(self, timeout: float = 600.0/' "$SERVER_PY"
-    find /opt/memomind-env -name '*.pyc' -delete 2>/dev/null
     echo "  Startup timeout patched to 600s"
 fi
+
+# Patch consolidation prompt: add language preservation rule
+PROMPT_PY=$(find /opt/memomind-env -name 'prompts.py' -path '*/consolidation/*' | head -1)
+if [ -n "$PROMPT_PY" ] && ! grep -q 'LANGUAGE: Write each observation' "$PROMPT_PY"; then
+    sed -i 's/"""Processing rules (always apply):/"""Processing rules (always apply):\n- LANGUAGE: Write each observation in the SAME language as the source facts. Chinese facts → Chinese observations. English facts → English observations. NEVER translate between languages. Keep proper nouns (product names, person names, technical terms) in their original form./' "$PROMPT_PY"
+    echo "  Consolidation language rule patched"
+fi
+find /opt/memomind-env -name '*.pyc' -delete 2>/dev/null
 
 # 7. Install config files, systemd service, and MCP entry
 echo "[7/7] Installing service and config..."

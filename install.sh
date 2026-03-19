@@ -89,6 +89,46 @@ if [ -n "$PROMPT_PY" ] && ! grep -q 'LANGUAGE: Write each observation' "$PROMPT_
     sed -i 's/"""Processing rules (always apply):/"""Processing rules (always apply):\n- LANGUAGE: Write each observation in the SAME language as the source facts. Chinese facts → Chinese observations. English facts → English observations. NEVER translate between languages. Keep proper nouns (product names, person names, technical terms) in their original form./' "$PROMPT_PY"
     echo "  Consolidation language rule patched"
 fi
+# Patch consolidator: skip trivial observations (1:1 copies of world facts)
+CONSOLIDATOR_PY=$(find /opt/memomind-env -name 'consolidator.py' -path '*/consolidation/*' | head -1)
+if [ -n "$CONSOLIDATOR_PY" ] && ! grep -q 'SKIP_TRIVIAL_OBSERVATION' "$CONSOLIDATOR_PY"; then
+    python3 -c "
+path = '$CONSOLIDATOR_PY'
+with open(path) as f:
+    content = f.read()
+old = '''        source_mems = [mem_by_id[fid] for fid in create.source_fact_ids if fid in mem_by_id]
+        if not source_mems:
+            continue
+        agg = _aggregate_source_fields(source_mems, tags=fact_tags)'''
+new = '''        source_mems = [mem_by_id[fid] for fid in create.source_fact_ids if fid in mem_by_id]
+        if not source_mems:
+            continue
+
+        # SKIP_TRIVIAL_OBSERVATION: Don't create observations that are near-copies of a single source fact.
+        if len(source_mems) == 1:
+            _src_text = (source_mems[0].get(\"text\") or \"\").strip().lower()
+            _obs_text = create.text.strip().lower()
+            for _sep in [\"| involving:\", \"| when:\"]:
+                if _sep in _src_text: _src_text = _src_text.split(_sep)[0].strip()
+            _shorter = min(len(_src_text), len(_obs_text))
+            _longer = max(len(_src_text), len(_obs_text))
+            if _shorter > 10 and _longer > 0:
+                _common = sum(1 for a, b in zip(_src_text[:_shorter], _obs_text[:_shorter]) if a == b)
+                _similarity = _common / _shorter if _shorter > 0 else 0
+                if _similarity > 0.8 or (_src_text in _obs_text) or (_obs_text in _src_text):
+                    continue
+
+        agg = _aggregate_source_fields(source_mems, tags=fact_tags)'''
+if old in content:
+    content = content.replace(old, new)
+    with open(path, 'w') as f:
+        f.write(content)
+    print('  Trivial observation skip patched')
+else:
+    print('  Consolidator patch: exact match not found (may need manual patch)')
+"
+fi
+
 find /opt/memomind-env -name '*.pyc' -delete 2>/dev/null
 
 # 7. Install config files, systemd service, and MCP entry

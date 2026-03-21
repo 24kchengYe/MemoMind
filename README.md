@@ -808,7 +808,7 @@ NEEDS_PROXY = False
 
 ![Visitors](https://visitor-badge.laobi.icu/badge?page_id=24kchengYe.MemoMind)
 
-[![Star History Chart](https://api.star-history.com/svg?repos=24kchengYe/MemoMind&type=Date)](https://star-history.com/#24kchengYe/MemoMind&Date)
+[![Star History](https://starchart.cc/24kchengYe/MemoMind.svg)](https://starchart.cc/24kchengYe/MemoMind)
 
 </div>
 

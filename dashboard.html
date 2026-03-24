@@ -2275,7 +2275,7 @@ body {
         <span class="status-dot" id="statusDot"></span>
         <span id="statusText">Connecting...</span>
       </div>
-      <input class="endpoint-input" id="baseUrl" value="http://127.0.0.1:8888" spellcheck="false"
+      <input class="endpoint-input" id="baseUrl" value="http://127.0.0.1:18888" spellcheck="false"
              onchange="loadAll()" title="API endpoint">
     </div>
   </aside>
@@ -2590,7 +2590,7 @@ function simpleForceLayout(graph, iterations) {
         const a = nodes[keys[i]], b = nodes[keys[j]];
         let dx = a.x - b.x, dy = a.y - b.y;
         let d = Math.sqrt(dx * dx + dy * dy) || 1;
-        let f = repulsion / (d * d) * cooling;
+        let f = Math.min(repulsion / (d * d) * cooling, 50);
         a.dx += dx / d * f; a.dy += dy / d * f;
         b.dx -= dx / d * f; b.dy -= dy / d * f;
       }
@@ -2605,19 +2605,41 @@ function simpleForceLayout(graph, iterations) {
       a.dx += dx / d * f; a.dy += dy / d * f;
       b.dx -= dx / d * f; b.dy -= dy / d * f;
     });
-    // Gentle gravity toward center
+    // Gravity toward center — stronger for low-degree nodes to prevent edge clustering
     const cx = 1500, cy = 1500;
+    const maxRadius = Math.max(600, Math.min(1000, N * 1.5));
     for (const key of keys) {
       const n = nodes[key];
-      n.dx += (cx - n.x) * 0.0005;
-      n.dy += (cy - n.y) * 0.0005;
-      n.dx *= 0.8; n.dy *= 0.8;
+      const deg = graph.degree ? graph.degree(key) : 0;
+      const distFromCenter = Math.sqrt((n.x - cx) ** 2 + (n.y - cy) ** 2) || 1;
+      // Low-degree nodes get pulled harder toward center (not edge)
+      const degFactor = deg < 2 ? 3.0 : deg < 5 ? 1.5 : 1.0;
+      const gravityStrength = (0.003 + (distFromCenter / maxRadius) * 0.008) * degFactor;
+      n.dx += (cx - n.x) * gravityStrength;
+      n.dy += (cy - n.y) * gravityStrength;
+      n.dx *= 0.7; n.dy *= 0.7;
+      // NaN protection
+      if (!isFinite(n.dx)) n.dx = 0;
+      if (!isFinite(n.dy)) n.dy = 0;
       n.x += n.dx; n.y += n.dy;
+      if (!isFinite(n.x)) n.x = cx + (Math.random() - 0.5) * 100;
+      if (!isFinite(n.y)) n.y = cy + (Math.random() - 0.5) * 100;
+      // Soft boundary — push back gently instead of hard clamp
+      const newDist = Math.sqrt((n.x - cx) ** 2 + (n.y - cy) ** 2) || 1;
+      if (newDist > maxRadius * 0.85) {
+        const pushBack = 0.3 * (newDist - maxRadius * 0.85) / newDist;
+        n.x -= (n.x - cx) * pushBack;
+        n.y -= (n.y - cy) * pushBack;
+      }
     }
   }
+  // Final NaN guard before setting attributes
   for (const key of keys) {
-    graph.setNodeAttribute(key, 'x', nodes[key].x);
-    graph.setNodeAttribute(key, 'y', nodes[key].y);
+    const n = nodes[key];
+    if (!isFinite(n.x)) n.x = cx;
+    if (!isFinite(n.y)) n.y = cy;
+    graph.setNodeAttribute(key, 'x', n.x);
+    graph.setNodeAttribute(key, 'y', n.y);
   }
 }
 </script>
@@ -3596,7 +3618,7 @@ async function loadGraph() {
     entitySet.forEach((info, name) => {
       if (info.connections < 1) return;
       const entityId = 'entity_' + name;
-      const size = Math.min(6 + info.connections * 1.5, 14);
+      const size = Math.min(2 + info.connections * 0.6, 9);
 
       graph.addNode(entityId, {
         label: name,
@@ -3680,21 +3702,24 @@ async function loadGraph() {
       const attrs = graphNodeAttrs[n];
       if (attrs && !attrs.isEntity) {
         const deg = graph.degree(n);
-        graph.setNodeAttribute(n, 'size', Math.max(3, Math.min(4 + deg * 0.8, 12)));
+        graph.setNodeAttribute(n, 'size', Math.max(1.5, Math.min(2 + deg * 0.5, 8)));
       }
     });
 
     // Run force-directed layout
     simpleForceLayout(graph, 300);
 
+    // Track hovered node for label display
+    let _hoveredNode = null;
+
     // Create sigma instance
     sigmaInstance = new Sigma(graph, container, {
       renderEdgeLabels: false,
       labelFont: 'DM Sans, system-ui, sans-serif',
-      labelSize: 12,
+      labelSize: 11,
       labelColor: { color: '#e0e8f0' },
-      labelRenderedSizeThreshold: 3,
-      labelDensity: 0.4,
+      labelRenderedSizeThreshold: 999,
+      labelDensity: 0.3,
       minCameraRatio: 0.05,
       maxCameraRatio: 10,
       defaultEdgeType: 'line',
@@ -3704,12 +3729,17 @@ async function loadGraph() {
         return { ...data };
       },
       nodeReducer: (node, data) => {
+        if (node === _hoveredNode) {
+          return { ...data, labelSize: 12, forceLabel: true };
+        }
         return { ...data };
       },
     });
 
     // Tooltip on hover
     sigmaInstance.on('enterNode', ({ node, event }) => {
+      _hoveredNode = node;
+      sigmaInstance.refresh();
       const attrs = graphNodeAttrs[node];
       if (!attrs) return;
       const typeLabel = attrs.isEntity ? 'entity' : attrs.type;
@@ -3736,6 +3766,8 @@ async function loadGraph() {
     });
 
     sigmaInstance.on('leaveNode', () => {
+      _hoveredNode = null;
+      sigmaInstance.refresh();
       tooltip.classList.remove('visible');
     });
 

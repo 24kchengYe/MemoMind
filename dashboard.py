@@ -10,10 +10,9 @@ import os
 import urllib.request
 import urllib.error
 
-MEMOMIND_API = "http://127.0.0.1:8888"
 DASHBOARD_PORT = 9999
 
-# Disable proxy for urllib (bypass Clash/system proxy)
+# Disable proxy for urllib FIRST (bypass Clash/system proxy)
 os.environ.pop("http_proxy", None)
 os.environ.pop("https_proxy", None)
 os.environ.pop("HTTP_PROXY", None)
@@ -21,14 +20,33 @@ os.environ.pop("HTTPS_PROXY", None)
 os.environ.pop("ALL_PROXY", None)
 os.environ.pop("all_proxy", None)
 proxy_handler = urllib.request.ProxyHandler({})
-opener = urllib.request.build_opener(proxy_handler)
-urllib.request.install_opener(opener)
+_no_proxy_opener = urllib.request.build_opener(proxy_handler)
+urllib.request.install_opener(_no_proxy_opener)
+
+# Auto-detect MemoMind API: try localhost first (mirrored mode), then WSL IP
+MEMOMIND_API = "http://127.0.0.1:18888"
+try:
+    import subprocess
+    _wsl_ip = subprocess.check_output(
+        ["wsl", "-d", "Ubuntu", "--", "bash", "-c", "hostname -I"],
+        timeout=5
+    ).decode().strip().split()[0]
+    # Test if localhost works (mirrored mode auto-maps WSL ports)
+    _test_req = urllib.request.Request(MEMOMIND_API + "/health")
+    try:
+        _no_proxy_opener.open(_test_req, timeout=2)
+    except Exception:
+        # Localhost failed, use WSL IP directly
+        MEMOMIND_API = f"http://{_wsl_ip}:18888"
+        print(f"[Dashboard] Using WSL IP: {MEMOMIND_API}")
+except Exception:
+    pass  # stick with localhost
 
 with open(os.path.join(os.path.dirname(__file__) or ".", "dashboard.html"), encoding="utf-8") as _f:
     DASHBOARD_HTML = _f.read()
 # Patch the default URL to point to the dashboard proxy (not directly to API)
 DASHBOARD_HTML = DASHBOARD_HTML.replace(
-    'value="http://127.0.0.1:8888"',
+    'value="http://127.0.0.1:18888"',
     f'value="http://127.0.0.1:{DASHBOARD_PORT}"'
 )
 
@@ -70,7 +88,7 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
             req.add_header("Content-Type", "application/json")
             req.add_header("Accept", "application/json")
 
-            with urllib.request.urlopen(req, timeout=120) as resp:
+            with _no_proxy_opener.open(req, timeout=120) as resp:
                 data = resp.read()
                 self.send_response(resp.status)
                 self.send_header("Content-Type", "application/json")

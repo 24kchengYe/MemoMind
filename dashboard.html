@@ -1170,20 +1170,22 @@ body {
 /* ── Timeline View ── */
 .timeline-container {
   overflow-x: auto;
-  padding-bottom: 8px;
-  padding-top: 4px;
+  padding: 0;
+  transform: rotateX(180deg);
   scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--surface-2);
 }
-.timeline-container::-webkit-scrollbar { height: 8px; }
-.timeline-container::-webkit-scrollbar-track { background: var(--surface-2); border-radius: 4px; margin: 0 8px; }
-.timeline-container::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+.timeline-container::-webkit-scrollbar { height: 10px; }
+.timeline-container::-webkit-scrollbar-track { background: var(--surface-2); border-radius: 5px; }
+.timeline-container::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 5px; min-width: 40px; }
 .timeline-container::-webkit-scrollbar-thumb:hover { background: var(--text-2); }
 
 .timeline-track {
   display: flex;
   gap: 20px;
   min-height: 300px;
-  padding: 8px 0;
+  padding: 12px 0 8px 0;
+  transform: rotateX(180deg);
 }
 
 .timeline-day {
@@ -3327,10 +3329,11 @@ function renderTimeline() {
     return;
   }
 
-  // Group by date
+  // Group by date — prefer occurred_start over mentioned_at/date
   const groups = {};
   source.forEach(m => {
-    const dateKey = m.date ? new Date(m.date).toISOString().split('T')[0] : 'unknown';
+    const bestDate = m.occurred_start || m.date;
+    const dateKey = bestDate ? new Date(bestDate).toISOString().split('T')[0] : 'unknown';
     if (!groups[dateKey]) groups[dateKey] = [];
     groups[dateKey].push(m);
   });

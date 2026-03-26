@@ -97,7 +97,7 @@ def build_content(entry: dict, user_msgs: list[str]) -> str:
     date = (entry.get("createdAt") or "")[:10]
     msg_count = entry.get("messageCount", 0)
 
-    header = f"[{source}] {title} ({date}, {msg_count}条消息)"
+    header = f"[{source}] {title} | When: {date} | {msg_count}条消息"
 
     if not user_msgs:
         return header + "\n\n(无用户消息)"

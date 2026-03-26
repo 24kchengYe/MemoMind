@@ -154,72 +154,43 @@ def main():
     by_date = group_by_date(entries)
     print(f"  Spanning {len(by_date)} days ({min(by_date.keys())} to {max(by_date.keys())})")
 
-    # Build batches: group consecutive dates into chunks
+    # One retain call per day
     dates = sorted(by_date.keys())
-    batches = []
-    current_batch = []
-    current_dates = []
-
-    for date in dates:
-        current_batch.extend(by_date[date])
-        current_dates.append(date)
-        if len(current_batch) >= args.batch_size:
-            batches.append((current_dates[0], current_dates[-1], current_batch))
-            current_batch = []
-            current_dates = []
-
-    if current_batch:
-        batches.append((current_dates[0], current_dates[-1], current_batch))
-
-    print(f"  Grouped into {len(batches)} batches (batch_size={args.batch_size})")
+    print(f"  Will import {len(dates)} days (one retain per day)")
     if args.dry_run:
         print("  [DRY RUN - no data will be written]\n")
 
-    # Import batches
     success = 0
     failed = 0
-    for i, (date_from, date_to, items) in enumerate(batches):
-        # Format batch content
-        # Re-group items by date for readable output
-        content_lines = []
-        current_date = None
-        item_idx = 0
-        for date in sorted(by_date.keys()):
-            if date < date_from or date > date_to:
-                continue
-            date_entries = by_date[date]
-            content_lines.append(f"## {date}")
-            for entry_text in date_entries:
-                content_lines.append(f"- {entry_text}")
+    for i, date in enumerate(dates):
+        date_entries = by_date[date]
+        content_lines = [f"{date}的活动记录："]
+        for entry_text in date_entries:
+            content_lines.append(f"- {entry_text}")
 
         content = "\n".join(content_lines)
 
-        # Use middle date as timestamp
-        timestamp = f"{date_from}T12:00:00+08:00"
+        timestamp = f"{date}T12:00:00+08:00"
+        tags = ["daylife", date[:4]]
 
-        # Extract category tags from content
-        tags = ["daylife"]
-        if date_from[:4] == date_to[:4]:
-            tags.append(date_from[:4])  # year tag
-
-        progress = f"[{i+1}/{len(batches)}]"
-        print(f"  {progress} {date_from} ~ {date_to} ({len(items)} entries)", end="")
+        progress = f"[{i+1}/{len(dates)}]"
+        print(f"  {progress} {date} ({len(date_entries)} entries)", end="")
 
         if args.dry_run:
             print(f" → DRY RUN")
-            if i < 3:  # Show first 3 batches content
-                print(f"    Preview:\n{content[:300]}...")
+            if i < 3:
+                print(f"    Preview:\n{content[:200]}...")
         else:
             result = retain(content, timestamp, tags)
             if "error" in result:
                 print(f" → FAILED: {result}")
                 failed += 1
             else:
-                print(f" → OK ({result.get('status', 'unknown')})")
+                print(f" → OK")
                 success += 1
             time.sleep(args.delay)
 
-    print(f"\n[Done] Success: {success}, Failed: {failed}, Total batches: {len(batches)}")
+    print(f"\n[Done] Success: {success}, Failed: {failed}, Total days: {len(dates)}")
 
 
 if __name__ == "__main__":

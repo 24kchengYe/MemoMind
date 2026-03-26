@@ -129,16 +129,27 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
                 req.add_header("Accept", "application/json")
                 with _no_proxy_opener.open(req, timeout=10) as resp:
                     doc = json.loads(resp.read())
-                # Extract title from original_text: "[source] title | When: ..."
-                orig_text = doc.get("original_text", "")
-                if "] " in orig_text:
-                    title = orig_text.split("] ", 1)[1].split(" | ")[0].strip()
-                    # Match by title in index
-                    index = _load_chat_index()
-                    for entry in index:
-                        if entry.get("title", "").strip() == title:
-                            md_path = _find_chat_md(entry["id"])
-                            break
+                # Try original_document_id first (if patched engine)
+                params = doc.get("retain_params", "")
+                if isinstance(params, str):
+                    try:
+                        params = json.loads(params)
+                    except Exception:
+                        params = {}
+                orig_doc_id = params.get("original_document_id") if isinstance(params, dict) else None
+                if orig_doc_id:
+                    md_path = _find_chat_md(orig_doc_id)
+
+                # Fallback: extract title from original_text
+                if not md_path:
+                    orig_text = doc.get("original_text", "")
+                    if "] " in orig_text:
+                        title = orig_text.split("] ", 1)[1].split(" | ")[0].strip()
+                        index = _load_chat_index()
+                        for entry in index:
+                            if entry.get("title", "").strip() == title:
+                                md_path = _find_chat_md(entry["id"])
+                                break
             except Exception:
                 pass
 

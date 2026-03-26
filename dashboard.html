@@ -3063,7 +3063,7 @@ function toggleFold(btn) {
 async function loadMemories() {
   const stream = document.getElementById('memoryStream');
   try {
-    const res = await api(`/v1/default/banks/${currentBank}/memories/list?limit=200`);
+    const res = await api(`/v1/default/banks/${currentBank}/memories/list?limit=100000`);
     const items = res.items || [];
     allMemories = items;
     allMemories.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));

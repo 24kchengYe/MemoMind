@@ -7,10 +7,17 @@ Opens at http://localhost:9999
 import http.server
 import json
 import os
+import re
 import urllib.request
 import urllib.error
+import urllib.parse
 
 DASHBOARD_PORT = 9999
+
+# AI chat history paths for "view original chat" feature
+AI_CHAT_ROOT = r"D:\pythonPycharms\memomind-memory\ai-chat-history(chatgpt+gemini)\total memory"
+AI_CHAT_INDEX = os.path.join(AI_CHAT_ROOT, "index.json")
+_chat_index_cache = None  # lazy-loaded
 
 # Disable proxy for urllib FIRST (bypass Clash/system proxy)
 os.environ.pop("http_proxy", None)
@@ -51,6 +58,37 @@ DASHBOARD_HTML = DASHBOARD_HTML.replace(
 )
 
 
+def _load_chat_index():
+    """Load and cache the AI chat history index.json."""
+    global _chat_index_cache
+    if _chat_index_cache is None:
+        try:
+            with open(AI_CHAT_INDEX, "r", encoding="utf-8") as f:
+                _chat_index_cache = json.load(f)
+        except Exception:
+            _chat_index_cache = []
+    return _chat_index_cache
+
+
+def _find_chat_md(document_id: str) -> str | None:
+    """Find the .md file path for a given document_id (conversation id).
+
+    The index.json stores entries like:
+      {"id": "676c0892-...", "filePath": "chatgpt/20241225_xxx.json"}
+    The corresponding .md has the same path with .json replaced by .md.
+    """
+    index = _load_chat_index()
+    for entry in index:
+        if entry.get("id") == document_id:
+            json_path = entry.get("filePath", "")
+            md_path = re.sub(r"\.json$", ".md", json_path)
+            full_path = os.path.join(AI_CHAT_ROOT, md_path)
+            if os.path.isfile(full_path):
+                return full_path
+            return None
+    return None
+
+
 class DashboardHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/" or self.path == "/dashboard":
@@ -58,6 +96,8 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
             self.send_header("Content-Type", "text/html")
             self.end_headers()
             self.wfile.write(DASHBOARD_HTML.encode())
+        elif self.path.startswith("/api/original-chat/"):
+            self._serve_original_chat()
         else:
             self._proxy("GET")
 
@@ -66,6 +106,71 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
 
     def do_DELETE(self):
         self._proxy("DELETE")
+
+    def _serve_original_chat(self):
+        """Serve the original .md chat file for a given document hash or conversation id."""
+        parts = self.path.split("/api/original-chat/", 1)
+        if len(parts) < 2 or not parts[1]:
+            self._json_error(400, "Missing document identifier")
+            return
+
+        doc_id = urllib.parse.unquote(parts[1].split("?")[0])
+        md_path = None
+
+        # 1. Try direct lookup by conversation UUID in index
+        md_path = _find_chat_md(doc_id)
+
+        # 2. If not found, treat as MemoMind document hash — query document API for title
+        if not md_path:
+            try:
+                bank = self._get_bank()
+                url = f"{MEMOMIND_API}/v1/default/banks/{bank}/documents/{doc_id}"
+                req = urllib.request.Request(url, method="GET")
+                req.add_header("Accept", "application/json")
+                with _no_proxy_opener.open(req, timeout=10) as resp:
+                    doc = json.loads(resp.read())
+                # Extract title from original_text: "[source] title | When: ..."
+                orig_text = doc.get("original_text", "")
+                if "] " in orig_text:
+                    title = orig_text.split("] ", 1)[1].split(" | ")[0].strip()
+                    # Match by title in index
+                    index = _load_chat_index()
+                    for entry in index:
+                        if entry.get("title", "").strip() == title:
+                            md_path = _find_chat_md(entry["id"])
+                            break
+            except Exception:
+                pass
+
+        if not md_path:
+            self._json_error(404, "Original chat not found for this memory")
+            return
+
+        try:
+            with open(md_path, "r", encoding="utf-8") as f:
+                content = f.read()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/markdown; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(content.encode("utf-8"))
+        except Exception as e:
+            self._json_error(500, f"Failed to read file: {e}")
+
+    def _get_bank(self):
+        """Extract bank from query params or default to 'default'."""
+        if "?" in self.path:
+            qs = urllib.parse.parse_qs(self.path.split("?", 1)[1])
+            return qs.get("bank", ["default"])[0]
+        return "default"
+
+    def _json_error(self, code, message):
+        """Send a JSON error response."""
+        self.send_response(code)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        self.wfile.write(json.dumps({"error": message}).encode())
 
     def do_OPTIONS(self):
         """CORS preflight handler."""

@@ -1710,6 +1710,168 @@ body {
 }
 .modal-btn.danger:hover { opacity: 0.9; }
 
+/* ── Original Chat Modal ── */
+.chat-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: oklch(0 0 0 / 0.65);
+  backdrop-filter: blur(6px);
+  z-index: 2100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.chat-modal-overlay.visible { display: flex; }
+
+.chat-modal {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  width: 90%;
+  max-width: 800px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px oklch(0 0 0 / 0.5);
+  animation: modalSlide 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.chat-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.chat-modal-header h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-modal-close {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+.chat-modal-close:hover { background: var(--surface-3); color: var(--text-1); }
+
+.chat-modal-body {
+  padding: 20px 24px 24px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.chat-modal-body .loading-spinner {
+  text-align: center;
+  color: var(--text-3);
+  padding: 40px 0;
+  font-size: 14px;
+}
+
+.chat-modal-body .error-msg {
+  color: var(--danger);
+  padding: 20px;
+  font-size: 13px;
+}
+
+/* Markdown rendering styles inside modal */
+.chat-md-content {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--text-1);
+}
+.chat-md-content h1,
+.chat-md-content h2,
+.chat-md-content h3 {
+  font-family: 'Fraunces', serif;
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  color: var(--text-1);
+}
+.chat-md-content h1 { font-size: 22px; font-weight: 700; }
+.chat-md-content h2 { font-size: 18px; font-weight: 600; border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px; }
+.chat-md-content h3 { font-size: 15px; font-weight: 600; }
+.chat-md-content p { margin-bottom: 0.8em; }
+.chat-md-content ul, .chat-md-content ol { padding-left: 1.5em; margin-bottom: 0.8em; }
+.chat-md-content li { margin-bottom: 0.3em; }
+.chat-md-content blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 4px 12px;
+  margin: 0.8em 0;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.chat-md-content code {
+  font-family: 'SF Mono', Consolas, monospace;
+  font-size: 0.88em;
+  background: var(--surface-2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--accent);
+}
+.chat-md-content pre {
+  background: var(--surface-0);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  overflow-x: auto;
+  margin: 0.8em 0;
+}
+.chat-md-content pre code {
+  background: none;
+  padding: 0;
+  color: var(--text-1);
+}
+.chat-md-content hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.2em 0;
+}
+.chat-md-content a { color: var(--accent); text-decoration: underline; }
+.chat-md-content strong { color: var(--text-1); font-weight: 600; }
+.chat-md-content table { border-collapse: collapse; width: 100%; margin: 0.8em 0; }
+.chat-md-content th, .chat-md-content td { border: 1px solid var(--border); padding: 6px 10px; font-size: 13px; }
+.chat-md-content th { background: var(--surface-2); font-weight: 600; }
+
+/* "View original" button in memory card */
+.btn-original-chat {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-3);
+  font-size: 13px;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-original-chat:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-glow);
+}
+
 .modal-btn.primary {
   background: var(--accent-dim);
   border-color: oklch(0.30 0.08 200);
@@ -2531,6 +2693,19 @@ body {
   </div>
 </div>
 
+<!-- Original Chat modal -->
+<div class="chat-modal-overlay" id="chatModal">
+  <div class="chat-modal">
+    <div class="chat-modal-header">
+      <h3>&#128172; Original Conversation</h3>
+      <button class="chat-modal-close" onclick="closeChatModal()">&#10005;</button>
+    </div>
+    <div class="chat-modal-body" id="chatModalBody">
+      <div class="loading-spinner">Loading...</div>
+    </div>
+  </div>
+</div>
+
 <!-- Reflect panel -->
 <div class="reflect-panel-overlay" id="reflectOverlay" onclick="toggleReflect()"></div>
 <div class="reflect-panel" id="reflectPanel">
@@ -2595,6 +2770,7 @@ body {
 
 <script src="https://unpkg.com/graphology@0.25.4/dist/graphology.umd.min.js"></script>
 <script src="https://unpkg.com/sigma@2.4.0/build/sigma.min.js"></script>
+<script src="https://unpkg.com/marked@12.0.1/marked.min.js"></script>
 <script>
 // Inline ForceAtlas2-style layout (the npm package has no UMD build)
 // Seeded random for deterministic layout
@@ -3025,6 +3201,13 @@ function renderMemoryCard(m, i, searchQuery) {
   const privateClass = memoryId && isMemoryPrivate(memoryId) ? ' is-private' : '';
   const checkboxHtml = `<input type="checkbox" class="bulk-checkbox" onclick="event.stopPropagation();toggleMemorySelection('${esc(memoryId)}', this)" ${selectedMemoryIds.has(memoryId) ? 'checked' : ''}>`;
 
+  // "View original chat" button — extract document hash from chunk_id
+  const chunkId = m.chunk_id || '';
+  const chunkDocHash = chunkId.includes('_') ? chunkId.split('_').slice(1, -1).join('_') : '';
+  const viewOrigBtn = chunkDocHash
+    ? `<button class="btn-original-chat" onclick="event.stopPropagation();openChatModal('${esc(chunkDocHash)}')" title="View original conversation">&#128172;</button>`
+    : '';
+
   return `
     <div class="memory-card type-${esc(type)}${agedClass}${selectClass}${privateClass}" style="animation-delay:${Math.min(i * 0.05, 0.8)}s" data-id="${esc(memoryId)}" data-type="${esc(type)}" data-date="${esc(m.date || '')}">
       ${checkboxHtml}
@@ -3045,6 +3228,7 @@ function renderMemoryCard(m, i, searchQuery) {
       ${memoryId && type === 'observation' ? `<div class="history-dropdown" id="history-${esc(memoryId)}" data-loaded="false"></div>` : ''}
       <div class="memory-footer">
         ${m.context ? `<span>${esc(m.context)}</span>` : ''}
+        ${viewOrigBtn}
         ${entities}
         <span class="memory-date">${fmtDate(m.date)}</span>
         ${confidenceHtml}
@@ -3350,11 +3534,15 @@ function renderTimeline() {
           ${memories.map(m => {
             const type = m.fact_type || 'world';
             const text = esc((m.text || '').slice(0, 200));
+            const tlDocId = m.document_id || '';
+            const tlOrigBtn = (m.context === 'ai-chat-import' && tlDocId)
+              ? `<button class="btn-original-chat" onclick="event.stopPropagation();openChatModal('${esc(tlDocId)}')" title="View original conversation">&#128172; Original</button>`
+              : '';
             return `
               <div class="timeline-card type-${esc(type)}">
                 <span class="tl-badge ${esc(type)}">${esc(type)}</span>
                 <div class="tl-text">${text}</div>
-                <div class="tl-time">${fmtTime(m.date)}</div>
+                <div class="tl-time">${fmtTime(m.date)} ${tlOrigBtn}</div>
               </div>`;
           }).join('')}
         </div>
@@ -4517,6 +4705,44 @@ function getCoOccurringEntities(entityNodeKey, graph, nodeAttrs) {
     .slice(0, 3)
     .map(([name]) => name);
 }
+
+// ── Original Chat Modal ──
+async function openChatModal(documentId) {
+  const overlay = document.getElementById('chatModal');
+  const body = document.getElementById('chatModalBody');
+  overlay.classList.add('visible');
+  body.innerHTML = '<div class="loading-spinner">Loading original conversation...</div>';
+
+  try {
+    const resp = await fetch(`${base()}/api/original-chat/${encodeURIComponent(documentId)}`);
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ error: resp.statusText }));
+      body.innerHTML = `<div class="error-msg">Could not load original chat: ${esc(err.error || 'Unknown error')}</div>`;
+      return;
+    }
+    const md = await resp.text();
+    body.innerHTML = `<div class="chat-md-content">${marked.parse(md)}</div>`;
+  } catch (e) {
+    body.innerHTML = `<div class="error-msg">Failed to fetch: ${esc(e.message)}</div>`;
+  }
+}
+
+function closeChatModal() {
+  document.getElementById('chatModal').classList.remove('visible');
+  document.getElementById('chatModalBody').innerHTML = '';
+}
+
+// Close chat modal on overlay click
+document.getElementById('chatModal').addEventListener('click', function(e) {
+  if (e.target === this) closeChatModal();
+});
+
+// Close chat modal on Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('chatModal').classList.contains('visible')) {
+    closeChatModal();
+  }
+});
 
 // ── Init ──
 loadAll();

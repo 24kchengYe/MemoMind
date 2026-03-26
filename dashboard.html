@@ -46,6 +46,32 @@
   --transition-spring: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* ── Light Theme ── */
+:root.light {
+  --surface-0: oklch(0.97 0.005 260);
+  --surface-1: oklch(0.94 0.005 260);
+  --surface-2: oklch(0.91 0.008 260);
+  --surface-3: oklch(0.86 0.01 260);
+  --surface-glass: oklch(0.95 0.005 260 / 0.85);
+  --text-1: oklch(0.20 0.02 260);
+  --text-2: oklch(0.40 0.02 260);
+  --text-3: oklch(0.55 0.02 260);
+  --border: oklch(0.82 0.01 260);
+  --border-subtle: oklch(0.88 0.008 260);
+  --world-bg: oklch(0.92 0.03 155);
+  --experience-bg: oklch(0.92 0.03 300);
+  --observation-bg: oklch(0.92 0.03 75);
+  --accent-dim: oklch(0.85 0.04 200);
+  --accent-glow: oklch(0.75 0.12 200 / 0.08);
+  --danger-bg: oklch(0.92 0.03 25);
+  --gradient-subtle: linear-gradient(135deg, oklch(0.95 0.01 260), oklch(0.93 0.005 280));
+  --shadow-card: 0 2px 8px oklch(0 0 0 / 0.06), 0 1px 2px oklch(0 0 0 / 0.04);
+  --shadow-card-hover: 0 8px 24px oklch(0 0 0 / 0.1), 0 2px 6px oklch(0 0 0 / 0.06);
+  --shadow-glow: 0 0 20px oklch(0.75 0.12 200 / 0.06);
+}
+:root.light .graph-container { background: oklch(0.95 0.005 260); }
+:root.light ::-webkit-scrollbar-thumb { background: oklch(0.78 0.01 260); }
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
@@ -1144,8 +1170,14 @@ body {
 /* ── Timeline View ── */
 .timeline-container {
   overflow-x: auto;
-  padding-bottom: 16px;
+  padding-bottom: 8px;
+  padding-top: 4px;
+  scrollbar-width: thin;
 }
+.timeline-container::-webkit-scrollbar { height: 8px; }
+.timeline-container::-webkit-scrollbar-track { background: var(--surface-2); border-radius: 4px; margin: 0 8px; }
+.timeline-container::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+.timeline-container::-webkit-scrollbar-thumb:hover { background: var(--text-2); }
 
 .timeline-track {
   display: flex;
@@ -2275,7 +2307,7 @@ body {
         <span class="status-dot" id="statusDot"></span>
         <span id="statusText">Connecting...</span>
       </div>
-      <input class="endpoint-input" id="baseUrl" value="http://127.0.0.1:18888" spellcheck="false"
+      <input class="endpoint-input" id="baseUrl" value="http://127.0.0.1:19999" spellcheck="false"
              onchange="loadAll()" title="API endpoint">
     </div>
   </aside>
@@ -2292,6 +2324,7 @@ body {
         <button class="btn-icon select-mode-btn" id="selectModeBtn" onclick="toggleSelectMode()" title="Select mode">&#9745;</button>
         <button class="btn-icon" onclick="exportMemories()" title="Export all memories as JSON">&#128190;</button>
         <button class="btn-icon" id="reflectToggle" onclick="toggleReflect()" title="Reflect">&#128172;</button>
+        <button class="btn-icon" id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark mode">&#9788;</button>
         <button class="btn-icon" onclick="doRefresh(this)" title="Refresh">&#8635;</button>
       </div>
     </div>
@@ -2644,6 +2677,26 @@ function simpleForceLayout(graph, iterations) {
 }
 </script>
 <script>
+// ── Theme Toggle ──
+function toggleTheme() {
+  const root = document.documentElement;
+  const isLight = root.classList.toggle('light');
+  localStorage.setItem('memomind-theme', isLight ? 'light' : 'dark');
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.innerHTML = isLight ? '&#9790;' : '&#9788;';
+}
+// Restore saved theme on load
+(function() {
+  const saved = localStorage.getItem('memomind-theme');
+  if (saved === 'light') {
+    document.documentElement.classList.add('light');
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('themeToggle');
+      if (btn) btn.innerHTML = '&#9790;';
+    });
+  }
+})();
+
 // ── State ──
 let currentBank = 'default';
 let allBanks = [];

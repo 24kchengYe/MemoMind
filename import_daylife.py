@@ -21,7 +21,7 @@ sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="repla
 
 # Config
 DAYLIFE_DB = os.path.expanduser("~/.local/share/daylife/daylife.db")
-MEMOMIND_API = "http://127.0.0.1:18888"
+MEMOMIND_API = "http://127.0.0.1:19999"
 BANK_ID = "life"
 BATCH_SIZE = 20  # entries per batch (one retain call per batch)
 

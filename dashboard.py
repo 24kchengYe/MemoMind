@@ -24,7 +24,7 @@ _no_proxy_opener = urllib.request.build_opener(proxy_handler)
 urllib.request.install_opener(_no_proxy_opener)
 
 # Auto-detect MemoMind API: try localhost first (mirrored mode), then WSL IP
-MEMOMIND_API = "http://127.0.0.1:18888"
+MEMOMIND_API = "http://127.0.0.1:19999"
 try:
     import subprocess
     _wsl_ip = subprocess.check_output(
@@ -46,7 +46,7 @@ with open(os.path.join(os.path.dirname(__file__) or ".", "dashboard.html"), enco
     DASHBOARD_HTML = _f.read()
 # Patch the default URL to point to the dashboard proxy (not directly to API)
 DASHBOARD_HTML = DASHBOARD_HTML.replace(
-    'value="http://127.0.0.1:18888"',
+    'value="http://127.0.0.1:19999"',
     f'value="http://127.0.0.1:{DASHBOARD_PORT}"'
 )
 

@@ -1,8 +1,8 @@
 """
 Import DayLife records into MemoMind's 'life' bank.
-Reads SQLite directly, calls MemoMind retain API in batches.
+One retain call per event (not per day).
 
-Usage: python import_daylife.py [--dry-run] [--batch-size 20] [--from 2024-01-01] [--to 2026-12-31]
+Usage: python import_daylife.py [--dry-run] [--from-date 2024-01-01] [--to-date 2026-12-31]
 """
 import sqlite3
 import json
@@ -13,7 +13,6 @@ import sys
 import io
 import time
 import argparse
-from datetime import datetime
 
 # Fix Windows console encoding for emoji
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
@@ -23,7 +22,6 @@ sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="repla
 DAYLIFE_DB = os.path.expanduser("~/.local/share/daylife/daylife.db")
 MEMOMIND_API = "http://127.0.0.1:19999"
 BANK_ID = "life"
-BATCH_SIZE = 20  # entries per batch (one retain call per batch)
 
 # Disable proxy
 for k in ["ALL_PROXY", "all_proxy", "HTTP_PROXY", "http_proxy", "HTTPS_PROXY", "https_proxy"]:
@@ -37,7 +35,7 @@ def get_entries(db_path, date_from=None, date_to=None):
     db.row_factory = sqlite3.Row
 
     query = """
-        SELECT e.date, c.icon, c.name as category, e.content, e.status,
+        SELECT e.id, e.date, c.icon, c.name as category, e.content, e.status,
                e.start_time, e.end_time, e.duration_minutes, e.priority, e.notes
         FROM daily_entries e
         LEFT JOIN categories c ON e.category_id = c.id
@@ -57,45 +55,53 @@ def get_entries(db_path, date_from=None, date_to=None):
     return rows
 
 
-def format_entry(row):
-    """Format a single entry into a concise string."""
+def format_event_content(row):
+    """Format a single event into a self-contained string for retain.
+
+    Format: "2024年3月15日 [科研] 写论文第三章 已完成 (9:00-12:30, 210分钟)"
+    """
+    date = row["date"]
+    # Convert date to Chinese format: 2024年3月15日
+    try:
+        parts = date.split("-")
+        date_cn = f"{int(parts[0])}年{int(parts[1])}月{int(parts[2])}日"
+    except (ValueError, IndexError):
+        date_cn = date
+
     icon = row["icon"] or ""
     cat = row["category"] or "未分类"
     content = row["content"] or ""
+
     status = row["status"] or ""
+    status_str = ""
+    if status == "completed":
+        status_str = " 已完成"
+    elif status == "incomplete":
+        status_str = " 未完成"
 
     time_str = ""
     if row["start_time"] and row["end_time"]:
-        time_str = f" {row['start_time']}-{row['end_time']}"
+        time_str = f"{row['start_time']}-{row['end_time']}"
     elif row["start_time"]:
-        time_str = f" {row['start_time']}"
+        time_str = f"{row['start_time']}"
 
     dur_str = ""
     if row["duration_minutes"]:
-        dur_str = f" ({row['duration_minutes']}min)"
+        dur_str = f"{row['duration_minutes']}分钟"
 
-    status_mark = ""
-    if status == "completed":
-        status_mark = " ✓"
-    elif status == "incomplete":
-        status_mark = " ✗"
+    # Build parenthetical: (9:00-12:30, 210分钟)
+    paren_parts = []
+    if time_str:
+        paren_parts.append(time_str)
+    if dur_str:
+        paren_parts.append(dur_str)
+    paren = f" ({', '.join(paren_parts)})" if paren_parts else ""
 
     notes = ""
     if row["notes"]:
         notes = f" | {row['notes']}"
 
-    return f"[{icon}{cat}] {content}{status_mark}{time_str}{dur_str}{notes}"
-
-
-def group_by_date(entries):
-    """Group entries by date, return dict of date -> [formatted_entries]."""
-    grouped = {}
-    for row in entries:
-        date = row["date"]
-        if date not in grouped:
-            grouped[date] = []
-        grouped[date].append(format_entry(row))
-    return grouped
+    return f"{date_cn} [{icon}{cat}] {content}{status_str}{paren}{notes}"
 
 
 def retain(content, timestamp, tags=None, dry_run=False):
@@ -133,64 +139,62 @@ def retain(content, timestamp, tags=None, dry_run=False):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Import DayLife into MemoMind")
+    parser = argparse.ArgumentParser(description="Import DayLife into MemoMind (per-event)")
     parser.add_argument("--dry-run", action="store_true", help="Preview without importing")
-    parser.add_argument("--batch-size", type=int, default=BATCH_SIZE, help="Entries per retain call")
     parser.add_argument("--from-date", default=None, help="Start date (YYYY-MM-DD)")
     parser.add_argument("--to-date", default=None, help="End date (YYYY-MM-DD)")
     parser.add_argument("--db", default=DAYLIFE_DB, help="DayLife DB path")
-    parser.add_argument("--delay", type=float, default=1.0, help="Delay between retain calls (seconds)")
+    parser.add_argument("--delay", type=float, default=0.3, help="Delay between retain calls (seconds)")
     args = parser.parse_args()
 
     print(f"[DayLife → MemoMind] Reading from {args.db}")
     entries = get_entries(args.db, args.from_date, args.to_date)
-    print(f"  Found {len(entries)} entries")
+    print(f"  Found {len(entries)} entries (one retain per event)")
 
     if not entries:
         print("  No entries to import.")
         return
 
-    # Group by date
-    by_date = group_by_date(entries)
-    print(f"  Spanning {len(by_date)} days ({min(by_date.keys())} to {max(by_date.keys())})")
-
-    # One retain call per day
-    dates = sorted(by_date.keys())
-    print(f"  Will import {len(dates)} days (one retain per day)")
+    dates = sorted(set(row["date"] for row in entries))
+    print(f"  Spanning {len(dates)} days ({dates[0]} to {dates[-1]})")
+    print(f"  Will make {len(entries)} retain calls")
     if args.dry_run:
         print("  [DRY RUN - no data will be written]\n")
 
     success = 0
     failed = 0
-    for i, date in enumerate(dates):
-        date_entries = by_date[date]
-        content_lines = [f"{date}的活动记录："]
-        for entry_text in date_entries:
-            content_lines.append(f"- {entry_text}")
+    for i, row in enumerate(entries):
+        content = format_event_content(row)
+        date = row["date"]
 
-        content = "\n".join(content_lines)
+        # Timestamp: use start_time if available, else noon
+        if row["start_time"]:
+            timestamp = f"{date}T{row['start_time']}:00+08:00"
+        else:
+            timestamp = f"{date}T12:00:00+08:00"
 
-        timestamp = f"{date}T12:00:00+08:00"
-        tags = ["daylife", date[:4]]
+        cat = row["category"] or "未分类"
+        tags = ["daylife", date[:4], cat]
 
-        progress = f"[{i+1}/{len(dates)}]"
-        print(f"  {progress} {date} ({len(date_entries)} entries)", end="")
+        progress = f"[{i+1}/{len(entries)}]"
 
         if args.dry_run:
-            print(f" → DRY RUN")
-            if i < 3:
-                print(f"    Preview:\n{content[:200]}...")
+            print(f"  {progress} {content[:100]}")
+            if i >= 10:
+                print(f"  ... (showing first 10 of {len(entries)})")
+                break
         else:
             result = retain(content, timestamp, tags)
             if "error" in result:
-                print(f" → FAILED: {result}")
+                print(f"  {progress} FAILED: {content[:60]} → {result}")
                 failed += 1
             else:
-                print(f" → OK")
+                if (i + 1) % 100 == 0 or i == 0:
+                    print(f"  {progress} OK: {content[:80]}")
                 success += 1
             time.sleep(args.delay)
 
-    print(f"\n[Done] Success: {success}, Failed: {failed}, Total days: {len(dates)}")
+    print(f"\n[Done] Success: {success}, Failed: {failed}, Total events: {len(entries)}")
 
 
 if __name__ == "__main__":

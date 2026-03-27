@@ -151,6 +151,10 @@ You don't do anything — the AI handles it all.
 - **Metadata & filtering** — tag memories with custom metadata for per-project or per-user isolation
 - **Multi-provider LLM** — works with OpenAI, Anthropic, Gemini, Groq, Ollama, LM Studio, and any OpenAI-compatible API
 - **Web Dashboard** — browse and search all memories visually at `http://127.0.0.1:9999`
+- **Life event tracking** — auto-imports DayLife activity records (per-event granularity) with smart incremental sync
+- **AI conversation import** — imports ChatGPT + Gemini conversation history into the knowledge graph
+- **Dual search mode** — toggle between fast keyword search and semantic recall in the dashboard
+- **Infinite scroll** — lazy-loads memory cards and timeline for smooth browsing of thousands of memories
 - **Auto-start** — systemd service + Windows startup script, works after reboot
 - **Backup & export** — one-click JSON export from dashboard + automated weekly backup to private GitHub repo
 
@@ -460,13 +464,18 @@ python backup-memomind.py
 
 ## Resource Usage
 
+Measured with ~7,600 memories across 3 banks:
+
 | Component | Idle | Active |
 |-----------|------|--------|
-| WSL2 + PostgreSQL | ~200MB RAM | ~200MB RAM |
-| MemoMind Server | ~600MB RAM | ~800MB RAM |
+| WSL2 + PostgreSQL | ~300MB RAM | ~500MB RAM |
+| MemoMind Server (serve.py) | ~2GB RAM | ~2GB RAM |
+| MCP process (per session) | ~1.5GB RAM | ~1.5GB RAM |
 | GPU (embeddings) | 0 | ~500MB VRAM (burst) |
-| Disk (WSL vhdx) | ~14GB | Grows with memories |
+| Disk (PostgreSQL data) | ~660MB | Grows with memories |
 | Network | 0 | LLM API calls on retain |
+
+> **Tip**: Close unused Claude Code sessions to free MCP process memory. Each open session loads its own embedding model (~1.5GB).
 
 ## Troubleshooting
 
@@ -522,13 +531,23 @@ export HF_ENDPOINT=https://hf-mirror.com  # Use China mirror
 - [x] WebGL graph rendering (sigma.js, handles 50,000+ nodes)
 - [x] Graph edge filtering (hide temporal, weight threshold slider)
 - [x] Backup optimization (filter temporal edges, reduce file size)
-- [ ] Multi-agent memory sharing
 - [x] Memory evolution via configurable consolidation mission
+- [x] DayLife integration — per-event import with smart daily sync (auto-catches up missed days)
+- [x] AI conversation history import (ChatGPT + Gemini)
+- [x] Dual search mode — keyword search (default) + semantic recall toggle
+- [x] Infinite scroll — lazy rendering for Stream and Timeline views
+- [x] Backup restore script with context filtering
+- [x] Contextual retain_mission — per-bank extraction quality rules
+- [ ] Multi-agent memory sharing
+- [ ] Memory conflict detection and resolution
+- [ ] Multi-hop graph-based recall (entity link traversal)
+- [ ] Memory decay and archival (time-weighted relevance)
 - [ ] Support for more MCP clients (Cursor, Windsurf, etc.)
 - [ ] Docker-based installation (no WSL dependency)
 
 ## Changelog
 
+- **v1.5** (2026-03-27): DayLife per-event import (5,505 life events) with smart daily sync that auto-catches up missed days; AI conversation history import (541 ChatGPT + Gemini conversations); dual search mode (keyword default + semantic recall toggle); infinite scroll for Stream and Timeline views; backup restore script with context filtering; contextual retain_mission per bank; dashboard performance optimization
 - **v1.4** (2026-03-16): WebGL graph rendering (sigma.js, 50,000+ nodes); graph edge filtering (type toggles + weight threshold); auto-prune stale observations weekly; backup optimization (filter temporal edges, 60% smaller)
 - **v1.3** (2026-03-16): Memory export (dashboard 💾 button + weekly auto-backup to GitHub); multilingual embedding (bge-m3, 100+ languages); split LLM config (deepseek-chat for retain, gpt-4o-mini for consolidation); architecture diagrams (SVG); memory evolution; dashboard redesign (reflect UI, timeline, entity graph, search filters, bank management); 14 deployment fixes
 - **v1.2** (2026-03-15): Dashboard redesign (glassmorphism, memory cards, graph zoom/pan/tooltips, delete, animated counters, mobile responsive); README rewrite with demo GIF; dual LLM mode (China direct via MindCraft / international via proxy bridge); retain speed 50s → 13s
@@ -713,6 +732,10 @@ Observation 不只是累积——它们会**进化**。巩固引擎自动合并�
 - **心智模型** — 构建对复杂主题的演化理解，不只是孤立的事实
 - **元数据过滤** — 为记忆添加标签，实现按项目/按用户隔离
 - **多 LLM 支持** — OpenAI、Anthropic、Gemini、Groq、Ollama、LM Studio 等
+- **生活轨迹** — 自动导入 DayLife 活动记录（按事件粒度），智能增量同步，断电多天也不丢
+- **AI 对话导入** — 导入 ChatGPT + Gemini 对话历史到知识图谱
+- **双搜索模式** — 面板中一键切换关键词搜索和语义召回
+- **无限滚动** — 记忆流和时间线懒加载，数千条记忆也流畅浏览
 - **可视化面板** — 在 `http://127.0.0.1:9999` 浏览和搜索所有记忆
 - **开机自启** — systemd 服务 + Windows 启动脚本
 
@@ -796,6 +819,7 @@ NEEDS_PROXY = False
 
 ## 更新日志
 
+- **v1.5** (2026-03-27): DayLife 按事件导入（5,505 条生活事件）+ 智能每日同步（断电自动补齐）；AI 对话历史导入（541 条 ChatGPT + Gemini 对话）；双搜索模式（关键词默认 + 语义召回切换）；记忆流和时间线无限滚动；备份恢复脚本（支持上下文过滤）；每个 bank 独立的 retain_mission；面板性能优化
 - **v1.4** (2026-03-16): WebGL 图谱渲染（sigma.js，支持 50,000+ 节点）；图谱边过滤（按类型/权重）；观察自动剪枝（每周清理低价值 observation）；备份优化（过滤 temporal 边）
 - **v1.3** (2026-03-16): 记忆导出（面板 💾 按钮 + 每周自动备份到 GitHub）；多语言嵌入模型（bge-m3）；LLM 分离配置；架构图（SVG）；记忆进化；面板重做（Reflect UI、时间线、实体图谱、搜索过滤、Bank 管理）；14 项部署修复
 - **v1.2** (2026-03-15): Dashboard 全面重新设计；README 重写 + demo GIF；双 LLM 模式（国内直连 MindCraft / 国际走代理桥接）；retain 速度 50s → 13s

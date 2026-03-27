@@ -1539,6 +1539,10 @@ body {
   margin-top: 20px;
 }
 
+.load-more-sentinel {
+  text-align: center;
+  padding: 16px;
+}
 /* ── Empty state ── */
 .empty-state {
   text-align: center;
@@ -1919,6 +1923,39 @@ body {
 }
 
 /* ── Feature: Recency Toggle ── */
+.search-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-3);
+  cursor: pointer;
+  user-select: none;
+}
+.search-mode-toggle .toggle-track {
+  width: 32px; height: 16px;
+  border-radius: 8px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  position: relative;
+  transition: all .2s;
+}
+.search-mode-toggle .toggle-track.on {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+}
+.search-mode-toggle .toggle-thumb {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--text-3);
+  position: absolute;
+  top: 1px; left: 1px;
+  transition: all .2s;
+}
+.search-mode-toggle .toggle-track.on .toggle-thumb {
+  transform: translateX(16px);
+  background: var(--accent);
+}
 .recency-toggle-wrap {
   display: flex;
   align-items: center;
@@ -2542,9 +2579,17 @@ body {
                    oninput="onSearchInput()" onkeydown="if(event.key==='Enter')doSearch()">
             <button class="search-clear-btn" id="searchClearBtn" onclick="clearSearch()">&#10005;</button>
           </div>
-          <button class="search-btn" onclick="doSearch()">Recall</button>
+          <button class="search-btn" onclick="doSearch()" id="searchBtn">Search</button>
         </div>
-        <div class="search-hint" id="searchHint">Semantic search across all memories &mdash; meaning, not just keywords</div>
+        <div class="search-hint" id="searchHint">
+          <label class="search-mode-toggle" onclick="toggleSearchMode()">
+            <div class="toggle-track" id="searchModeTrack">
+              <div class="toggle-thumb"></div>
+            </div>
+            <span id="searchModeLabel">Keyword search</span>
+            <span class="recency-tooltip-icon" data-tip="Keyword: fast exact match. Semantic: meaning-based recall via embeddings">(i)</span>
+          </label>
+        </div>
 
         <!-- Filter chips -->
         <div class="filter-chips">
@@ -2892,7 +2937,10 @@ let activeTypeFilter = 'all';
 let activeEntityFilter = null;
 let reflectOpen = false;
 let recencyBoostOn = false;
+let semanticSearchOn = false;
 let selectModeOn = false;
+const PAGE_SIZE = 50;
+let renderedCount = 0;
 let selectedMemoryIds = new Set();
 let detectedDuplicates = [];
 
@@ -3326,7 +3374,6 @@ function applyFilters() {
 
 function renderStream() {
   const stream = document.getElementById('memoryStream');
-  const hint = document.getElementById('searchHint');
 
   if (filteredMemories.length === 0) {
     if (isSearchMode) {
@@ -3339,8 +3386,54 @@ function renderStream() {
     return;
   }
 
+  // Reset and render first page
+  renderedCount = 0;
+  stream.innerHTML = '';
+  renderNextPage();
+}
+
+function renderNextPage() {
+  const stream = document.getElementById('memoryStream');
   const query = isSearchMode ? document.getElementById('searchInput').value.trim() : null;
-  stream.innerHTML = filteredMemories.map((m, i) => renderMemoryCard(m, i, query)).join('');
+  const end = Math.min(renderedCount + PAGE_SIZE, filteredMemories.length);
+
+  // Remove existing sentinel
+  const oldSentinel = document.getElementById('loadMoreSentinel');
+  if (oldSentinel) oldSentinel.remove();
+
+  // Render next batch
+  let html = '';
+  for (let i = renderedCount; i < end; i++) {
+    html += renderMemoryCard(filteredMemories[i], i, query);
+  }
+  stream.insertAdjacentHTML('beforeend', html);
+  renderedCount = end;
+
+  // Add sentinel + counter if more to load
+  if (renderedCount < filteredMemories.length) {
+    stream.insertAdjacentHTML('beforeend',
+      `<div id="loadMoreSentinel" class="load-more-sentinel">
+        <span style="color:var(--text-3);font-size:12px">${renderedCount} / ${filteredMemories.length} memories loaded</span>
+      </div>`);
+    observeLoadMore();
+  } else {
+    stream.insertAdjacentHTML('beforeend',
+      `<div style="text-align:center;padding:12px;color:var(--text-3);font-size:12px">${filteredMemories.length} memories</div>`);
+  }
+}
+
+let _loadMoreObserver = null;
+function observeLoadMore() {
+  if (_loadMoreObserver) _loadMoreObserver.disconnect();
+  const sentinel = document.getElementById('loadMoreSentinel');
+  if (!sentinel) return;
+  _loadMoreObserver = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
+      _loadMoreObserver.disconnect();
+      renderNextPage();
+    }
+  }, { rootMargin: '200px' });
+  _loadMoreObserver.observe(sentinel);
 }
 
 // ── Search ──
@@ -3353,10 +3446,26 @@ function onSearchInput() {
 function clearSearch() {
   document.getElementById('searchInput').value = '';
   document.getElementById('searchClearBtn').classList.remove('visible');
-  document.getElementById('searchHint').innerHTML = 'Semantic search across all memories &mdash; meaning, not just keywords';
+  // Restore search hint to just the toggle (remove result count text)
+  const hintEl = document.getElementById('searchHint');
+  const toggle = hintEl.querySelector('.search-mode-toggle');
+  if (toggle) {
+    hintEl.innerHTML = '';
+    hintEl.appendChild(toggle);
+  }
   isSearchMode = false;
   searchResults = null;
   applyFilters();
+}
+
+function toggleSearchMode() {
+  semanticSearchOn = !semanticSearchOn;
+  const track = document.getElementById('searchModeTrack');
+  const label = document.getElementById('searchModeLabel');
+  const btn = document.getElementById('searchBtn');
+  track.classList.toggle('on', semanticSearchOn);
+  label.textContent = semanticSearchOn ? 'Semantic recall' : 'Keyword search';
+  btn.textContent = semanticSearchOn ? 'Recall' : 'Search';
 }
 
 async function doSearch() {
@@ -3364,22 +3473,32 @@ async function doSearch() {
   if (!query) { clearSearch(); return; }
 
   const stream = document.getElementById('memoryStream');
-  const hint = document.getElementById('searchHint');
   stream.innerHTML = `<div class="empty-state"><p style="color:var(--text-3)">Searching...</p></div>`;
 
   try {
-    const res = await fetch(base() + `/v1/default/banks/${currentBank}/memories/recall`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query, max_tokens: 8192 })
-    });
-    const data = await res.json();
-    const results = data.results || [];
+    let results;
+    if (semanticSearchOn) {
+      // Semantic search via recall API
+      const res = await fetch(base() + `/v1/default/banks/${currentBank}/memories/recall`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, max_tokens: 8192 })
+      });
+      const data = await res.json();
+      results = data.results || [];
+    } else {
+      // Keyword search via list API with q param
+      const res = await api(`/v1/default/banks/${currentBank}/memories/list?q=${encodeURIComponent(query)}&limit=100000`);
+      results = res.items || [];
+      results.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+    }
 
     isSearchMode = true;
     searchResults = results;
 
-    hint.innerHTML = `<span class="result-count">${results.length}</span> memor${results.length === 1 ? 'y' : 'ies'} found for "${esc(query)}"`;
+    const mode = semanticSearchOn ? 'semantic' : 'keyword';
+    document.getElementById('searchHint').querySelector('.search-mode-toggle').insertAdjacentHTML('afterend',
+      ` <span class="result-count">${results.length}</span> result${results.length === 1 ? '' : 's'} for "${esc(query)}" (${mode})`);
     applyFilters();
   } catch (e) {
     stream.innerHTML = neuronEmptyHTML(e.message);
@@ -3524,7 +3643,13 @@ function renderTimeline() {
 
   const sortedDays = Object.keys(groups).sort((a, b) => b.localeCompare(a));
 
-  container.innerHTML = `<div class="timeline-track">${sortedDays.map(day => {
+  // Render timeline in batches for performance
+  const TL_PAGE = 30; // days per batch
+  let tlRendered = 0;
+  container.innerHTML = '<div class="timeline-track" id="timelineTrack"></div>';
+  const track = document.getElementById('timelineTrack');
+
+  function renderTlDay(day) {
     const memories = groups[day];
     const dayLabel = day === 'unknown' ? 'Unknown Date' : fmtDateFull(day + 'T00:00:00');
     return `
@@ -3548,7 +3673,28 @@ function renderTimeline() {
           }).join('')}
         </div>
       </div>`;
-  }).join('')}</div>`;
+  }
+
+  function renderTlBatch() {
+    const old = document.getElementById('tlSentinel');
+    if (old) old.remove();
+    const end = Math.min(tlRendered + TL_PAGE, sortedDays.length);
+    let html = '';
+    for (let i = tlRendered; i < end; i++) html += renderTlDay(sortedDays[i]);
+    tlRendered = end;
+    if (tlRendered < sortedDays.length) {
+      html += `<div id="tlSentinel" class="load-more-sentinel"><span style="color:var(--text-3);font-size:12px">${tlRendered} / ${sortedDays.length} days loaded</span></div>`;
+    }
+    track.insertAdjacentHTML('beforeend', html);
+    const sentinel = document.getElementById('tlSentinel');
+    if (sentinel) {
+      const obs = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting) { obs.disconnect(); renderTlBatch(); }
+      }, { rootMargin: '300px' });
+      obs.observe(sentinel);
+    }
+  }
+  renderTlBatch();
 }
 
 // ── Reflect panel ──

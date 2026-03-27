@@ -119,6 +119,46 @@ You don't do anything — the AI handles it all.
 
 ---
 
+### 💬 Import & Trace Your AI Conversations
+
+**One-click import** your ChatGPT and Gemini conversation history into the knowledge graph — then **trace any memory back to the original conversation**.
+
+Export your conversations using our companion tools, then import them into MemoMind. Every extracted memory links back to its source — click the 💬 icon on any memory card to view the full original conversation.
+
+<table>
+<tr>
+<td align="center"><b>AI Memory Timeline (2,000+ memories)</b></td>
+<td align="center"><b>Original Conversation Tracing</b></td>
+</tr>
+<tr>
+<td><img src="docs/demos/ai-chat-timeline.png" width="400" alt="Timeline view of AI conversation memories across months"/></td>
+<td><img src="docs/demos/original-chat-modal.png" width="400" alt="Click 💬 to view the original ChatGPT/Gemini conversation"/></td>
+</tr>
+</table>
+
+**Companion tools for conversation export:**
+- [**chatgpt-exporter**](https://github.com/24kchengYe/chatgpt-exporter) — One-click export all ChatGPT conversations (including Projects/folders) via browser console
+- [**gemini-exporter**](https://github.com/24kchengYe/gemini-exporter) — Export all Google Gemini conversations via Chrome Extension using internal batchexecute API
+
+### 📅 Visualize Your Life with DayLife
+
+Import your daily activities from **[DayLife](https://apps.apple.com/app/id6504528797)** — every event becomes a searchable, AI-analyzable memory. Smart daily sync catches up automatically even if your computer was off for days.
+
+<table>
+<tr>
+<td align="center"><b>Life Timeline in MemoMind (6,000+ events)</b></td>
+<td align="center"><b>DayLife App — Your Daily Planner</b></td>
+</tr>
+<tr>
+<td><img src="docs/demos/daylife-timeline.png" width="400" alt="Years of daily activities visualized as a searchable timeline"/></td>
+<td><img src="docs/demos/daylife-app.png" width="400" alt="DayLife calendar view with daily activities and categories"/></td>
+</tr>
+</table>
+
+Import once with `import_daylife.py`, then the daily sync keeps it updated forever. Combined with DayLife's CSV import feature, you can **one-click visualize your entire life history** — every plan, every achievement, every habit pattern — all searchable by AI.
+
+---
+
 ## How It Compares
 
 | Feature | MemoMind | [MemOS](https://github.com/MemTensor/MemOS) | Mem0 | Claude Code built-in |
@@ -547,7 +587,7 @@ export HF_ENDPOINT=https://hf-mirror.com  # Use China mirror
 
 ## Changelog
 
-- **v1.5** (2026-03-27): DayLife per-event import (5,505 life events) with smart daily sync that auto-catches up missed days; AI conversation history import (541 ChatGPT + Gemini conversations); dual search mode (keyword default + semantic recall toggle); infinite scroll for Stream and Timeline views; backup restore script with context filtering; contextual retain_mission per bank; dashboard performance optimization
+- **v1.5** (2026-03-27): **AI conversation import** — import ChatGPT + Gemini history (541 conversations) with **original conversation tracing** (click 💬 to view source); **DayLife integration** — per-event import (5,505 life events) with smart daily sync that auto-catches up missed days; **dual search mode** (keyword default + semantic recall toggle); **infinite scroll** for Stream and Timeline views; backup restore script; contextual retain_mission per bank
 - **v1.4** (2026-03-16): WebGL graph rendering (sigma.js, 50,000+ nodes); graph edge filtering (type toggles + weight threshold); auto-prune stale observations weekly; backup optimization (filter temporal edges, 60% smaller)
 - **v1.3** (2026-03-16): Memory export (dashboard 💾 button + weekly auto-backup to GitHub); multilingual embedding (bge-m3, 100+ languages); split LLM config (deepseek-chat for retain, gpt-4o-mini for consolidation); architecture diagrams (SVG); memory evolution; dashboard redesign (reflect UI, timeline, entity graph, search filters, bank management); 14 deployment fixes
 - **v1.2** (2026-03-15): Dashboard redesign (glassmorphism, memory cards, graph zoom/pan/tooltips, delete, animated counters, mobile responsive); README rewrite with demo GIF; dual LLM mode (China direct via MindCraft / international via proxy bridge); retain speed 50s → 13s
@@ -661,6 +701,44 @@ MemoMind 赋予你的 AI **持久、本地、智能的记忆**。它不仅仅存
 <td><img src="docs/demos/add-memory.png" width="400" alt="手动创建记忆的弹窗"/></td>
 </tr>
 </table>
+
+---
+
+### 💬 导入并溯源你的 AI 对话
+
+**一键导入** ChatGPT 和 Gemini 对话历史到知识图谱——然后**点击任意记忆卡片上的 💬 图标，直接追溯到原始对话**。
+
+<table>
+<tr>
+<td align="center"><b>AI 记忆时间线（2,000+ 条）</b></td>
+<td align="center"><b>原始对话溯源</b></td>
+</tr>
+<tr>
+<td><img src="docs/demos/ai-chat-timeline.png" width="400" alt="跨越数月的 AI 对话记忆时间线"/></td>
+<td><img src="docs/demos/original-chat-modal.png" width="400" alt="点击 💬 查看原始 ChatGPT/Gemini 对话"/></td>
+</tr>
+</table>
+
+**配套对话导出工具：**
+- [**chatgpt-exporter**](https://github.com/24kchengYe/chatgpt-exporter) — 一键导出所有 ChatGPT 对话（含 Projects 文件夹），浏览器控制台运行
+- [**gemini-exporter**](https://github.com/24kchengYe/gemini-exporter) — Chrome 扩展一键导出所有 Google Gemini 对话
+
+### 📅 用 DayLife 可视化你的人生
+
+导入 **[DayLife](https://apps.apple.com/app/id6504528797)** 日常活动——每条事件都成为可搜索、可 AI 分析的记忆。智能每日同步，电脑关机多天也不丢数据。
+
+<table>
+<tr>
+<td align="center"><b>MemoMind 生活时间线（6,000+ 事件）</b></td>
+<td align="center"><b>DayLife 应用——你的每日规划器</b></td>
+</tr>
+<tr>
+<td><img src="docs/demos/daylife-timeline.png" width="400" alt="数年的日常活动可视化为可搜索的时间线"/></td>
+<td><img src="docs/demos/daylife-app.png" width="400" alt="DayLife 日历视图，按分类显示每日活动"/></td>
+</tr>
+</table>
+
+用 `import_daylife.py` 一次性导入，然后每日自动同步。配合 DayLife 的 CSV 导入功能，**一键可视化你的整个人生**——每个计划、每个成就、每个习惯模式，全部可被 AI 搜索和分析。
 
 ---
 

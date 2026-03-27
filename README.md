@@ -15,7 +15,7 @@
 [![PostgreSQL](https://img.shields.io/badge/Storage-PostgreSQL%20%2B%20pgvector-336791)](https://github.com/pgvector/pgvector)
 [![MCP](https://img.shields.io/badge/Protocol-MCP%20(stdio)-blue)](https://modelcontextprotocol.io/)
 [![CUDA](https://img.shields.io/badge/GPU-CUDA%20Accelerated-76b900)](https://developer.nvidia.com/cuda-toolkit)
-[![Dashboard](https://img.shields.io/badge/Dashboard-http%3A%2F%2F127.0.0.1%3A9999-ff69b4)](http://127.0.0.1:9999)
+
 
 [English](#two-kinds-of-ai-memory) | [中文](#两种-ai-记忆)
 

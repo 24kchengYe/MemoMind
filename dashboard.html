@@ -3534,9 +3534,10 @@ function renderTimeline() {
           ${memories.map(m => {
             const type = m.fact_type || 'world';
             const text = esc((m.text || '').slice(0, 200));
-            const tlDocId = m.document_id || '';
-            const tlOrigBtn = (m.context === 'ai-chat-import' && tlDocId)
-              ? `<button class="btn-original-chat" onclick="event.stopPropagation();openChatModal('${esc(tlDocId)}')" title="View original conversation">&#128172; Original</button>`
+            const tlChunkId = m.chunk_id || '';
+            const tlDocHash = tlChunkId.includes('_') ? tlChunkId.split('_').slice(1, -1).join('_') : '';
+            const tlOrigBtn = tlDocHash
+              ? `<button class="btn-original-chat" onclick="event.stopPropagation();openChatModal('${esc(tlDocHash)}')" title="View original conversation">&#128172;</button>`
               : '';
             return `
               <div class="timeline-card type-${esc(type)}">

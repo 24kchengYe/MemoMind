@@ -62,6 +62,8 @@ def main():
     count = 0
     # 1. fact_extraction.py - occurred_start fallback
     count += patch_file("fact_extraction.py", os.path.join("engine", "retain", "fact_extraction.py"))
+    # 1b. fact_storage.py - Windows strftime %-d fix
+    count += patch_file("fact_storage.py", os.path.join("engine", "retain", "fact_storage.py"))
     # 2. orchestrator.py - original_document_id
     count += patch_file("orchestrator.py", os.path.join("engine", "retain", "orchestrator.py"))
     # 3. link_expansion_retrieval.py - super entity filtering

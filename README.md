@@ -11,7 +11,7 @@
 *A fully local, GPU-accelerated memory system for AI coding agents. Start building your digital twin's memory today — portable, evolving, and ready to migrate when a better system comes along.*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-WSL2%20%2B%20Ubuntu-orange)](https://learn.microsoft.com/en-us/windows/wsl/)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20WSL2-orange)](https://github.com/24kchengYe/MemoMind#quick-start)
 [![PostgreSQL](https://img.shields.io/badge/Storage-PostgreSQL%20%2B%20pgvector-336791)](https://github.com/pgvector/pgvector)
 [![MCP](https://img.shields.io/badge/Protocol-MCP%20(stdio)-blue)](https://modelcontextprotocol.io/)
 [![CUDA](https://img.shields.io/badge/GPU-CUDA%20Accelerated-76b900)](https://developer.nvidia.com/cuda-toolkit)
@@ -182,7 +182,7 @@ Import once with `import_daylife.py`, then the daily sync keeps it updated forev
 
 ## Key Features
 
-- **100% local** — PostgreSQL + embedding models in WSL2, nothing leaves your machine
+- **100% local** — PostgreSQL + embedding models on your machine, nothing leaves it
 - **Zero manual effort** — AI autonomously decides what to remember and recall
 - **GPU-accelerated** — uses your NVIDIA GPU for fast local embeddings and reranking
 - **Multilingual** — bge-m3 embedding model supports 100+ languages (Chinese, English, Japanese, etc.)
@@ -197,7 +197,7 @@ Import once with `import_daylife.py`, then the daily sync keeps it updated forev
 - **AI conversation import** — imports ChatGPT + Gemini conversation history into the knowledge graph
 - **Dual search mode** — toggle between fast keyword search and semantic recall in the dashboard
 - **Infinite scroll** — lazy-loads memory cards and timeline for smooth browsing of thousands of memories
-- **Auto-start** — systemd service + Windows startup script, works after reboot
+- **Auto-start** — Windows Task Scheduler or systemd service, works after reboot
 - **Backup & export** — one-click JSON export from dashboard + automated weekly backup to private GitHub repo
 
 ## Use Cases
@@ -257,27 +257,94 @@ Each memory bank has a configurable **mission** that controls how the consolidat
 
 ### Prerequisites
 
-- Windows 10/11 with WSL2 + Ubuntu
 - NVIDIA GPU (optional but recommended for local embeddings)
 - An LLM API key ([MindCraft](https://www.mindcraft.com.cn/) for China users / [OpenRouter](https://openrouter.ai/) for international)
+- **Windows**: Python 3.11+, Visual Studio Build Tools (for pgvector compilation)
+- **Linux/macOS**: Python 3.11+, PostgreSQL 17+
 
-### Installation
+### Option A: Windows Native (Recommended for Windows users)
+
+Runs entirely on Windows — no WSL, no virtual machines. Most stable option.
+
+**Step 1 — Clone and set up Python venv**
+
+```bash
+git clone https://github.com/24kchengYe/MemoMind.git
+python -m venv D:\pythonPycharms\memomind-env
+```
+
+**Step 2 — Install dependencies**
+
+```bash
+# Install hindsight-api (skip uvloop — Windows doesn't support it)
+pip install hindsight-api-slim --no-deps
+pip install pg0-embedded sentence-transformers torch --index-url https://download.pytorch.org/whl/cu124
+# Install remaining deps (see requirements-win.txt or install all from hindsight-api-slim metadata)
+```
+
+**Step 3 — Set up PostgreSQL 17 + pgvector**
+
+```bash
+# Download PG 17 portable: https://www.enterprisedb.com/download-postgresql-binaries
+# Extract to e.g. D:\memomind-pg\pgsql\
+# Initialize and start:
+pg_ctl initdb -D D:\memomind-pg\data -U hindsight -A trust
+pg_ctl start -D D:\memomind-pg\data -o "-p 5433"
+
+# Build and install pgvector (requires Visual Studio Build Tools):
+git clone https://github.com/pgvector/pgvector.git
+# In VS Developer Command Prompt:
+set PGROOT=D:\memomind-pg\pgsql
+nmake /F Makefile.win && nmake /F Makefile.win install
+
+# Create database with vector extension:
+createdb -h localhost -p 5433 -U hindsight hindsight
+psql -h localhost -p 5433 -U hindsight -d hindsight -c "CREATE EXTENSION vector;"
+```
+
+**Step 4 — Configure and start**
+
+```bash
+# Edit serve.py — set LLM_API_KEY, LLM_BASE_URL, LLM_MODEL
+# Apply patches:
+python patch_hindsight.py
+
+# Start the server:
+python serve.py          # API at http://localhost:19999
+pythonw dashboard.py     # Dashboard at http://localhost:9999
+```
+
+**Step 5 — Register MCP in Claude Code**
+
+```bash
+claude mcp add --scope user --transport stdio memomind \
+  -- D:\memomind-env\Scripts\python.exe D:\memomind-env\mcp_stdio.py
+```
+
+**Step 6 — (Optional) Auto-start on boot**
+
+```powershell
+# Create a Windows Scheduled Task, or copy to Startup:
+copy start-memomind.vbs "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\"
+```
+
+### Option B: WSL2 / Linux (Recommended for Linux users)
+
+Uses WSL2 on Windows or runs natively on Linux. Leverages systemd for service management.
 
 **Step 1 — Clone and install**
 
 ```bash
 git clone https://github.com/24kchengYe/MemoMind.git
 
-# Enter WSL and run installer (it auto-copies serve.py.template)
-wsl -d Ubuntu
-cd /mnt/d/path/to/MemoMind  # adjust to your clone location
+# On Linux or inside WSL:
+cd MemoMind
 sudo bash install.sh
 ```
 
 **Step 2 — Configure your LLM API key**
 
 ```bash
-# Only one file to edit — mcp_stdio.py reads from this automatically
 sudo nano /opt/memomind-env/serve.py
 # Set LLM_API_KEY, LLM_BASE_URL, LLM_MODEL (see "Supported LLM Providers" below)
 ```
@@ -288,36 +355,32 @@ sudo nano /opt/memomind-env/serve.py
 sudo systemctl start memomind
 ```
 
-**Step 4 — Register MCP in Claude Code** (run from Windows terminal)
+**Step 4 — Register MCP in Claude Code**
 
 ```bash
+# From Windows (if using WSL):
 claude mcp add --scope user --transport stdio memomind \
   -- wsl -d Ubuntu -u memomind -e //opt/memomind-env/mcp-entry.sh
+
+# From Linux (native):
+claude mcp add --scope user --transport stdio memomind \
+  -- /opt/memomind-env/bin/python3 /opt/memomind-env/mcp_stdio.py
 ```
 
-**Step 5 — (Optional) Auto-start on boot**
+**Step 5 — (Optional) Auto-start & Dashboard**
 
-```powershell
-# Run from Windows PowerShell or CMD (not WSL bash — $APPDATA is a Windows variable)
+```bash
+# WSL auto-start (run from Windows):
 copy keep-wsl-alive.vbs "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\"
+
+# Dashboard (run from Windows, or Linux with GUI):
+pythonw dashboard.py  # Opens at http://localhost:9999
 ```
 
-**Step 6 — (Optional) Dashboard**
+### Verify (both options)
 
 ```bash
-# Run on Windows (not WSL) — requires portproxy for API access
-powershell -ExecutionPolicy Bypass -File update-portproxy.ps1  # Run as admin
-pythonw dashboard.py  # Starts at http://localhost:9999
-```
-
-### Verify
-
-```bash
-# Check service status
-wsl -d Ubuntu -e systemctl status memomind
-
-# Test health endpoint
-wsl -d Ubuntu -- bash -c "curl -s --noproxy '*' http://127.0.0.1:8888/health"
+curl http://localhost:19999/health
 # → {"status":"healthy","database":"connected"}
 ```
 
@@ -510,7 +573,7 @@ Measured with ~7,600 memories across 3 banks:
 
 | Component | Idle | Active |
 |-----------|------|--------|
-| WSL2 + PostgreSQL | ~300MB RAM | ~500MB RAM |
+| PostgreSQL 17 | ~100MB RAM | ~300MB RAM |
 | MemoMind Server (serve.py) | ~2GB RAM | ~2GB RAM |
 | MCP process (per session) | ~1.5GB RAM | ~1.5GB RAM |
 | GPU (embeddings) | 0 | ~500MB VRAM (burst) |
@@ -518,6 +581,7 @@ Measured with ~7,600 memories across 3 banks:
 | Network | 0 | LLM API calls on retain |
 
 > **Tip**: Close unused Claude Code sessions to free MCP process memory. Each open session loads its own embedding model (~1.5GB).
+> **Windows native** uses less RAM than WSL2 (no virtualization overhead).
 
 ## Troubleshooting
 
@@ -525,17 +589,22 @@ Measured with ~7,600 memories across 3 banks:
 <summary><b>MCP not connecting</b></summary>
 
 ```bash
-wsl -d Ubuntu -e systemctl status memomind  # Check service
-wsl -d Ubuntu -e ss -tlnp | grep 8888       # Check port
+# Windows native:
+curl http://localhost:19999/health
+# Check if serve.py and PostgreSQL are running
+
+# WSL mode:
+wsl -d Ubuntu -e systemctl status memomind
 ```
 
 </details>
 
 <details>
-<summary><b>WSL shuts down automatically</b></summary>
+<summary><b>WSL shuts down automatically (WSL mode only)</b></summary>
 
 - Ensure `keep-wsl-alive.vbs` is in your Windows Startup folder
 - Or: `wsl -d Ubuntu -e bash -c "sleep infinity" &`
+- Consider switching to **Windows native mode** for better stability
 
 </details>
 
@@ -585,10 +654,12 @@ export HF_ENDPOINT=https://hf-mirror.com  # Use China mirror
 - [ ] Multi-hop graph-based recall (entity link traversal)
 - [ ] Memory decay and archival (time-weighted relevance)
 - [ ] Support for more MCP clients (Cursor, Windsurf, etc.)
-- [ ] Docker-based installation (no WSL dependency)
+- [x] Windows native installation (no WSL dependency)
+- [ ] Docker-based installation (one-command setup)
 
 ## Changelog
 
+- **v1.6** (2026-03-29): **Windows native support** — run entirely on Windows without WSL2; PostgreSQL 17 portable + pgvector 0.8.2 (compiled from source); eliminates Hyper-V/WSL network instability; auto-start via Windows Task Scheduler; `patch_hindsight.py` for one-click patch management; dual installation guide (Windows native + WSL/Linux)
 - **v1.5** (2026-03-27): **AI conversation import** — import ChatGPT + Gemini history (541 conversations) with **original conversation tracing** (click 💬 to view source); **DayLife integration** — per-event import (5,505 life events) with smart daily sync that auto-catches up missed days; **dual search mode** (keyword default + semantic recall toggle); **infinite scroll** for Stream and Timeline views; backup restore script; contextual retain_mission per bank
 - **v1.4** (2026-03-16): WebGL graph rendering (sigma.js, 50,000+ nodes); graph edge filtering (type toggles + weight threshold); auto-prune stale observations weekly; backup optimization (filter temporal edges, 60% smaller)
 - **v1.3** (2026-03-16): Memory export (dashboard 💾 button + weekly auto-backup to GitHub); multilingual embedding (bge-m3, 100+ languages); split LLM config (deepseek-chat for retain, gpt-4o-mini for consolidation); architecture diagrams (SVG); memory evolution; dashboard redesign (reflect UI, timeline, entity graph, search filters, bank management); 14 deployment fixes
@@ -806,7 +877,7 @@ Observation 不只是累积——它们会**进化**。巩固引擎自动合并�
 
 ## 核心能力
 
-- **100% 本地** — PostgreSQL + 嵌入模型运行在 WSL2，数据不出机器
+- **100% 本地** — PostgreSQL + 嵌入模型运行在你的机器上，数据不出机器
 - **零手动操作** — AI 自主决定记什么、什么时候回忆
 - **GPU 加速** — 使用 NVIDIA GPU 加速本地嵌入和重排序
 - **4 路混合检索** — 语义相似度 + BM25 关键词 + 知识图谱 + 时序搜索
@@ -819,7 +890,7 @@ Observation 不只是累积——它们会**进化**。巩固引擎自动合并�
 - **双搜索模式** — 面板中一键切换关键词搜索和语义召回
 - **无限滚动** — 记忆流和时间线懒加载，数千条记忆也流畅浏览
 - **可视化面板** — 在 `http://127.0.0.1:9999` 浏览和搜索所有记忆
-- **开机自启** — systemd 服务 + Windows 启动脚本
+- **开机自启** — Windows 计划任务 或 systemd 服务，重启后自动恢复
 
 ## 备份与导出 — 面向未来的数字分身
 
@@ -854,28 +925,31 @@ python backup-memomind.py
 
 ### 前置条件
 
-- Windows 10/11 + WSL2 + Ubuntu
 - NVIDIA GPU（可选，推荐用于本地嵌入）
 - LLM API 密钥（国内推荐 [MindCraft](https://www.mindcraft.com.cn/) / 国际推荐 [OpenRouter](https://openrouter.ai/)）
+- **Windows 用户**: Python 3.11+，Visual Studio Build Tools（编译 pgvector）
+- **Linux 用户**: Python 3.11+，PostgreSQL 17+
 
-### 安装步骤
+### 方案 A：Windows 原生安装（推荐）
+
+无需 WSL，无需虚拟机，最稳定。详见英文 [Quick Start — Option A](#option-a-windows-native-recommended-for-windows-users)。
 
 ```bash
-# 1. 克隆仓库
+# 核心流程：
 git clone https://github.com/24kchengYe/MemoMind.git
+python -m venv memomind-env
+pip install hindsight-api-slim --no-deps  # 跳过 uvloop（Windows 不支持）
+# 安装 PG 17 便携版 + 编译 pgvector + 配置 serve.py + 注册 MCP
+```
 
-# 2. 进入 WSL 运行安装脚本（自动复制 serve.py 模板）
-wsl -d Ubuntu
-cd /mnt/d/path/to/MemoMind  # adjust to your clone location
-sudo bash install.sh
+### 方案 B：WSL2 / Linux 安装
 
-# 3. 配置 LLM API 密钥（只需编辑这一个文件，MCP 会自动读取）
-sudo nano /opt/memomind-env/serve.py
+适合 Linux 原生环境或偏好 WSL 的用户。详见英文 [Quick Start — Option B](#option-b-wsl2--linux-recommended-for-linux-users)。
 
-# 4. 启动服务
+```bash
+git clone https://github.com/24kchengYe/MemoMind.git
+cd MemoMind && sudo bash install.sh
 sudo systemctl start memomind
-
-# 5. 在 Claude Code 中注册 MCP（在 Windows 终端执行）
 claude mcp add --scope user --transport stdio memomind \
   -- wsl -d Ubuntu -u memomind -e //opt/memomind-env/mcp-entry.sh
 ```
@@ -901,6 +975,7 @@ NEEDS_PROXY = False
 
 ## 更新日志
 
+- **v1.6** (2026-03-29): **Windows 原生支持**——无需 WSL2，全部运行在 Windows 上；PostgreSQL 17 便携版 + pgvector 0.8.2（源码编译）；消除 Hyper-V/WSL 网络不稳定问题；Windows 计划任务自启动；`patch_hindsight.py` 一键补丁管理；双安装指南（Windows 原生 + WSL/Linux）
 - **v1.5** (2026-03-27): DayLife 按事件导入（5,505 条生活事件）+ 智能每日同步（断电自动补齐）；AI 对话历史导入（541 条 ChatGPT + Gemini 对话）；双搜索模式（关键词默认 + 语义召回切换）；记忆流和时间线无限滚动；备份恢复脚本（支持上下文过滤）；每个 bank 独立的 retain_mission；面板性能优化
 - **v1.4** (2026-03-16): WebGL 图谱渲染（sigma.js，支持 50,000+ 节点）；图谱边过滤（按类型/权重）；观察自动剪枝（每周清理低价值 observation）；备份优化（过滤 temporal 边）
 - **v1.3** (2026-03-16): 记忆导出（面板 💾 按钮 + 每周自动备份到 GitHub）；多语言嵌入模型（bge-m3）；LLM 分离配置；架构图（SVG）；记忆进化；面板重做（Reflect UI、时间线、实体图谱、搜索过滤、Bank 管理）；14 项部署修复

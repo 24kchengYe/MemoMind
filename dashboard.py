@@ -1,7 +1,7 @@
 """
 MemoMind Dashboard - Local web UI for viewing memories.
 Run on Windows: pythonw dashboard.py (or python dashboard.py)
-Proxies API requests to MemoMind backend (WSL port 8888 via portproxy).
+Proxies API requests to MemoMind backend (native Windows, port 19999).
 Opens at http://localhost:9999
 """
 import http.server
@@ -30,24 +30,8 @@ proxy_handler = urllib.request.ProxyHandler({})
 _no_proxy_opener = urllib.request.build_opener(proxy_handler)
 urllib.request.install_opener(_no_proxy_opener)
 
-# Auto-detect MemoMind API: try localhost first (mirrored mode), then WSL IP
+# MemoMind API runs natively on Windows
 MEMOMIND_API = "http://127.0.0.1:19999"
-try:
-    import subprocess
-    _wsl_ip = subprocess.check_output(
-        ["wsl", "-d", "Ubuntu", "--", "bash", "-c", "hostname -I"],
-        timeout=5
-    ).decode().strip().split()[0]
-    # Test if localhost works (mirrored mode auto-maps WSL ports)
-    _test_req = urllib.request.Request(MEMOMIND_API + "/health")
-    try:
-        _no_proxy_opener.open(_test_req, timeout=2)
-    except Exception:
-        # Localhost failed, use WSL IP directly
-        MEMOMIND_API = f"http://{_wsl_ip}:18888"
-        print(f"[Dashboard] Using WSL IP: {MEMOMIND_API}")
-except Exception:
-    pass  # stick with localhost
 
 with open(os.path.join(os.path.dirname(__file__) or ".", "dashboard.html"), encoding="utf-8") as _f:
     DASHBOARD_HTML = _f.read()

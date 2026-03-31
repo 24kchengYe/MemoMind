@@ -15,6 +15,14 @@ if %errorlevel% neq 0 (
     "%PG_BIN%\pg_ctl.exe" start -D "%PG_DATA%" -o "-p 5433" -l "%PG_DATA%\pg.log" -w
 )
 
+:: Clear socks proxy (prevents OpenAI SDK from using socks5 instead of http proxy)
+set ALL_PROXY=
+set all_proxy=
+set HTTP_PROXY=
+set HTTPS_PROXY=
+set http_proxy=
+set https_proxy=
+
 :: Start MemoMind API server (background)
 echo Starting MemoMind API server...
 start /B "" "%PYTHON%" "%MEMOMIND_ENV%\serve.py"

@@ -3100,13 +3100,34 @@ function renderBanks() {
       `<button class="bank-delete-btn" onclick="event.stopPropagation();showDeleteBankModal('${esc(b.bank_id)}')" title="Delete bank">&#128465;</button>`;
     return `
     <li class="bank-item ${b.bank_id === currentBank ? 'active' : ''}"
-        onclick="selectBank('${esc(b.bank_id)}')">
+        onclick="selectBank('${esc(b.bank_id)}')"
+        oncontextmenu="event.preventDefault();renameBankPrompt('${esc(b.bank_id)}','${esc(b.name || b.bank_id)}')">
       <span class="bank-icon">${icon}</span>
       <span class="bank-name">${esc(b.name || b.bank_id)}</span>
       <span class="bank-count" id="bc-${esc(b.bank_id)}">&middot;</span>
       ${delBtn}
     </li>`;
   }).join('');
+}
+
+async function renameBankPrompt(bankId, currentName) {
+  const newName = prompt(`Rename bank "${bankId}"\nDisplay name:`, currentName);
+  if (!newName || newName === currentName) return;
+  try {
+    await fetch(base() + `/v1/default/banks/${bankId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newName })
+    });
+    const b = allBanks.find(x => x.bank_id === bankId);
+    if (b) b.name = newName;
+    renderBanks();
+    if (bankId === currentBank) {
+      document.getElementById('toolbarBankName').textContent = newName;
+    }
+  } catch (e) {
+    alert('Rename failed: ' + e.message);
+  }
 }
 
 async function selectBank(id) {

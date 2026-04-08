@@ -84,17 +84,10 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(DASHBOARD_HTML.encode())
         elif self.path == "/vault" or self.path == "/vault/":
-            # Serve a full-page iframe pointing to NoteDiscovery
-            html = f"""<!DOCTYPE html>
-<html style="margin:0;padding:0;height:100%">
-<head><meta charset="UTF-8"><title>MemoMind Knowledge Vault</title></head>
-<body style="margin:0;padding:0;height:100%;overflow:hidden">
-<iframe src="{VAULT_BACKEND}/" style="width:100%;height:100%;border:none"></iframe>
-</body></html>"""
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html")
+            # Redirect to NoteDiscovery directly (avoids iframe/proxy path rewriting issues)
+            self.send_response(302)
+            self.send_header("Location", VAULT_BACKEND + "/")
             self.end_headers()
-            self.wfile.write(html.encode())
         elif self.path.startswith("/vault/"):
             self._proxy_vault("GET")
         elif self.path.startswith("/api/original-chat/"):

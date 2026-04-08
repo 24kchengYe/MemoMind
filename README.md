@@ -96,12 +96,13 @@ You don't do anything — the AI handles it all.
 
 | Metric | Value |
 |--------|-------|
-| Memory nodes | 43,700+ |
-| Knowledge links | 2,490,000+ |
+| Memory nodes | 50,100+ |
+| Knowledge links | 2,900,000+ |
 | Named entities | 4,600+ |
 | Time span | 2017 – present (9 years) |
 | AI chats imported | 541 (ChatGPT + Gemini) |
-| Life events imported | 5,490 (2,400+ days) |
+| Life events imported | 5,500+ (2,400+ days) |
+| Knowledge Vault docs | 13,400+ (NoteDiscovery) |
 | Database size | ~500 MB |
 | Keyword search | 20–33ms |
 | Semantic recall | 235–430ms |
@@ -675,6 +676,7 @@ export HF_ENDPOINT=https://hf-mirror.com  # Use China mirror
 
 ## Changelog
 
+- **v1.7** (2026-04-08): **Knowledge Vault integration** — NoteDiscovery (13,400+ docs) integrated as `/vault/` route in dashboard; unified three-service architecture (API + Dashboard + Vault) managed by NSSM Windows services; auto-start, crash recovery, zero-window operation; production stats: 50,100+ memory nodes, 2,900,000+ knowledge links across 3 memory banks
 - **v1.6** (2026-03-29): **Windows native support** — run entirely on Windows without WSL2; PostgreSQL 17 portable + pgvector 0.8.2 (compiled from source); eliminates Hyper-V/WSL network instability; auto-start via Windows Task Scheduler; `patch_hindsight.py` for one-click patch management; dual installation guide (Windows native + WSL/Linux)
 - **v1.5** (2026-03-27): **AI conversation import** — import ChatGPT + Gemini history (541 conversations) with **original conversation tracing** (click 💬 to view source); **DayLife integration** — per-event import (5,505 life events) with smart daily sync that auto-catches up missed days; **dual search mode** (keyword default + semantic recall toggle); **infinite scroll** for Stream and Timeline views; backup restore script; contextual retain_mission per bank
 - **v1.4** (2026-03-16): WebGL graph rendering (sigma.js, 50,000+ nodes); graph edge filtering (type toggles + weight threshold); auto-prune stale observations weekly; backup optimization (filter temporal edges, 60% smaller)
@@ -770,12 +772,13 @@ MemoMind 赋予你的 AI 一个**持久、本地、智能的大脑**。不是聊
 
 | 指标 | 数值 |
 |------|------|
-| 记忆节点 | 43,700+ |
-| 知识链接 | 2,490,000+ |
+| 记忆节点 | 50,100+ |
+| 知识链接 | 2,900,000+ |
 | 命名实体 | 4,600+ |
 | 时间跨度 | 2017 至今（9 年） |
 | 导入 AI 对话 | 541 条（ChatGPT + Gemini） |
-| 导入生活事件 | 5,490 条（2,400+ 天） |
+| 导入生活事件 | 5,500+ 条（2,400+ 天） |
+| Knowledge Vault 文档 | 13,400+（NoteDiscovery） |
 | 数据库大小 | ~500 MB |
 | 关键词搜索 | 20–33ms |
 | 语义召回 | 235–430ms |
@@ -1009,6 +1012,7 @@ NEEDS_PROXY = False
 
 ## 更新日志
 
+- **v1.7** (2026-04-08): **Knowledge Vault 集成**——NoteDiscovery（13,400+ 文档）作为 `/vault/` 路由接入 Dashboard；三服务统一架构（API + Dashboard + Vault）由 NSSM Windows 服务管理；开机自启、崩溃自恢复、零窗口运行；生产数据：50,100+ 记忆节点、2,900,000+ 知识链接，横跨 3 个记忆银行
 - **v1.6** (2026-03-29): **Windows 原生支持**——无需 WSL2，全部运行在 Windows 上；PostgreSQL 17 便携版 + pgvector 0.8.2（源码编译）；消除 Hyper-V/WSL 网络不稳定问题；Windows 计划任务自启动；`patch_hindsight.py` 一键补丁管理；双安装指南（Windows 原生 + WSL/Linux）
 - **v1.5** (2026-03-27): DayLife 按事件导入（5,505 条生活事件）+ 智能每日同步（断电自动补齐）；AI 对话历史导入（541 条 ChatGPT + Gemini 对话）；双搜索模式（关键词默认 + 语义召回切换）；记忆流和时间线无限滚动；备份恢复脚本（支持上下文过滤）；每个 bank 独立的 retain_mission；面板性能优化
 - **v1.4** (2026-03-16): WebGL 图谱渲染（sigma.js，支持 50,000+ 节点）；图谱边过滤（按类型/权重）；观察自动剪枝（每周清理低价值 observation）；备份优化（过滤 temporal 边）

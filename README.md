@@ -96,8 +96,8 @@ You don't do anything — the AI handles it all.
 
 | Metric | Value |
 |--------|-------|
-| Memory nodes | 8,400+ |
-| Knowledge links | 556,000+ |
+| Memory nodes | 43,700+ |
+| Knowledge links | 2,490,000+ |
 | Named entities | 4,600+ |
 | Time span | 2017 – present (9 years) |
 | AI chats imported | 541 (ChatGPT + Gemini) |
@@ -770,8 +770,8 @@ MemoMind 赋予你的 AI 一个**持久、本地、智能的大脑**。不是聊
 
 | 指标 | 数值 |
 |------|------|
-| 记忆节点 | 8,400+ |
-| 知识链接 | 556,000+ |
+| 记忆节点 | 43,700+ |
+| 知识链接 | 2,490,000+ |
 | 命名实体 | 4,600+ |
 | 时间跨度 | 2017 至今（9 年） |
 | 导入 AI 对话 | 541 条（ChatGPT + Gemini） |

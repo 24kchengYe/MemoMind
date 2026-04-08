@@ -27,3 +27,7 @@ WScript.Sleep 30000
 
 ' Start Dashboard
 WshShell.Run """D:\pythonPycharms\memomind-env\Scripts\pythonw.exe"" ""D:\pythonPycharms\MemoMind\dashboard.py""", 0, False
+
+' Start NoteDiscovery (Knowledge Vault wiki viewer)
+WshShell.CurrentDirectory = "D:\pythonPycharms\NoteDiscovery"
+WshShell.Run """D:\pythonPycharms\NoteDiscovery\venv\Scripts\pythonw.exe"" -X utf8 -m uvicorn backend.main:app --host 0.0.0.0 --port 9998", 0, False

@@ -33,6 +33,9 @@ urllib.request.install_opener(_no_proxy_opener)
 # MemoMind API runs natively on Windows
 MEMOMIND_API = "http://127.0.0.1:19999"
 
+# NoteDiscovery (Knowledge Vault wiki viewer)
+VAULT_BACKEND = "http://127.0.0.1:9998"
+
 with open(os.path.join(os.path.dirname(__file__) or ".", "dashboard.html"), encoding="utf-8") as _f:
     DASHBOARD_HTML = _f.read()
 # Patch the default URL to point to the dashboard proxy (not directly to API)
@@ -80,16 +83,42 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
             self.send_header("Content-Type", "text/html")
             self.end_headers()
             self.wfile.write(DASHBOARD_HTML.encode())
+        elif self.path == "/vault" or self.path == "/vault/":
+            # Serve a full-page iframe pointing to NoteDiscovery
+            html = f"""<!DOCTYPE html>
+<html style="margin:0;padding:0;height:100%">
+<head><meta charset="UTF-8"><title>MemoMind Knowledge Vault</title></head>
+<body style="margin:0;padding:0;height:100%;overflow:hidden">
+<iframe src="{VAULT_BACKEND}/" style="width:100%;height:100%;border:none"></iframe>
+</body></html>"""
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html")
+            self.end_headers()
+            self.wfile.write(html.encode())
+        elif self.path.startswith("/vault/"):
+            self._proxy_vault("GET")
         elif self.path.startswith("/api/original-chat/"):
             self._serve_original_chat()
         else:
             self._proxy("GET")
 
     def do_POST(self):
-        self._proxy("POST")
+        if self.path.startswith("/vault"):
+            self._proxy_vault("POST")
+        else:
+            self._proxy("POST")
+
+    def do_PUT(self):
+        if self.path.startswith("/vault"):
+            self._proxy_vault("PUT")
+        else:
+            self._proxy("PUT")
 
     def do_DELETE(self):
-        self._proxy("DELETE")
+        if self.path.startswith("/vault"):
+            self._proxy_vault("DELETE")
+        else:
+            self._proxy("DELETE")
 
     def _serve_original_chat(self):
         """Serve the original .md chat file for a given document hash or conversation id."""
@@ -171,9 +200,47 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
         """CORS preflight handler."""
         self.send_response(204)
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, Accept")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization")
         self.end_headers()
+
+    def _proxy_vault(self, method):
+        """Proxy /vault/* requests to NoteDiscovery backend."""
+        # Strip /vault prefix: /vault/foo → /foo, /vault → /
+        backend_path = self.path[len("/vault"):] or "/"
+        url = VAULT_BACKEND + backend_path
+        try:
+            body = None
+            if method in ("POST", "PUT", "DELETE"):
+                length = int(self.headers.get("Content-Length", 0))
+                body = self.rfile.read(length) if length > 0 else None
+
+            req = urllib.request.Request(url, data=body, method=method)
+            # Forward relevant headers
+            for h in ("Content-Type", "Accept", "Authorization"):
+                val = self.headers.get(h)
+                if val:
+                    req.add_header(h, val)
+
+            with _no_proxy_opener.open(req, timeout=120) as resp:
+                data = resp.read()
+                self.send_response(resp.status)
+                # Forward content-type from NoteDiscovery (HTML, CSS, JS, JSON, etc.)
+                ct = resp.headers.get("Content-Type", "application/octet-stream")
+                self.send_header("Content-Type", ct)
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(data)
+        except urllib.error.HTTPError as e:
+            self.send_response(e.code)
+            self.send_header("Content-Type", e.headers.get("Content-Type", "text/html"))
+            self.end_headers()
+            self.wfile.write(e.read())
+        except Exception as e:
+            self.send_response(502)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps({"error": f"Vault backend unavailable: {e}"}).encode())
 
     def _proxy(self, method):
         """Proxy requests to MemoMind API."""

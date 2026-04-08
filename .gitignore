@@ -18,3 +18,7 @@ tmp-frames/
 # Never commit actual config with API keys (only templates)
 serve.py
 mcp_stdio.py
+tmp_mem.json
+sync_daylife_last.txt
+proxy-rules*.txt
+gen_proxy_rules.py

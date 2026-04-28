@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/24kchengye-memomind-badge.png)](https://mseep.ai/app/24kchengye-memomind)
+
 <div align="center">
 
 

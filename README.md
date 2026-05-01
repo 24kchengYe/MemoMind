@@ -1,5 +1,3 @@
-[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/24kchengye-memomind-badge.png)](https://mseep.ai/app/24kchengye-memomind)
-
 <div align="center">
 
 
@@ -13,6 +11,7 @@
 *A fully local, GPU-accelerated memory system for AI coding agents. Start building your digital twin's memory today — portable, evolving, and ready to migrate when a better system comes along.*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![MseeP Verified](https://img.shields.io/badge/MseeP-Verified-brightgreen)](https://mseep.ai/app/24kchengye-memomind)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20WSL2-orange)](https://github.com/24kchengYe/MemoMind#quick-start)
 [![PostgreSQL](https://img.shields.io/badge/Storage-PostgreSQL%20%2B%20pgvector-336791)](https://github.com/pgvector/pgvector)
 [![MCP](https://img.shields.io/badge/Protocol-MCP%20(stdio)-blue)](https://modelcontextprotocol.io/)

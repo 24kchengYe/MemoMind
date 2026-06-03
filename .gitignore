@@ -24,3 +24,7 @@ proxy-rules*.txt
 gen_proxy_rules.py
 MemoMind-Presentation.pptx
 MemoMind-Presentation-ZH.pptx
+# Test artifacts / crash dumps / local backups
+*.png
+*.stackdump
+*.bak-*

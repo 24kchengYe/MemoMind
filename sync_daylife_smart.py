@@ -10,13 +10,21 @@ import io
 import subprocess
 from datetime import date, timedelta
 
-# Fix Windows console encoding
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
-
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 MARKER_FILE = os.path.join(PROJECT_DIR, "sync_daylife_last.txt")
 IMPORT_SCRIPT = os.path.join(PROJECT_DIR, "import_daylife.py")
+LOG_FILE = os.path.join(PROJECT_DIR, "sync_daylife.log")
+
+# Redirect stdout/stderr to log file when running under pythonw (no console)
+# so we capture output even without shell redirection.
+if sys.stdout is None or not hasattr(sys.stdout, 'buffer'):
+    _log_fp = open(LOG_FILE, "a", encoding="utf-8", buffering=1)
+    sys.stdout = _log_fp
+    sys.stderr = _log_fp
+else:
+    # Fix Windows console encoding when run from console
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 
 def get_last_sync_date():

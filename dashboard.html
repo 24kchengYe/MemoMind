@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MemoMind</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,700&display=swap" rel="stylesheet">
 <style>
 :root {
   --surface-0: oklch(0.11 0.015 260);
@@ -2828,10 +2826,51 @@ body {
   </div>
 </div>
 
-<script src="https://unpkg.com/graphology@0.25.4/dist/graphology.umd.min.js"></script>
-<script src="https://unpkg.com/sigma@2.4.0/build/sigma.min.js"></script>
-<script src="https://unpkg.com/marked@12.0.1/marked.min.js"></script>
 <script>
+const _externalScriptPromises = new Map();
+
+function loadExternalScript(url, globalName) {
+  if (window[globalName]) return Promise.resolve();
+  if (_externalScriptPromises.has(url)) return _externalScriptPromises.get(url);
+  const promise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = url;
+    script.async = true;
+    const timer = setTimeout(() => {
+      script.remove();
+      reject(new Error(`Timed out loading ${globalName}`));
+    }, 15000);
+    script.onload = () => {
+      clearTimeout(timer);
+      window[globalName] ? resolve() : reject(new Error(`${globalName} did not initialize`));
+    };
+    script.onerror = () => {
+      clearTimeout(timer);
+      reject(new Error(`Could not load ${globalName}`));
+    };
+    document.head.appendChild(script);
+  });
+  _externalScriptPromises.set(url, promise);
+  return promise;
+}
+
+async function ensureGraphLibraries() {
+  await loadExternalScript(
+    'https://unpkg.com/graphology@0.25.4/dist/graphology.umd.min.js',
+    'graphology'
+  );
+  await loadExternalScript(
+    'https://unpkg.com/sigma@2.4.0/build/sigma.min.js',
+    'Sigma'
+  );
+}
+
+async function ensureMarkedLibrary() {
+  await loadExternalScript(
+    'https://unpkg.com/marked@12.0.1/marked.min.js',
+    'marked'
+  );
+}
 // Inline ForceAtlas2-style layout (the npm package has no UMD build)
 // Seeded random for deterministic layout
 function seededRandom(seed) {
@@ -2944,6 +2983,8 @@ let searchResults = null;
 let isSearchMode = false;
 let sigmaInstance = null;
 let sigmaGraph = null;
+let graphLoadedBank = null;
+let graphLoadingBank = null;
 let focusedNode = null;
 let graphNodeAttrs = {}; // id -> { fullText, date, type, isEntity, connCount }
 let deleteTarget = null;
@@ -3943,10 +3984,18 @@ function applyGraphEdgeFilter() {
   });
 }
 
-async function loadGraph() {
+async function loadGraph(force = false) {
   const empty = document.getElementById('graphEmpty');
   const container = document.getElementById('sigmaContainer');
   const tooltip = document.getElementById('graphTooltip');
+
+  // Graph data is intentionally lazy: never requested during initial page load.
+  // Reuse the rendered graph for the same bank and collapse double-clicks.
+  if (!force && graphLoadedBank === currentBank && sigmaInstance) return;
+  if (graphLoadingBank === currentBank) return;
+  graphLoadingBank = currentBank;
+  empty.textContent = 'Loading graph on demand...';
+  empty.style.display = '';
 
   // Destroy previous instance
   if (sigmaInstance) {
@@ -3956,6 +4005,7 @@ async function loadGraph() {
   }
 
   try {
+    await ensureGraphLibraries();
     // Fetch graph and memory types in parallel
     const [data, memList] = await Promise.all([
       api(`/v1/default/banks/${currentBank}/graph`),
@@ -4318,7 +4368,7 @@ async function loadGraph() {
         if (!confirm('Delete this memory?\\n\\n' + attrs.fullText.slice(0, 100))) return;
         try {
           await fetch(base() + `/v1/default/banks/${currentBank}/memories/${node}`, { method: 'DELETE' });
-          loadGraph();
+          loadGraph(true);
           loadBank();
         } catch(e) { showError(e.message); }
       }));
@@ -4338,7 +4388,7 @@ async function loadGraph() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text: newText })
               });
-              loadGraph();
+              loadGraph(true);
               loadBank();
             } catch(e) { showError('Edit failed: ' + e.message); }
           })();
@@ -4369,10 +4419,13 @@ async function loadGraph() {
 
     // Apply default edge filter (hide temporal by default)
     applyGraphEdgeFilter();
+    graphLoadedBank = currentBank;
 
   } catch (e) {
     empty.textContent = `Graph unavailable: ${e.message}`;
     empty.style.display = '';
+  } finally {
+    graphLoadingBank = null;
   }
 }
 
@@ -4897,6 +4950,7 @@ async function openChatModal(documentId) {
   body.innerHTML = '<div class="loading-spinner">Loading original conversation...</div>';
 
   try {
+    await ensureMarkedLibrary();
     const resp = await fetch(`${base()}/api/original-chat/${encodeURIComponent(documentId)}`);
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({ error: resp.statusText }));

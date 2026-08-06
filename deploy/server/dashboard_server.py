@@ -42,7 +42,7 @@ urllib.request.install_opener(_no_proxy_opener)
 
 MEMOMIND_API = os.environ.get("MEMOMIND_API_URL", "http://memomind-api:19999")
 # NoteDiscovery still runs on wolf; reachable over Tailscale
-VAULT_BACKEND = os.environ.get("VAULT_BACKEND_URL", "http://127.0.0.1:9998")  # 真实地址由服务器 .env 注入
+VAULT_BACKEND = os.environ.get("VAULT_BACKEND_URL", "http://100.101.229.33:9998")
 
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "dashboard.html"), encoding="utf-8") as _f:
     DASHBOARD_HTML = _f.read()
@@ -59,6 +59,13 @@ DASHBOARD_HTML = DASHBOARD_HTML.replace(
     'href="http://127.0.0.1:9998/"',
     f'href="{VAULT_BACKEND}/"'
 )
+# Favicon：浏览器书签/标签页图标（公开路由，无需登录）
+if '<link rel="icon"' not in DASHBOARD_HTML:
+    DASHBOARD_HTML = DASHBOARD_HTML.replace(
+        '<head>',
+        '<head>\n<link rel="icon" type="image/svg+xml" href="/favicon.svg">',
+        1,
+    )
 
 
 def _page_origin(headers) -> str:
@@ -66,8 +73,14 @@ def _page_origin(headers) -> str:
     proto = headers.get("X-Forwarded-Proto", "http")
     return f"{proto}://{host}"
 
+FAVICON_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<rect width="64" height="64" rx="14" fill="#0f172a"/>
+<text x="32" y="44" font-size="36" text-anchor="middle">🧠</text>
+</svg>"""
+
 LOGIN_HTML = """<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <title>MemoMind 登录</title>
 <style>
 body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0f172a;font-family:-apple-system,'Segoe UI',sans-serif}
@@ -231,7 +244,20 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
 
     # ── routes ──
     def do_GET(self):
-        if self.path == "/login" or self.path.startswith("/login?"):
+        if self.path == "/favicon.svg":
+            body = FAVICON_SVG.encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "image/svg+xml")
+            self.send_header("Cache-Control", "public, max-age=86400")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        elif self.path == "/favicon.ico":
+            self.send_response(302)
+            self.send_header("Location", "/favicon.svg")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+        elif self.path == "/login" or self.path.startswith("/login?"):
             self._serve_login()
         elif self.path == "/auth/logout":
             self._handle_logout()

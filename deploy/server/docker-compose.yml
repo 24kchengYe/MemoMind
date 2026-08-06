@@ -45,6 +45,7 @@ services:
     build: .
     container_name: memomind-dashboard
     restart: unless-stopped
+    env_file: .env   # MEMOMIND_AUTH_* 登录认证配置
     environment:
       MEMOMIND_API_URL: http://memomind-api:19999
     command: ["python", "/app/dashboard_server.py"]

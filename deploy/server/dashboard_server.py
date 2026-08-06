@@ -1,0 +1,241 @@
+"""
+MemoMind Dashboard - server (Docker) edition.
+Serves dashboard.html and proxies API calls to the api container.
+Vault proxy points back to wolf's NoteDiscovery over Tailscale (vault corpus
+stays on wolf; see migration plan).
+Opens at http://<tailscale-ip>:9999
+"""
+import http.server
+import json
+import os
+import re
+import urllib.request
+import urllib.error
+import urllib.parse
+
+DASHBOARD_PORT = 9999
+
+# AI chat history for the "view original chat" feature (mounted volume)
+AI_CHAT_ROOT = os.environ.get("AI_CHAT_ROOT", "/chat-history/total memory")
+AI_CHAT_INDEX = os.path.join(AI_CHAT_ROOT, "index.json")
+_chat_index_cache = None  # lazy-loaded
+
+# Direct networking (no proxies on the server)
+proxy_handler = urllib.request.ProxyHandler({})
+_no_proxy_opener = urllib.request.build_opener(proxy_handler)
+urllib.request.install_opener(_no_proxy_opener)
+
+MEMOMIND_API = os.environ.get("MEMOMIND_API_URL", "http://api:19999")
+# NoteDiscovery still runs on wolf; reachable over Tailscale
+VAULT_BACKEND = os.environ.get("VAULT_BACKEND_URL", "http://100.101.229.33:9998")
+
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "dashboard.html"), encoding="utf-8") as _f:
+    DASHBOARD_HTML = _f.read()
+# Patch the default URL to point to the dashboard proxy (not directly to API)
+DASHBOARD_HTML = DASHBOARD_HTML.replace(
+    'value="http://127.0.0.1:19999"',
+    f'value="http://127.0.0.1:{DASHBOARD_PORT}"'
+)
+
+
+def _load_chat_index():
+    global _chat_index_cache
+    if _chat_index_cache is None:
+        try:
+            with open(AI_CHAT_INDEX, "r", encoding="utf-8") as f:
+                _chat_index_cache = json.load(f)
+        except Exception:
+            _chat_index_cache = []
+    return _chat_index_cache
+
+
+def _find_chat_md(document_id: str):
+    index = _load_chat_index()
+    for entry in index:
+        if entry.get("id") == document_id:
+            json_path = entry.get("filePath", "")
+            md_path = re.sub(r"\.json$", ".md", json_path)
+            full_path = os.path.join(AI_CHAT_ROOT, md_path)
+            if os.path.isfile(full_path):
+                return full_path
+            return None
+    return None
+
+
+class DashboardHandler(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/" or self.path == "/dashboard":
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html")
+            self.end_headers()
+            self.wfile.write(DASHBOARD_HTML.encode())
+        elif self.path == "/vault" or self.path == "/vault/":
+            self.send_response(302)
+            self.send_header("Location", VAULT_BACKEND + "/")
+            self.end_headers()
+        elif self.path.startswith("/vault/"):
+            self._proxy_vault("GET")
+        elif self.path.startswith("/api/original-chat/"):
+            self._serve_original_chat()
+        else:
+            self._proxy("GET")
+
+    def do_POST(self):
+        if self.path.startswith("/vault"):
+            self._proxy_vault("POST")
+        else:
+            self._proxy("POST")
+
+    def do_PUT(self):
+        if self.path.startswith("/vault"):
+            self._proxy_vault("PUT")
+        else:
+            self._proxy("PUT")
+
+    def do_DELETE(self):
+        if self.path.startswith("/vault"):
+            self._proxy_vault("DELETE")
+        else:
+            self._proxy("DELETE")
+
+    def _serve_original_chat(self):
+        parts = self.path.split("/api/original-chat/", 1)
+        if len(parts) < 2 or not parts[1]:
+            self._json_error(400, "Missing document identifier")
+            return
+
+        doc_id = urllib.parse.unquote(parts[1].split("?")[0])
+        md_path = _find_chat_md(doc_id)
+
+        if not md_path:
+            try:
+                bank = self._get_bank()
+                url = f"{MEMOMIND_API}/v1/default/banks/{bank}/documents/{doc_id}"
+                req = urllib.request.Request(url, method="GET")
+                req.add_header("Accept", "application/json")
+                with _no_proxy_opener.open(req, timeout=10) as resp:
+                    doc = json.loads(resp.read())
+                params = doc.get("retain_params", "")
+                if isinstance(params, str):
+                    try:
+                        params = json.loads(params)
+                    except Exception:
+                        params = {}
+                orig_doc_id = params.get("original_document_id") if isinstance(params, dict) else None
+                if orig_doc_id:
+                    md_path = _find_chat_md(orig_doc_id)
+                if not md_path:
+                    orig_text = doc.get("original_text", "")
+                    if "] " in orig_text:
+                        title = orig_text.split("] ", 1)[1].split(" | ")[0].strip()
+                        index = _load_chat_index()
+                        for entry in index:
+                            if entry.get("title", "").strip() == title:
+                                md_path = _find_chat_md(entry["id"])
+                                break
+            except Exception:
+                pass
+
+        if not md_path:
+            self._json_error(404, "Original chat not found for this memory")
+            return
+
+        try:
+            with open(md_path, "r", encoding="utf-8") as f:
+                content = f.read()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/markdown; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(content.encode("utf-8"))
+        except Exception as e:
+            self._json_error(500, f"Failed to read file: {e}")
+
+    def _get_bank(self):
+        if "?" in self.path:
+            qs = urllib.parse.parse_qs(self.path.split("?", 1)[1])
+            return qs.get("bank", ["default"])[0]
+        return "default"
+
+    def _json_error(self, code, message):
+        self.send_response(code)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        self.wfile.write(json.dumps({"error": message}).encode())
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization")
+        self.end_headers()
+
+    def _proxy_vault(self, method):
+        backend_path = self.path[len("/vault"):] or "/"
+        url = VAULT_BACKEND + backend_path
+        try:
+            body = None
+            if method in ("POST", "PUT", "DELETE"):
+                length = int(self.headers.get("Content-Length", 0))
+                body = self.rfile.read(length) if length > 0 else None
+            req = urllib.request.Request(url, data=body, method=method)
+            for h in ("Content-Type", "Accept", "Authorization"):
+                val = self.headers.get(h)
+                if val:
+                    req.add_header(h, val)
+            with _no_proxy_opener.open(req, timeout=120) as resp:
+                data = resp.read()
+                self.send_response(resp.status)
+                ct = resp.headers.get("Content-Type", "application/octet-stream")
+                self.send_header("Content-Type", ct)
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(data)
+        except urllib.error.HTTPError as e:
+            self.send_response(e.code)
+            self.send_header("Content-Type", e.headers.get("Content-Type", "text/html"))
+            self.end_headers()
+            self.wfile.write(e.read())
+        except Exception as e:
+            self.send_response(502)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps({"error": f"Vault backend unavailable: {e}"}).encode())
+
+    def _proxy(self, method):
+        url = MEMOMIND_API + self.path
+        try:
+            body = None
+            if method in ("POST", "DELETE"):
+                length = int(self.headers.get("Content-Length", 0))
+                body = self.rfile.read(length) if length > 0 else None
+            req = urllib.request.Request(url, data=body, method=method)
+            req.add_header("Content-Type", "application/json")
+            req.add_header("Accept", "application/json")
+            with _no_proxy_opener.open(req, timeout=120) as resp:
+                data = resp.read()
+                self.send_response(resp.status)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(data)
+        except urllib.error.HTTPError as e:
+            self.send_response(e.code)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(e.read())
+        except Exception as e:
+            self.send_response(502)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps({"error": str(e)}).encode())
+
+    def log_message(self, format, *args):
+        pass
+
+
+if __name__ == "__main__":
+    server = http.server.HTTPServer(("0.0.0.0", DASHBOARD_PORT), DashboardHandler)
+    print(f"MemoMind Dashboard running at http://0.0.0.0:{DASHBOARD_PORT}")
+    server.serve_forever()

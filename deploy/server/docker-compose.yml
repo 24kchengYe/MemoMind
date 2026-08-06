@@ -1,0 +1,64 @@
+name: memomind
+
+services:
+  pg:
+    image: pgvector/pgvector:pg17   # 自带 vector 扩展（hindsight 必需）
+    container_name: memomind-pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hindsight
+      POSTGRES_PASSWORD: ${PG_PASSWORD:?PG_PASSWORD is required}
+      POSTGRES_DB: hindsight
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    networks:
+      - memomind-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hindsight -d hindsight"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  memomind-api:   # 服务名必须唯一：之前叫 api 会在 caddy_web 上劫持 SmartBidding 的 api 名
+    build: .
+    container_name: memomind-api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MEMOMIND_PG_URL: postgresql://hindsight:${PG_PASSWORD}@pg:5432/hindsight
+    command: ["python", "/app/serve.py"]
+    volumes:
+      - ./chat-history:/chat-history:ro   # models 在镜像里，不要挂卷覆盖
+    ports:
+      # Tailscale-only: full HTTP API + /mcp for tailnet clients
+      - "100.101.110.113:19999:19999"
+    depends_on:
+      pg:
+        condition: service_healthy
+    hostname: memomind-api
+    networks:
+      - memomind-net
+      - caddy_web   # reach sub2api:8080 in-network
+
+  dashboard:
+    build: .
+    container_name: memomind-dashboard
+    restart: unless-stopped
+    environment:
+      MEMOMIND_API_URL: http://memomind-api:19999
+    command: ["python", "/app/dashboard_server.py"]
+    ports:
+      # Tailscale-only: web UI
+      - "100.101.110.113:9999:9999"
+    depends_on:
+      - memomind-api
+    networks:
+      - memomind-net
+      - caddy_web   # Caddy 公网入口（basic_auth）反代到这里
+
+networks:
+  memomind-net:
+    driver: bridge
+  caddy_web:
+    external: true

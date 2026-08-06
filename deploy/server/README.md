@@ -14,9 +14,11 @@
 
 | 用途 | 地址 | 认证 |
 |------|------|------|
-| HTTP API（retain/recall/reflect） | `http://100.101.110.113:19999`（Tailscale 内网） | 无（Tailnet 内） |
-| Dashboard 网页 | `https://memomind.duqi.top` 或 Tailscale `http://100.101.110.113:9999` | 公网 basic_auth（admin / 密码见 AI Gateway 加密包 sub2api 管理员字段） |
-| MCP（kimi/Claude 等 AI 客户端） | `https://memomind.duqi.top/mcp` | Bearer token（加密包 `MEMOMIND_MCP_TOKEN`） |
+| HTTP API（retain/recall/reflect） | Tailscale：`http://100.101.110.113:19999`；公网：`https://memomind.duqi.top/v1/...` | 内网免认证；公网 `Authorization: Bearer <访问密码>`（与主密码同值，加密包 `MEMOMIND_MCP_TOKEN`） |
+| Dashboard 网页 | `https://memomind.duqi.top` 或 Tailscale `http://100.101.110.113:9999` | 登录页：575860760@qq.com / 同 sub2api 管理员密码 |
+| MCP（kimi/Claude 等 AI 客户端） | `https://memomind.duqi.top/mcp` | Bearer 访问密码（同上） |
+
+公网双层鉴权模型：Dashboard 用网站账号登录（会话 Cookie）；API/MCP 用访问密码（Bearer）。无 Bearer 的 /v1 请求会回落到 Dashboard 检查会话 Cookie，浏览器与脚本两种客户端都兼容。不能上 Tailscale 的设备直接走公网即可。
 
 kimi-cli `~/.kimi/mcp.json` 配置示例：
 

@@ -42,7 +42,7 @@ urllib.request.install_opener(_no_proxy_opener)
 
 MEMOMIND_API = os.environ.get("MEMOMIND_API_URL", "http://memomind-api:19999")
 # NoteDiscovery still runs on wolf; reachable over Tailscale
-VAULT_BACKEND = os.environ.get("VAULT_BACKEND_URL", "http://100.101.229.33:9998")
+VAULT_BACKEND = os.environ.get("VAULT_BACKEND_URL", "http://127.0.0.1:9998")  # 真实地址由服务器 .env 注入
 
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "dashboard.html"), encoding="utf-8") as _f:
     DASHBOARD_HTML = _f.read()

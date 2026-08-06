@@ -20,7 +20,17 @@ sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="repla
 
 # Config
 DAYLIFE_DB = os.path.expanduser("~/.local/share/daylife/daylife.db")
-MEMOMIND_API = "http://100.101.110.113:19999"
+def _load_memomind_api():
+    """生产 API 地址从本地 secrets 文件读取（不入 git）；缺省回退本机。"""
+    if os.environ.get("MEMOMIND_API"):
+        return os.environ["MEMOMIND_API"]
+    try:
+        with open(r"D:\server-ops\secrets\memomind-api-url.txt", encoding="utf-8") as f:
+            return f.read().strip()
+    except OSError:
+        return "http://127.0.0.1:19999"
+
+MEMOMIND_API = _load_memomind_api()
 BANK_ID = "life"
 
 # Disable proxy

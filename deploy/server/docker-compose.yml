@@ -32,7 +32,7 @@ services:
       - ./chat-history:/chat-history:ro   # models 在镜像里，不要挂卷覆盖
     ports:
       # Tailscale-only: full HTTP API + /mcp for tailnet clients
-      - "100.101.110.113:19999:19999"
+      - "${BIND_IP:-127.0.0.1}:19999:19999"   # BIND_IP=服务器 Tailscale IP，写在服务器 .env
     depends_on:
       pg:
         condition: service_healthy
@@ -51,7 +51,7 @@ services:
     command: ["python", "/app/dashboard_server.py"]
     ports:
       # Tailscale-only: web UI
-      - "100.101.110.113:9999:9999"
+      - "${BIND_IP:-127.0.0.1}:9999:9999"
     depends_on:
       - memomind-api
     networks:

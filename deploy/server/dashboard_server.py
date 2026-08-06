@@ -241,6 +241,8 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
             body = DASHBOARD_HTML.replace("__PAGE_ORIGIN__", _page_origin(self.headers)).encode()
             self.send_response(200)
             self.send_header("Content-Type", "text/html")
+            # no-store: 页面含按请求动态生成的 API 地址，浏览器缓存旧版会连 127.0.0.1
+            self.send_header("Cache-Control", "no-store")
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)

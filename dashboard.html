@@ -3372,7 +3372,7 @@ function toggleFold(btn) {
 async function loadMemories() {
   const stream = document.getElementById('memoryStream');
   try {
-    const res = await api(`/v1/default/banks/${currentBank}/memories/list?limit=100000`);
+    const res = await api(`/v1/default/banks/${currentBank}/memories/list?limit=500`); // 全量拉取在服务器上太慢（5 万条需数分钟）；首屏 500 条约 5s，更早的记忆用搜索（recall）
     const items = res.items || [];
     allMemories = items;
     allMemories.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));

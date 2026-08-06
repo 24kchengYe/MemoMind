@@ -425,6 +425,9 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    server = http.server.HTTPServer(("0.0.0.0", DASHBOARD_PORT), DashboardHandler)
+    # Threading: HTTP/1.1 keep-alive + browsers' parallel connections would
+    # otherwise block the single-threaded HTTPServer and hang the dashboard.
+    server = http.server.ThreadingHTTPServer(("0.0.0.0", DASHBOARD_PORT), DashboardHandler)
+    server.daemon_threads = True
     print(f"MemoMind Dashboard on :{DASHBOARD_PORT} (auth={'on' if AUTH_ENABLED else 'off'})")
     server.serve_forever()

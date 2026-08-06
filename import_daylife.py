@@ -20,7 +20,7 @@ sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="repla
 
 # Config
 DAYLIFE_DB = os.path.expanduser("~/.local/share/daylife/daylife.db")
-MEMOMIND_API = "http://127.0.0.1:19999"
+MEMOMIND_API = "http://100.101.110.113:19999"
 BANK_ID = "life"
 
 # Disable proxy

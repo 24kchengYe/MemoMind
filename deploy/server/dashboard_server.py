@@ -46,10 +46,25 @@ VAULT_BACKEND = os.environ.get("VAULT_BACKEND_URL", "http://100.101.229.33:9998"
 
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "dashboard.html"), encoding="utf-8") as _f:
     DASHBOARD_HTML = _f.read()
+# The dashboard JS calls whatever is in the #baseUrl input. Hardcoding
+# 127.0.0.1 breaks remote browsers (their own localhost). Patch in a
+# placeholder and fill it per-request with the actual page origin, so the
+# page talks back to the same dashboard that served it (which proxies to the API).
 DASHBOARD_HTML = DASHBOARD_HTML.replace(
     'value="http://127.0.0.1:19999"',
-    f'value="http://127.0.0.1:{DASHBOARD_PORT}"'
+    'value="__PAGE_ORIGIN__"'
 )
+# Vault link: NoteDiscovery stays on wolf — point to its Tailscale address, not localhost.
+DASHBOARD_HTML = DASHBOARD_HTML.replace(
+    'href="http://127.0.0.1:9998/"',
+    f'href="{VAULT_BACKEND}/"'
+)
+
+
+def _page_origin(headers) -> str:
+    host = headers.get("Host", f"127.0.0.1:{DASHBOARD_PORT}")
+    proto = headers.get("X-Forwarded-Proto", "http")
+    return f"{proto}://{host}"
 
 LOGIN_HTML = """<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -191,12 +206,13 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
         if (AUTH_USERNAME and AUTH_PASSWORD_HASH and SESSION_SECRET
                 and hmac.compare_digest(username, AUTH_USERNAME)
                 and _verify_password(password, AUTH_PASSWORD_HASH)):
-            body = b"ok"
+            # Secure 只在 https（公网经 Caddy）时加，Tailscale 内网 http 也能保持会话
+            secure_attr = "; Secure" if self.headers.get("X-Forwarded-Proto") == "https" else ""
             self.send_response(303)
             self.send_header("Location", "/")
             self.send_header(
                 "Set-Cookie",
-                f"{SESSION_COOKIE}={_create_session(username)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age={SESSION_TTL_SECONDS}"
+                f"{SESSION_COOKIE}={_create_session(username)}; Path=/; HttpOnly{secure_attr}; SameSite=Lax; Max-Age={SESSION_TTL_SECONDS}"
             )
             self.send_header("Content-Length", "0")
             self.end_headers()
@@ -222,7 +238,7 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
         elif not self._require_auth():
             return
         elif self.path == "/" or self.path == "/dashboard":
-            body = DASHBOARD_HTML.encode()
+            body = DASHBOARD_HTML.replace("__PAGE_ORIGIN__", _page_origin(self.headers)).encode()
             self.send_response(200)
             self.send_header("Content-Type", "text/html")
             self.send_header("Content-Length", str(len(body)))

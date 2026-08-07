@@ -41,8 +41,11 @@ _no_proxy_opener = urllib.request.build_opener(proxy_handler)
 urllib.request.install_opener(_no_proxy_opener)
 
 MEMOMIND_API = os.environ.get("MEMOMIND_API_URL", "http://memomind-api:19999")
-# NoteDiscovery still runs on wolf; reachable over Tailscale
-VAULT_BACKEND = os.environ.get("VAULT_BACKEND_URL", "http://100.101.229.33:9998")
+MEMOMIND_API_TOKEN = os.environ.get("MEMOMIND_MCP_TOKEN", "")
+if not MEMOMIND_API_TOKEN:
+    raise RuntimeError("MEMOMIND_MCP_TOKEN is required for the dashboard API proxy")
+# NoteDiscovery address is deployment-only and must be injected through .env.
+VAULT_BACKEND = os.environ.get("VAULT_BACKEND_URL", "http://127.0.0.1:9998")
 
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "dashboard.html"), encoding="utf-8") as _f:
     DASHBOARD_HTML = _f.read()
@@ -430,6 +433,8 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
             req = urllib.request.Request(url, data=body, method=method)
             req.add_header("Content-Type", "application/json")
             req.add_header("Accept", "application/json")
+            # The API enforces application-layer auth even on the Docker network.
+            req.add_header("Authorization", f"Bearer {MEMOMIND_API_TOKEN}")
             with _no_proxy_opener.open(req, timeout=120) as resp:
                 data = resp.read()
                 self.send_response(resp.status)

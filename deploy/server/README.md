@@ -14,9 +14,9 @@ MemoMind 生产实例以 Docker Compose 运行在云服务器上（`/opt/memomin
 
 | 用途 | 地址 | 认证 |
 |------|------|------|
-| HTTP API（retain/recall/reflect） | Tailscale：`http://<SERVER_TAILSCALE_IP>:19999`；公网：`https://<DOMAIN>/v1/...` | 内网免认证；公网 `Authorization: Bearer <访问密码>` |
+| HTTP API（retain/recall/reflect） | Tailscale：`http://<SERVER_TAILSCALE_IP>:19999`；公网：`https://<DOMAIN>/v1/...` | 两条通道均需 `Authorization: Bearer <访问密码>` |
 | Dashboard 网页 | `https://<DOMAIN>` 或 Tailscale `http://<SERVER_TAILSCALE_IP>:9999` | 登录页（账号密码见私有 secrets） |
-| MCP（kimi/Claude 等 AI 客户端） | `https://<DOMAIN>/mcp` | Bearer 访问密码（同上） |
+| MCP（kimi/Claude 等 AI 客户端） | 公网：`https://<DOMAIN>/mcp`；Tailscale：`http://<SERVER_TAILSCALE_IP>:19999/mcp` | 两条通道均需 Bearer 访问密码 |
 
 公网双层鉴权：Dashboard 用网站账号登录（会话 Cookie）；API/MCP 用访问密码（Bearer）。无 Bearer 的 /v1 请求回落到 Dashboard 检查会话 Cookie，浏览器与脚本两种客户端都兼容。不能上 Tailscale 的设备直接走公网。
 

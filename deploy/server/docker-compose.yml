@@ -30,6 +30,8 @@ services:
       # Enforce the same service credential on both public and Tailnet paths.
       HINDSIGHT_API_TENANT_EXTENSION: hindsight_api.extensions.builtin.tenant:ApiKeyTenantExtension
       HINDSIGHT_API_TENANT_API_KEY: ${MEMOMIND_MCP_TOKEN:?MEMOMIND_MCP_TOKEN is required}
+      # Stable ownership lets Hindsight recover async jobs after container recreation.
+      HINDSIGHT_API_WORKER_ID: memomind-api
     command: ["python", "/app/serve.py"]
     volumes:
       - ./chat-history:/chat-history:ro   # models 在镜像里，不要挂卷覆盖

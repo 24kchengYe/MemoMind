@@ -18,6 +18,7 @@ tmp-frames/
 graphify-out/
 # Never commit actual config with API keys (only templates)
 serve.py
+!deploy/server/serve.py
 mcp_stdio.py
 tmp_mem.json
 sync_daylife_last.txt

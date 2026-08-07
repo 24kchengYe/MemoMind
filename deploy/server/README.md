@@ -40,6 +40,8 @@ docker compose up -d
 
 `.env` 需要：`PG_PASSWORD`、`SUB2API_MEMOMIND_KEY`、`MEMOMIND_MCP_TOKEN`、`BIND_IP`、`MEMOMIND_AUTH_*`（登录页）、`VAULT_BACKEND_URL`（可选，指回知识库设备）。
 
+如需给另一台设备签发可单独撤销的服务凭据，可把随机 token 加入 `MEMOMIND_MCP_ADDITIONAL_TOKENS`（逗号分隔）；不要分发 owner token。附加 token 当前拥有同一 MemoMind 服务能力，不等同于只读权限。
+
 ## 注意
 
 - compose 服务名必须带项目前缀（`memomind-api` 而非 `api`）——共享网络 caddy_web 上服务名即全局 DNS 名，通用名会劫持其他项目

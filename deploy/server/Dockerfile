@@ -15,5 +15,5 @@ RUN python -c "from huggingface_hub import snapshot_download; \
     snapshot_download('cross-encoder/ms-marco-MiniLM-L-6-v2')"
 
 WORKDIR /app
-COPY serve.py dashboard_server.py dashboard.html /app/
+COPY serve.py tenant.py dashboard_server.py dashboard.html /app/
 COPY tiktoken_cache /app/tiktoken_cache

@@ -28,8 +28,9 @@ services:
     environment:
       MEMOMIND_PG_URL: postgresql://hindsight:${PG_PASSWORD}@pg:5432/hindsight
       # Enforce the same service credential on both public and Tailnet paths.
-      HINDSIGHT_API_TENANT_EXTENSION: hindsight_api.extensions.builtin.tenant:ApiKeyTenantExtension
+      HINDSIGHT_API_TENANT_EXTENSION: tenant:MultiApiKeyTenantExtension
       HINDSIGHT_API_TENANT_API_KEY: ${MEMOMIND_MCP_TOKEN:?MEMOMIND_MCP_TOKEN is required}
+      HINDSIGHT_API_TENANT_ADDITIONAL_API_KEYS: ${MEMOMIND_MCP_ADDITIONAL_TOKENS:-}
       # Stable ownership lets Hindsight recover async jobs after container recreation.
       HINDSIGHT_API_WORKER_ID: memomind-api
     command: ["python", "/app/serve.py"]
